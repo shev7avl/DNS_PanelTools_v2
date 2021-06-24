@@ -27,11 +27,12 @@ namespace DNS_PanelTools_v2.Commands
 
             Debug.WriteLine(LinkedDocument.PathName);
             OpeningBuilder openingBuilder = new OpeningBuilder(ActiveDocument, LinkedDocument);
-            foreach (var item in fecStruct)
-            {
-                openingBuilder.FindIntersectedWindows(item);
+            Element item = fecStruct.Cast<Element>().ToList()[0];
+
+                openingBuilder.CreateOpening(item);
                 Debug.WriteLine(item.Name);
-            }
+                
+           
 
 
             return Result.Succeeded;
