@@ -30,6 +30,7 @@ namespace DNS_PanelTools_v2.Commands
             foreach (var item in els)
             {             
                 SetPanelBehaviour(item);
+                Behaviour.SetMarks();
             }
             transactionGroup.Assimilate();
             transactionGroup.Dispose();

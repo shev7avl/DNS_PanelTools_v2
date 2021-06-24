@@ -21,9 +21,8 @@ namespace DNS_PanelTools_v2.StructuralApps.Mark
         {
             ActiveDocument = document;
             ActiveElement = element;
-            SetMarks();
         }
-        private void MarkLogic()
+        public void FillMarks()
         {
 
             LongMark = $"ПС {GetPanelCode()}";
@@ -31,13 +30,13 @@ namespace DNS_PanelTools_v2.StructuralApps.Mark
 
         }
 
-        private void SetMarks()
+        public void SetMarks()
         {
             Guid DNS_panelMark = new Guid("db2bee76-ce6f-4203-9fde-b8f34f3477b5");
             Guid ADSK_panelMark = new Guid("92ae0425-031b-40a9-8904-023f7389963b");
             Transaction transaction = new Transaction(ActiveDocument);
 
-            MarkLogic();
+            FillMarks();
 
             transaction.Start($"Транзакция - {ActiveElement.Name}");
             ActiveElement.get_Parameter(DNS_panelMark).Set(LongMark);

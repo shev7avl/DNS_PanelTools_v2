@@ -62,6 +62,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resource.resx</DependentUpon>
     </Compile>
+    <Compile Include="StructuralApps\Assemblies\AssemblyBuilder.cs" />
+    <Compile Include="StructuralApps\SingletonMarksList.cs" />
     <Compile Include="StructuralApps\Mark\BPMark.cs" />
     <Compile Include="StructuralApps\Mark\PSMark.cs" />
     <Compile Include="StructuralApps\Mark\PPMark.cs" />

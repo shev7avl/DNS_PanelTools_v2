@@ -10,6 +10,7 @@ namespace DNS_PanelTools_v2.StructuralApps.Mark
 {
     class BPMark : IPanelMark
     {
+
         public Document ActiveDocument { get; set; }
         public Element ActiveElement { get; set; }
 
@@ -17,27 +18,25 @@ namespace DNS_PanelTools_v2.StructuralApps.Mark
 
         public string ShortMark { get; set; }
 
+
         public BPMark(Document document, Element element)
         {
-            ActiveDocument = document
-            ; ActiveElement = element;
-            SetMarks();
+            ActiveDocument = document;
+            ActiveElement = element; 
         }
-        private void MarkLogic()
+        public void FillMarks()
         {
-
             LongMark = $"БП {GetPanelCode()}";
             ShortMark = LongMark.Split('_')[0];
-
         }
 
-        private void SetMarks()
+        public void SetMarks()
         {
             Guid DNS_panelMark = new Guid("db2bee76-ce6f-4203-9fde-b8f34f3477b5");
             Guid ADSK_panelMark = new Guid("92ae0425-031b-40a9-8904-023f7389963b");
             Transaction transaction = new Transaction(ActiveDocument);
 
-            MarkLogic();
+            FillMarks();
 
             transaction.Start($"Транзакция - {ActiveElement.Name}");
             ActiveElement.get_Parameter(DNS_panelMark).Set(LongMark);

@@ -16,5 +16,15 @@ namespace DNS_PanelTools_v2.StructuralApps.Mark
 
         string ShortMark { get; set; }
 
+        /// <summary>
+        /// Заполняет значения короткой и длинной марки
+        /// </summary>
+        void FillMarks();
+
+        /// <summary>
+        /// Передает заполненные поля в семейство
+        /// </summary>
+        void SetMarks();
+
     }
 }
