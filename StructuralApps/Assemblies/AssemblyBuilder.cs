@@ -12,9 +12,22 @@ namespace DNS_PanelTools_v2.StructuralApps.Assemblies
     {
         List<IPanelMark> MarksList;
 
+        List<XYZ> frontPVLPts;
+
         Element ActiveElement;
 
         Document ActiveDoc;
+
+        public AssemblyBuilder(Document document, Element element)
+        {
+            ActiveDoc = document;
+            ActiveElement = element;
+
+            SingletonMarksList marksList = SingletonMarksList.getInstance(ActiveDoc);
+            MarksList = marksList.GetPanelMarks();
+        }
+
+
 
     }
 }
