@@ -6,38 +6,46 @@ using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 
-namespace DNS_PanelTools_v2.StructuralApps.LongMark
+namespace DNS_PanelTools_v2.StructuralApps.Mark
 {
-    class VSLongMark : IPanelLongMark
+    class NSMark : IPanelMark
     {
+
         public Document ActiveDocument { get; set; }
         public Element ActiveElement { get; set; }
 
+        public string LongMark { get; set; }
+
+        public string ShortMark { get; set; }
 
 
-        public VSLongMark(Document document, Element element)
+        public NSMark(Document document, Element element)
         {
-            ActiveDocument = document
-            ; ActiveElement = element;
-        }
-        public string LongMarkLogic()
-        {
-
-            string output = $"ВС-{GetPanelCode()}_{GetClosureCode()}";
-
-            return output;
+            ActiveDocument = document;
+            ActiveElement = element;
+            SetMarks();
         }
 
-        public void SetLongMark()
+        private void MarkLogic()
         {
-            string value = LongMarkLogic();
+            LongMark = $"НС {GetPanelCode()}_{GetClosureCode()}";
+            ShortMark = $"НС {LongMark.Split('_')[1]}";
+        }
+
+
+        private void SetMarks()
+        {
             Guid DNS_panelMark = new Guid("db2bee76-ce6f-4203-9fde-b8f34f3477b5");
             Guid ADSK_panelMark = new Guid("92ae0425-031b-40a9-8904-023f7389963b");
             Transaction transaction = new Transaction(ActiveDocument);
 
+
+            MarkLogic();
+
             transaction.Start($"Транзакция - {ActiveElement.Name}");
-            ActiveElement.get_Parameter(ADSK_panelMark).Set(value);
-            ActiveElement.get_Parameter(DNS_panelMark).Set(value);
+            ActiveElement.get_Parameter(DNS_panelMark).Set(LongMark);
+            ActiveElement.get_Parameter(ADSK_panelMark).Set(ShortMark);
+
             transaction.Commit();
         }
 
@@ -46,6 +54,8 @@ namespace DNS_PanelTools_v2.StructuralApps.LongMark
         {
             var elementFamily = ActiveElement as FamilyInstance;
             var familySymbol = elementFamily.Symbol;
+            string i1 = ActiveElement.LookupParameter("СТАРТ").AsValueString();
+            string i2 = ActiveElement.LookupParameter("ФИНИШ").AsValueString();
             string i3 = GetDoubleValueAsDecimeterString(ActiveElement, "ГабаритДлина");
             string i4 = GetDoubleValueAsDecimeterString(familySymbol, "ГабаритВысота");
             string i5 = GetDoubleValueAsDecimeterString(familySymbol, "ГабаритТолщина");
@@ -53,7 +63,7 @@ namespace DNS_PanelTools_v2.StructuralApps.LongMark
             string i6 = temp_i6[1];
             string[] temp_i7 = ActiveElement.LookupParameter("Тип PVL_ФИНИШ").AsValueString().Split(' ');
             string i7 = temp_i7[1];
-            return $"{i3}.{i4}.{i5}_{i6}.{i7}";
+            return $"{i1}.{i2}_{i3}.{i4}.{i5}_{i6}.{i7}";
         }
         private string GetClosureCode()
         {

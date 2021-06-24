@@ -6,38 +6,43 @@ using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 
-namespace DNS_PanelTools_v2.StructuralApps.LongMark
+namespace DNS_PanelTools_v2.StructuralApps.Mark
 {
-    class PSLongMark : IPanelLongMark
+    class PSMark : IPanelMark
     {
         public Document ActiveDocument { get; set; }
         public Element ActiveElement { get; set; }
 
+        public string LongMark { get; set; }
 
+        public string ShortMark { get; set; }
 
-        public PSLongMark(Document document, Element element)
+        public PSMark(Document document, Element element)
         {
             ActiveDocument = document;
             ActiveElement = element;
+            SetMarks();
         }
-        public string LongMarkLogic()
+        private void MarkLogic()
         {
 
-            string output = $"ПС-{GetPanelCode()}";
-            return output;
+            LongMark = $"ПС {GetPanelCode()}";
+            ShortMark = $"ПС {LongMark.Split('_')[1]}";
 
         }
 
-        public void SetLongMark()
+        private void SetMarks()
         {
-            string value = LongMarkLogic();
             Guid DNS_panelMark = new Guid("db2bee76-ce6f-4203-9fde-b8f34f3477b5");
             Guid ADSK_panelMark = new Guid("92ae0425-031b-40a9-8904-023f7389963b");
             Transaction transaction = new Transaction(ActiveDocument);
 
+            MarkLogic();
+
             transaction.Start($"Транзакция - {ActiveElement.Name}");
-            ActiveElement.get_Parameter(ADSK_panelMark).Set(value);
-            ActiveElement.get_Parameter(DNS_panelMark).Set(value);
+            ActiveElement.get_Parameter(DNS_panelMark).Set(LongMark);
+            ActiveElement.get_Parameter(ADSK_panelMark).Set(ShortMark);
+
             transaction.Commit();
         }
 

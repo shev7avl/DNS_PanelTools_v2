@@ -7,7 +7,7 @@ using Autodesk.Revit.Attributes;
 using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.DB;
-using DNS_PanelTools_v2.StructuralApps.LongMark;
+using DNS_PanelTools_v2.StructuralApps.Mark;
 using DNS_PanelTools_v2.StructuralApps;
 using System.Diagnostics;
 
@@ -15,10 +15,10 @@ namespace DNS_PanelTools_v2.Commands
 {
     [Transaction(mode: TransactionMode.Manual)]
     [Regeneration(RegenerationOption.Manual)]
-    public class SetLongMark : IExternalCommand
+    public class SetMarks : IExternalCommand
     {
         public Document Document;
-        public IPanelLongMark Behaviour { get; set; }
+        public IPanelMark Behaviour { get; set; }
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
             Document = commandData.Application.ActiveUIDocument.Document;
@@ -28,12 +28,8 @@ namespace DNS_PanelTools_v2.Commands
             FilteredElementCollector fec = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_StructuralFraming).WhereElementIsNotElementType();
             List<Element> els = fec.ToElements().Cast<Element>().ToList();
             foreach (var item in els)
-            {
-               
+            {             
                 SetPanelBehaviour(item);
-                Debug.WriteLine(Behaviour.LongMarkLogic());
-                Behaviour.SetLongMark();
-
             }
             transactionGroup.Assimilate();
             transactionGroup.Dispose();
@@ -48,27 +44,27 @@ namespace DNS_PanelTools_v2.Commands
             string type = structureType.GetPanelType(element);
             if (type == StructureType.Panels.NS.ToString())
             {
-                NSLongMark nS = new NSLongMark(Document, element);
+                NSMark nS = new NSMark(Document, element);
                 Behaviour = nS;
             }
             if (type == StructureType.Panels.VS.ToString())
             {
-                VSLongMark vS = new VSLongMark(Document, element);
+                VSMark vS = new VSMark(Document, element);
                 Behaviour = vS;
             }
             if (type == StructureType.Panels.BP.ToString())
             {
-                BPLongMark bP = new BPLongMark(Document, element);
+                BPMark bP = new BPMark(Document, element);
                 Behaviour = bP;
             }
             if (type == StructureType.Panels.PS.ToString())
             {
-                PSLongMark pS = new PSLongMark(Document, element);
+                PSMark pS = new PSMark(Document, element);
                 Behaviour = pS;
             }
             if (type == StructureType.Panels.PP.ToString())
             {
-                PPLongMark pP = new PPLongMark(Document, element);
+                PPMark pP = new PPMark(Document, element);
                 Behaviour = pP;
             }
 

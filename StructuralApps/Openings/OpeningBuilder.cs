@@ -22,7 +22,7 @@ namespace DNS_PanelTools_v2.StructuralApps.Openings
             LinkedDocument = linkedDoc;
         }
 
-        public void FindIntersectedWindows(Element element)
+        private void FindIntersectedWindows(Element element)
         {
             IntersectedWindows = new List<Element>();
             Options options = new Options();

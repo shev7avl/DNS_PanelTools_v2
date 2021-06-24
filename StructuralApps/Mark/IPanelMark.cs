@@ -5,15 +5,16 @@ using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 
-namespace DNS_PanelTools_v2.StructuralApps.LongMark
+namespace DNS_PanelTools_v2.StructuralApps.Mark
 {
-    public interface IPanelLongMark
+    public interface IPanelMark
     {
         Document ActiveDocument { get; set; }
         Element ActiveElement { get; set; }
 
-        string LongMarkLogic();
+        string LongMark { get; set; }
 
-        void SetLongMark();
+        string ShortMark { get; set; }
+
     }
 }

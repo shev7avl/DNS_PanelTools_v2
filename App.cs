@@ -28,7 +28,7 @@ namespace DNS_PanelTools_v2
             application.CreateRibbonTab(tabName);
             RibbonPanel panel = application.CreateRibbonPanel(tabName, panelName);
 
-            PushButtonData JsonButtonData = new PushButtonData("DNS Panel", $"Длинная марка", Assembly.GetExecutingAssembly().Location, "DNS_PanelTools_v2.Commands.SetLongMark");
+            PushButtonData JsonButtonData = new PushButtonData("DNS Panel", $"Создать марки", Assembly.GetExecutingAssembly().Location, "DNS_PanelTools_v2.Commands.SetMarks");
             var JSONbutton = panel.AddItem(JsonButtonData) as PushButton;
             Image image = Properties.Resource.Test.ToBitmap();
             ImageSource imageSource = Convert(image);
@@ -37,6 +37,7 @@ namespace DNS_PanelTools_v2
             PushButtonData JsonButtonData1 = new PushButtonData("DNS Panel1", $"Создать проемы", Assembly.GetExecutingAssembly().Location, "DNS_PanelTools_v2.Commands.CreateOpenings");
             var JSONbutton1 = panel.AddItem(JsonButtonData1) as PushButton;
             JSONbutton1.LargeImage = imageSource;
+
 
             return Result.Succeeded;
         }

@@ -55,19 +55,19 @@
   <ItemGroup>
     <Compile Include="App.cs" />
     <Compile Include="Commands\CreateOpenings.cs" />
-    <Compile Include="Commands\SetLongMark.cs" />
+    <Compile Include="Commands\SetMarks.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resource.resx</DependentUpon>
     </Compile>
-    <Compile Include="StructuralApps\LongMark\BPLongMark.cs" />
-    <Compile Include="StructuralApps\LongMark\PSLongMark.cs" />
-    <Compile Include="StructuralApps\LongMark\PPLongMark.cs" />
-    <Compile Include="StructuralApps\LongMark\VSLongMark.cs" />
-    <Compile Include="StructuralApps\LongMark\NSLongMark.cs" />
-    <Compile Include="StructuralApps\LongMark\IPanelLongMark.cs" />
+    <Compile Include="StructuralApps\Mark\BPMark.cs" />
+    <Compile Include="StructuralApps\Mark\PSMark.cs" />
+    <Compile Include="StructuralApps\Mark\PPMark.cs" />
+    <Compile Include="StructuralApps\Mark\VSMark.cs" />
+    <Compile Include="StructuralApps\Mark\NSMark.cs" />
+    <Compile Include="StructuralApps\Mark\IPanelMark.cs" />
     <Compile Include="StructuralApps\Openings\OpeningBuilder.cs" />
     <Compile Include="StructuralApps\StructureType.cs" />
   </ItemGroup>
@@ -106,6 +106,7 @@
   <ItemGroup>
     <None Include="Resources\Test.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy /Y "$(SolutionDir)\bin\Debug" "C:\Users\shevyakov.a.PARTNER\AppData\Roaming\Autodesk\Revit\Addins\2022"</PostBuildEvent>
