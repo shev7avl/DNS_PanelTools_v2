@@ -18,11 +18,41 @@ namespace DNS_PanelTools_v2.StructuralApps.Mark
 
         public string ShortMark { get; set; }
 
+        public bool FrontPVL { get; set; }
+
+        private List<XYZ> frontPVLPts { get; set; }
+
+        public void SetFrontPVL()
+        {
+            SingletonMarksList singletonMarks = SingletonMarksList.getInstance(ActiveDocument);
+            frontPVLPts = singletonMarks.getPVLpts();
+            FrontPVL = PVLComingClause(ActiveElement);
+        }
+
+        public void OverrideShortMark(string newMark)
+        {
+            ShortMark = newMark;
+            Guid ADSK_panelMark = new Guid("92ae0425-031b-40a9-8904-023f7389963b");
+            Transaction transaction = new Transaction(ActiveDocument, $"Назначение индекса: {newMark}");
+            transaction.Start();
+            ActiveElement.get_Parameter(ADSK_panelMark).Set(ShortMark);
+            transaction.Commit();
+
+        }
+
+        public bool Equal(IPanelMark panelMark)
+        {
+            if (LongMark == panelMark.LongMark && FrontPVL == panelMark.FrontPVL)
+            {
+                return true;
+            }
+            else return false;
+        }
 
         public NSMark(Document document, Element element)
         {
             ActiveDocument = document;
-            ActiveElement = element;
+            ActiveElement = element;   
         }
 
         public void FillMarks()
@@ -113,6 +143,42 @@ namespace DNS_PanelTools_v2.StructuralApps.Mark
         {
             return Math.Round(Convert.ToDouble(elementFamily.LookupParameter(lkp).AsValueString()) / 10, 0).ToString();
         }
+
+        private bool PVLComingClause(Element element)
+        {
+            bool result = false;
+            Options options = new Options();
+            BoundingBoxXYZ elBB = element.get_Geometry(options).GetBoundingBox();
+
+            foreach (var item in frontPVLPts)
+            {
+                if (IsPointInsideBbox(elBB, item))
+                {
+                    result = true;
+                    break;
+                }
+            }
+            return result;
+        }
+
+        private bool IsPointInsideBbox(BoundingBoxXYZ boundingBox, XYZ point)
+        {
+            double maxX = boundingBox.Max.X;
+            double maxY = boundingBox.Max.Y;
+            double maxZ = boundingBox.Max.Z;
+
+            double minX = boundingBox.Min.X;
+            double minY = boundingBox.Min.Y;
+            double minZ = boundingBox.Min.Z;
+
+            bool XCheck = (point.X >= minX && point.X <= maxX);
+            bool YCheck = (point.Y >= minY && point.Y <= maxY);
+            bool ZCheck = (point.Z >= minZ && point.Z <= maxZ);
+
+            return XCheck && YCheck && ZCheck;
+
+        }
+
 
     }
 }

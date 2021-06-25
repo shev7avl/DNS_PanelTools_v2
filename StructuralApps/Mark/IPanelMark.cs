@@ -16,10 +16,21 @@ namespace DNS_PanelTools_v2.StructuralApps.Mark
 
         string ShortMark { get; set; }
 
+        bool FrontPVL { get; set; }
+
+        void SetFrontPVL();
+
+        bool Equal(IPanelMark panelMark);
+
         /// <summary>
         /// Заполняет значения короткой и длинной марки
         /// </summary>
         void FillMarks();
+
+        /// <summary>
+        /// Метод для переназначения значения короткой марки после присвоения индекса
+        /// </summary>
+        void OverrideShortMark(string newMark);
 
         /// <summary>
         /// Передает заполненные поля в семейство

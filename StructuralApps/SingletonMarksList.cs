@@ -51,6 +51,11 @@ namespace DNS_PanelTools_v2.StructuralApps
             return PanelMarks;
         }
 
+        public List<XYZ> getPVLpts()
+        {
+            return frontPVLpts;
+        }
+
         public void Dispose()
         {
             ((IDisposable)instance).Dispose();

@@ -54,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App.cs" />
+    <Compile Include="Commands\Assemblies.cs" />
     <Compile Include="Commands\CreateOpenings.cs" />
     <Compile Include="Commands\SetMarks.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -112,5 +113,9 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy /Y "$(SolutionDir)\bin\Debug" "C:\Users\shevyakov.a.PARTNER\AppData\Roaming\Autodesk\Revit\Addins\2022"</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
 </Project>

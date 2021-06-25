@@ -38,6 +38,9 @@ namespace DNS_PanelTools_v2
             var JSONbutton1 = panel.AddItem(JsonButtonData1) as PushButton;
             JSONbutton1.LargeImage = imageSource;
 
+            PushButtonData JsonButtonData2 = new PushButtonData("DNS Panel2", $"Маркисборки", Assembly.GetExecutingAssembly().Location, "DNS_PanelTools_v2.Commands.Assemblies");
+            var JSONbutton2 = panel.AddItem(JsonButtonData2) as PushButton;
+            JSONbutton2.LargeImage = imageSource;
 
             return Result.Succeeded;
         }

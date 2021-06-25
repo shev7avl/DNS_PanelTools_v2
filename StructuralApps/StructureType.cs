@@ -9,7 +9,6 @@ namespace DNS_PanelTools_v2.StructuralApps
 {
     class StructureType
     {
-
         public Element ActiveElement { get; }
 
         [Flags]

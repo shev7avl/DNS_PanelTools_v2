@@ -17,6 +17,22 @@ namespace DNS_PanelTools_v2.StructuralApps.Mark
 
         public string ShortMark { get; set; }
 
+        public bool FrontPVL { get; set; }
+
+        public bool Equal(IPanelMark panelMark)
+        {
+            if (LongMark == panelMark.LongMark && FrontPVL == panelMark.FrontPVL)
+            {
+                return true;
+            }
+            else return false;
+        }
+
+        public void SetFrontPVL()
+        {
+            FrontPVL = false;
+        }
+
         public VSMark(Document document, Element element)
         {
             ActiveDocument = document;
@@ -25,8 +41,19 @@ namespace DNS_PanelTools_v2.StructuralApps.Mark
         public void FillMarks()
         {
 
-            LongMark = $"ВС-{GetPanelCode()}_{GetClosureCode()}";
+            LongMark = $"ВС {GetPanelCode()}_{GetClosureCode()}";
             ShortMark = $"{LongMark.Split('_')[0]}";
+
+        }
+
+        public void OverrideShortMark(string newMark)
+        {
+            ShortMark = newMark;
+            Guid ADSK_panelMark = new Guid("92ae0425-031b-40a9-8904-023f7389963b");
+            Transaction transaction = new Transaction(ActiveDocument, $"Назначение индекса: {newMark}");
+            transaction.Start();
+            ActiveElement.get_Parameter(ADSK_panelMark).Set(ShortMark);
+            transaction.Commit();
 
         }
 
