@@ -5,12 +5,15 @@ using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 
-namespace DNS_PanelTools_v2.StructuralApps.Mark
+namespace DNS_PanelTools_v2.StructuralApps.Panel
 {
-    public interface IPanelMark
+    public interface IPanel
     {
         Document ActiveDocument { get; set; }
         Element ActiveElement { get; set; }
+        List<XYZ> IntersectedWindows { get; set; }
+
+        XYZ Location { get; set; }
 
         string LongMark { get; set; }
 
@@ -20,7 +23,7 @@ namespace DNS_PanelTools_v2.StructuralApps.Mark
 
         void SetFrontPVL();
 
-        bool Equal(IPanelMark panelMark);
+        bool Equal(IPanel panelMark);
 
         /// <summary>
         /// Заполняет значения короткой и длинной марки

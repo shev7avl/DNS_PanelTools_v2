@@ -42,6 +42,14 @@ namespace DNS_PanelTools_v2
             var JSONbutton2 = panel.AddItem(JsonButtonData2) as PushButton;
             JSONbutton2.LargeImage = imageSource;
 
+            PushButtonData JsonButtonData3 = new PushButtonData("DNS Panel3", $"ФасадМарки", Assembly.GetExecutingAssembly().Location, "DNS_PanelTools_v2.Commands.ARCH_copyMarks");
+            var JSONbutton3 = panel.AddItem(JsonButtonData3) as PushButton;
+            JSONbutton3.LargeImage = imageSource;
+
+            PushButtonData JsonButtonData4 = new PushButtonData("DNS Panel4", $"ФасадПроем", Assembly.GetExecutingAssembly().Location, "DNS_PanelTools_v2.Commands.ARCH_PlaceWindow");
+            var JSONbutton4 = panel.AddItem(JsonButtonData4) as PushButton;
+            JSONbutton4.LargeImage = imageSource;
+
             return Result.Succeeded;
         }
 

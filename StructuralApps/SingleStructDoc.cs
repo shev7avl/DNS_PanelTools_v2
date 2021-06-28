@@ -1,4 +1,4 @@
-﻿using DNS_PanelTools_v2.StructuralApps.Mark;
+﻿using DNS_PanelTools_v2.StructuralApps.Panel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,24 +8,24 @@ using Autodesk.Revit.DB;
 
 namespace DNS_PanelTools_v2.StructuralApps
 {
-    public class SingletonMarksList: IDisposable
+    public class SingleStructDoc
     {
-        private static SingletonMarksList instance;
+        private static SingleStructDoc instance;
 
         private Document Document;
 
-        private IPanelMark Behaviour;
+        private IPanel Behaviour;
 
-        private List<IPanelMark> PanelMarks;
+        private List<IPanel> PanelMarks;
 
         private List<XYZ> frontPVLpts;
 
-        private SingletonMarksList(Document document)
+        private SingleStructDoc(Document document)
         {
             Document = document;
 
             List<Element> panelsList = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_StructuralFraming).WhereElementIsNotElementType().ToElements().Cast<Element>().ToList();
-            PanelMarks = new List<IPanelMark>();
+            PanelMarks = new List<IPanel>();
 
             foreach (var item in panelsList)
             {
@@ -37,16 +37,16 @@ namespace DNS_PanelTools_v2.StructuralApps
             FillPVLList();
         }
 
-        public static SingletonMarksList getInstance(Document document)
+        public static SingleStructDoc getInstance(Document document)
         {
             if (instance == null)
             {
-                instance = new SingletonMarksList(document);
+                instance = new SingleStructDoc(document);
             }
             return instance;
         }
 
-        public List<IPanelMark> GetPanelMarks()
+        public List<IPanel> GetPanelMarks()
         {
             return PanelMarks;
         }
@@ -58,7 +58,6 @@ namespace DNS_PanelTools_v2.StructuralApps
 
         public void Dispose()
         {
-            ((IDisposable)instance).Dispose();
             Document = null;
             instance = null;
             Behaviour = null;
@@ -85,27 +84,27 @@ namespace DNS_PanelTools_v2.StructuralApps
             string type = structureType.GetPanelType(element);
             if (type == StructureType.Panels.NS.ToString())
             {
-                NSMark nS = new NSMark(Document, element);
+                NS_Panel nS = new NS_Panel(Document, element);
                 Behaviour = nS;
             }
             if (type == StructureType.Panels.VS.ToString())
             {
-                VSMark vS = new VSMark(Document, element);
+                VS_Panel vS = new VS_Panel(Document, element);
                 Behaviour = vS;
             }
             if (type == StructureType.Panels.BP.ToString())
             {
-                BPMark bP = new BPMark(Document, element);
+                BP_Panel bP = new BP_Panel(Document, element);
                 Behaviour = bP;
             }
             if (type == StructureType.Panels.PS.ToString())
             {
-                PSMark pS = new PSMark(Document, element);
+                PS_Panel pS = new PS_Panel(Document, element);
                 Behaviour = pS;
             }
             if (type == StructureType.Panels.PP.ToString())
             {
-                PPMark pP = new PPMark(Document, element);
+                PP_Panel pP = new PP_Panel(Document, element);
                 Behaviour = pP;
             }
 

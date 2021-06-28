@@ -54,6 +54,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App.cs" />
+    <Compile Include="Architecture\SingleArchDoc.cs" />
+    <Compile Include="Architecture\WallParts.cs" />
+    <Compile Include="Commands\ARCH_PlaceWindow.cs" />
+    <Compile Include="Commands\ARCH_copyMarks.cs" />
     <Compile Include="Commands\Assemblies.cs" />
     <Compile Include="Commands\CreateOpenings.cs" />
     <Compile Include="Commands\SetMarks.cs" />
@@ -64,13 +68,14 @@
       <DependentUpon>Resource.resx</DependentUpon>
     </Compile>
     <Compile Include="StructuralApps\Assemblies\AssemblyBuilder.cs" />
-    <Compile Include="StructuralApps\SingletonMarksList.cs" />
-    <Compile Include="StructuralApps\Mark\BPMark.cs" />
-    <Compile Include="StructuralApps\Mark\PSMark.cs" />
-    <Compile Include="StructuralApps\Mark\PPMark.cs" />
-    <Compile Include="StructuralApps\Mark\VSMark.cs" />
-    <Compile Include="StructuralApps\Mark\NSMark.cs" />
-    <Compile Include="StructuralApps\Mark\IPanelMark.cs" />
+    <Compile Include="StructuralApps\RvtGeomStat.cs" />
+    <Compile Include="StructuralApps\SingleStructDoc.cs" />
+    <Compile Include="StructuralApps\Panel\BP_Panel.cs" />
+    <Compile Include="StructuralApps\Panel\PS_Panel.cs" />
+    <Compile Include="StructuralApps\Panel\PP_Panel.cs" />
+    <Compile Include="StructuralApps\Panel\VS_Panel.cs" />
+    <Compile Include="StructuralApps\Panel\NS_Panel.cs" />
+    <Compile Include="StructuralApps\Panel\IPanel.cs" />
     <Compile Include="StructuralApps\Openings\OpeningBuilder.cs" />
     <Compile Include="StructuralApps\StructureType.cs" />
   </ItemGroup>

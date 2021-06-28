@@ -26,6 +26,8 @@ namespace DNS_PanelTools_v2.Commands
             assemblyBuilder.FillMxIdDict("ПС");
             assemblyBuilder.FillMxIdDict("ПП");
             assemblyBuilder.FillMxIdDict("БП");
+            assemblyBuilder.CreateAssembly();
+
 
 
             return Result.Succeeded;

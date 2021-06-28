@@ -6,12 +6,16 @@ using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 
-namespace DNS_PanelTools_v2.StructuralApps.Mark
+namespace DNS_PanelTools_v2.StructuralApps.Panel
 {
-    class VSMark : IPanelMark
+    class NS_Panel : IPanel
     {
+
         public Document ActiveDocument { get; set; }
         public Element ActiveElement { get; set; }
+        public List<XYZ> IntersectedWindows { get; set; }
+
+        public XYZ Location { get; set; }
 
         public string LongMark { get; set; }
 
@@ -19,31 +23,13 @@ namespace DNS_PanelTools_v2.StructuralApps.Mark
 
         public bool FrontPVL { get; set; }
 
-        public bool Equal(IPanelMark panelMark)
-        {
-            if (LongMark == panelMark.LongMark && FrontPVL == panelMark.FrontPVL)
-            {
-                return true;
-            }
-            else return false;
-        }
+        private List<XYZ> frontPVLPts { get; set; }
 
         public void SetFrontPVL()
         {
-            FrontPVL = false;
-        }
-
-        public VSMark(Document document, Element element)
-        {
-            ActiveDocument = document;
-            ActiveElement = element;
-        }
-        public void FillMarks()
-        {
-
-            LongMark = $"ВС {GetPanelCode()}_{GetClosureCode()}";
-            ShortMark = $"{LongMark.Split('_')[0]}";
-
+            SingleStructDoc singletonMarks = SingleStructDoc.getInstance(ActiveDocument);
+            frontPVLPts = singletonMarks.getPVLpts();
+            FrontPVL = PVLComingClause(ActiveElement);
         }
 
         public void OverrideShortMark(string newMark)
@@ -57,14 +43,38 @@ namespace DNS_PanelTools_v2.StructuralApps.Mark
 
         }
 
+        public bool Equal(IPanel panelMark)
+        {
+            if (LongMark == panelMark.LongMark && FrontPVL == panelMark.FrontPVL)
+            {
+                return true;
+            }
+            else return false;
+        }
+
+        public NS_Panel(Document document, Element element)
+        {
+            ActiveDocument = document;
+            ActiveElement = element;
+            LocationPoint point = (LocationPoint)element.Location;
+            Location = point.Point;
+        }
+
+        public void FillMarks()
+        {
+            LongMark = $"НС {GetPanelCode()}_{GetClosureCode()}";
+            ShortMark = $"НС {LongMark.Split('_')[1]}";
+        }
+
+
         public void SetMarks()
         {
             Guid DNS_panelMark = new Guid("db2bee76-ce6f-4203-9fde-b8f34f3477b5");
             Guid ADSK_panelMark = new Guid("92ae0425-031b-40a9-8904-023f7389963b");
             Transaction transaction = new Transaction(ActiveDocument);
 
-            FillMarks();
 
+            FillMarks();
 
             transaction.Start($"Транзакция - {ActiveElement.Name}");
             ActiveElement.get_Parameter(DNS_panelMark).Set(LongMark);
@@ -78,6 +88,8 @@ namespace DNS_PanelTools_v2.StructuralApps.Mark
         {
             var elementFamily = ActiveElement as FamilyInstance;
             var familySymbol = elementFamily.Symbol;
+            string i1 = ActiveElement.LookupParameter("СТАРТ").AsValueString();
+            string i2 = ActiveElement.LookupParameter("ФИНИШ").AsValueString();
             string i3 = GetDoubleValueAsDecimeterString(ActiveElement, "ГабаритДлина");
             string i4 = GetDoubleValueAsDecimeterString(familySymbol, "ГабаритВысота");
             string i5 = GetDoubleValueAsDecimeterString(familySymbol, "ГабаритТолщина");
@@ -85,7 +97,7 @@ namespace DNS_PanelTools_v2.StructuralApps.Mark
             string i6 = temp_i6[1];
             string[] temp_i7 = ActiveElement.LookupParameter("Тип PVL_ФИНИШ").AsValueString().Split(' ');
             string i7 = temp_i7[1];
-            return $"{i3}.{i4}.{i5}_{i6}.{i7}";
+            return $"{i1}.{i2}_{i3}.{i4}.{i5}_{i6}.{i7}";
         }
         private string GetClosureCode()
         {
@@ -135,6 +147,23 @@ namespace DNS_PanelTools_v2.StructuralApps.Mark
         private string GetDoubleValueAsDecimeterString(FamilySymbol elementFamily, string lkp)
         {
             return Math.Round(Convert.ToDouble(elementFamily.LookupParameter(lkp).AsValueString()) / 10, 0).ToString();
+        }
+
+        private bool PVLComingClause(Element element)
+        {
+            bool result = false;
+            Options options = new Options();
+            BoundingBoxXYZ elBB = element.get_Geometry(options).GetBoundingBox();
+
+            foreach (var item in frontPVLPts)
+            {
+                if (RvtGeomStat.IsPointInsideBbox(elBB, item))
+                {
+                    result = true;
+                    break;
+                }
+            }
+            return result;
         }
 
     }

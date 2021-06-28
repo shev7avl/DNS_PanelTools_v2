@@ -1,4 +1,4 @@
-﻿using DNS_PanelTools_v2.StructuralApps.Mark;
+﻿using DNS_PanelTools_v2.StructuralApps.Panel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,9 +11,9 @@ namespace DNS_PanelTools_v2.StructuralApps.Assemblies
 {
     class AssemblyBuilder
     {
-        Dictionary<int, IPanelMark> IndexMarkPairs;
+        Dictionary<int, IPanel> IndexMarkPairs;
 
-        List<IPanelMark> MarksList;
+        List<IPanel> MarksList;
 
         List<XYZ> frontPVLPts;
 
@@ -26,7 +26,7 @@ namespace DNS_PanelTools_v2.StructuralApps.Assemblies
             ActiveDoc = document;
             //ActiveElement = element;
 
-            SingletonMarksList marksList = SingletonMarksList.getInstance(ActiveDoc);
+            SingleStructDoc marksList = SingleStructDoc.getInstance(ActiveDoc);
             MarksList = marksList.GetPanelMarks();
             frontPVLPts = marksList.getPVLpts();
         }
@@ -34,13 +34,45 @@ namespace DNS_PanelTools_v2.StructuralApps.Assemblies
         public void FillMxIdDict(string panelSubString)
         {
 
-            IndexMarkPairs = new Dictionary<int, IPanelMark>();
+            IndexMarkPairs = new Dictionary<int, IPanel>();
             Debug.WriteLine("Словарь Марка - индекс");
             Debug.WriteLine("------Начало словаря------");
 
             AddDictEntry(panelSubString);
 
+            //Перезаписываем марки панелей в интерфейсе
+            SingleStructDoc marksList = SingleStructDoc.getInstance(ActiveDoc);
+            marksList.Dispose();
+            marksList = SingleStructDoc.getInstance(ActiveDoc);
+            MarksList = marksList.GetPanelMarks();
+
             Debug.WriteLine("------Конец словаря------");
+        }
+
+        public void CreateAssembly()
+        {
+            TransactionGroup transactionGroup = new TransactionGroup(ActiveDoc, "Создание сборок");
+            transactionGroup.Start();
+            foreach (var item in MarksList)
+            {
+                IList<Subelement> subElements = item.ActiveElement.GetSubelements();
+                ICollection<ElementId> elementIds = new List<ElementId>();
+                
+                if (subElements.Count > 0)
+                {
+                    foreach (var thing in subElements)
+                    {
+                        elementIds.Add(thing.Element.Id);
+                    }
+                }
+                elementIds.Add(item.ActiveElement.Id);
+
+                Transaction transaction = new Transaction(ActiveDoc, $"Создание сборки: {item.ShortMark}");
+                transaction.Start();
+                AssemblyInstance.Create(ActiveDoc, elementIds, item.ActiveElement.Category.Id);
+                transaction.Commit();
+            }
+            transactionGroup.Assimilate();
         }
 
         private bool PVLComingClause(Element element)
@@ -110,7 +142,7 @@ namespace DNS_PanelTools_v2.StructuralApps.Assemblies
             }
         }
 
-        private bool PanelExists(IPanelMark item)
+        private bool PanelExists(IPanel item)
         {
             bool exists = false;
             foreach (int key in IndexMarkPairs.Keys)

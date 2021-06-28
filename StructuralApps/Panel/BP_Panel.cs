@@ -6,21 +6,24 @@ using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 
-namespace DNS_PanelTools_v2.StructuralApps.Mark
+namespace DNS_PanelTools_v2.StructuralApps.Panel
 {
-    class BPMark : IPanelMark
+    class BP_Panel : IPanel
     {
 
         public Document ActiveDocument { get; set; }
         public Element ActiveElement { get; set; }
 
+        public List<XYZ> IntersectedWindows { get; set; }
+
+        public XYZ Location { get; set; }
         public string LongMark { get; set; }
 
         public string ShortMark { get; set; }
 
         public bool FrontPVL { get; set; }
 
-        public bool Equal(IPanelMark panelMark)
+        public bool Equal(IPanel panelMark)
         {
             if (LongMark == panelMark.LongMark && FrontPVL == panelMark.FrontPVL)
             {
@@ -34,10 +37,12 @@ namespace DNS_PanelTools_v2.StructuralApps.Mark
             FrontPVL = false;
         }
 
-        public BPMark(Document document, Element element)
+        public BP_Panel(Document document, Element element)
         {
             ActiveDocument = document;
-            ActiveElement = element; 
+            ActiveElement = element;
+            LocationPoint point = (LocationPoint)element.Location;
+            Location = point.Point;
         }
         public void FillMarks()
         {

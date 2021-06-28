@@ -24,44 +24,17 @@ namespace DNS_PanelTools_v2.StructuralApps.Openings
 
         private void FindIntersectedWindows(Element element)
         {
-            IntersectedWindows = new List<Element>();
-            Options options = new Options();
-            BoundingBoxXYZ panelBbox = element.get_Geometry(options).GetBoundingBox();
 
+            IntersectedWindows = RvtGeomStat.FindPointIntersections(element, LinkedDocument, BuiltInCategory.OST_Windows, "DNS_");
 
-            IEnumerable<Element> listWindows = new FilteredElementCollector(LinkedDocument).OfCategory(BuiltInCategory.OST_Windows).WhereElementIsNotElementType().ToElements().Where(o => o.Name.Contains("DNS_"));
-
-            foreach (var item in listWindows)
+            foreach (var item in IntersectedWindows)
             {
-                LocationPoint locationPoint = (LocationPoint)item.Location;
                 Debug.WriteLine($"{item.Name} попал в список");
-                if (IsPointInsideBbox(panelBbox, locationPoint.Point))
-                {
-                    IntersectedWindows.Add(item);
-                    Debug.WriteLine($"{item.Name} пересекается с панелью {element.Name}");
-                    CalculateOffset(item);
-                }
             }
 
         }
 
-        private bool IsPointInsideBbox(BoundingBoxXYZ boundingBox, XYZ point)
-        {
-            double maxX = boundingBox.Max.X;
-            double maxY = boundingBox.Max.Y;
-            double maxZ = boundingBox.Max.Z;
-
-            double minX = boundingBox.Min.X;
-            double minY = boundingBox.Min.Y;
-            double minZ = boundingBox.Min.Z;
-
-            bool XCheck = (point.X >= minX && point.X <= maxX);
-            bool YCheck = (point.Y >= minY && point.Y <= maxY);
-            bool ZCheck = (point.Z >= minZ && point.Z <= maxZ);
-
-            return XCheck && YCheck && ZCheck;
-
-        }
+        
 
         private double CalculateAxialLength (XYZ pointA, XYZ pointB)
         {

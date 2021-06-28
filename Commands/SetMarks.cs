@@ -7,7 +7,7 @@ using Autodesk.Revit.Attributes;
 using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.DB;
-using DNS_PanelTools_v2.StructuralApps.Mark;
+using DNS_PanelTools_v2.StructuralApps.Panel;
 using DNS_PanelTools_v2.StructuralApps;
 using System.Diagnostics;
 
@@ -18,7 +18,7 @@ namespace DNS_PanelTools_v2.Commands
     public class SetMarks : IExternalCommand
     {
         public Document Document;
-        public IPanelMark Behaviour { get; set; }
+        public IPanel Behaviour { get; set; }
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
             Document = commandData.Application.ActiveUIDocument.Document;
@@ -45,27 +45,27 @@ namespace DNS_PanelTools_v2.Commands
             string type = structureType.GetPanelType(element);
             if (type == StructureType.Panels.NS.ToString())
             {
-                NSMark nS = new NSMark(Document, element);
+                NS_Panel nS = new NS_Panel(Document, element);
                 Behaviour = nS;
             }
             if (type == StructureType.Panels.VS.ToString())
             {
-                VSMark vS = new VSMark(Document, element);
+                VS_Panel vS = new VS_Panel(Document, element);
                 Behaviour = vS;
             }
             if (type == StructureType.Panels.BP.ToString())
             {
-                BPMark bP = new BPMark(Document, element);
+                BP_Panel bP = new BP_Panel(Document, element);
                 Behaviour = bP;
             }
             if (type == StructureType.Panels.PS.ToString())
             {
-                PSMark pS = new PSMark(Document, element);
+                PS_Panel pS = new PS_Panel(Document, element);
                 Behaviour = pS;
             }
             if (type == StructureType.Panels.PP.ToString())
             {
-                PPMark pP = new PPMark(Document, element);
+                PP_Panel pP = new PP_Panel(Document, element);
                 Behaviour = pP;
             }
 
