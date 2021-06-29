@@ -28,6 +28,8 @@ namespace DNS_PanelTools_v2.Architecture
 
         public List<Material> FacadeMaterials { get; set; }
 
+        public List<ElementId> FacadeParts { get; set; } 
+
         public WallParts(Document document, Document linkedDocSTR, Document linkedDocARCH, Element element)
         {
             ActiveDoc = document;
@@ -116,72 +118,41 @@ namespace DNS_PanelTools_v2.Architecture
 
 
         }
-        private void CreateWindow(Document doc, string fsFamilyName,
-            string fsName, string levelName, string xCoord, string yCoord)
+
+        public void SplitToParts()
         {
-            // LINQ to find the window's FamilySymbol by its type name.
-            FamilySymbol familySymbol = (from fs in new FilteredElementCollector(doc).
-                 OfClass(typeof(FamilySymbol)).WhereElementIsElementType().
-                 Cast<FamilySymbol>()
-                                         where (fs.Family.Name == fsFamilyName && fs.Name == fsName)
-                                         select fs).First();
+            ICollection<ElementId> elementIdsToDivide = new List<ElementId>();
 
-            // LINQ to find the level by its name.
-            Level level = (from lvl in new FilteredElementCollector(doc).
-                           OfClass(typeof(Level)).
-                           Cast<Level>()
-                           where (lvl.Name == levelName)
-                           select lvl).First();
-
-            // Convert coordinates to double and create XYZ point.
-            double x = double.Parse(xCoord) / 304.8;  //don't forget to convert the dimensions to proper units
-            double y = double.Parse(yCoord) / 304.8;  // in my project I use mm so I must divied by 304.8 to convert them from Feet
-
-            XYZ xyz = new XYZ(x, y, level.Elevation);
-
-            #region Find the hosting Wall (nearst wall to the insertion point)
-
-            FilteredElementCollector collector = new FilteredElementCollector(doc);
-            collector.OfClass(typeof(Wall));
-
-            List<Wall> walls = collector.Cast<Wall>().Where(wl => wl.LevelId == level.Id).ToList();
-
-            Wall wall = null;
-
-            double distance = double.MaxValue;
-
-            foreach (Wall w in walls)
+            ICollection<ElementId> elementIds = new List<ElementId>()
             {
-                double proximity = (w.Location as LocationCurve).Curve.Distance(xyz);
-
-                if (proximity < distance)
-                {
-                    distance = proximity;
-                    wall = w;
-                }
-            }
-
-            #endregion
-
-            // Create window.
-            using (Transaction t = new Transaction(doc, "Create window"))
+                ActiveElement.Id
+            };
+            Debug.WriteLine($"------------");
+            Debug.WriteLine($"@Начало транзакции");
+            Debug.WriteLine($"@");
+            if (PartUtils.AreElementsValidForCreateParts(ActiveDoc, elementIds))
             {
-                t.Start();
-
-                if (!familySymbol.IsActive)
+                using (Transaction transaction = new Transaction(ActiveDoc, "Parts creation"))
                 {
-                    // Ensure the family symbol is activated.
-                    familySymbol.Activate();
-                    doc.Regenerate();
-                }
-
-                // Create window
-                // unliss you specified a host, Rebit will create the family instance as orphabt object.
-                FamilyInstance window = doc.Create.NewFamilyInstance(xyz, familySymbol, wall, StructuralType.NonStructural);
-                t.Commit();
+                    transaction.Start();
+                    PartUtils.CreateParts(ActiveDoc, elementIds);
+                    transaction.Commit();
+                }                
             }
-            string prompt = "The element was created!";
-            TaskDialog.Show("Revit", prompt);
+            ElementFilter filter = new ElementCategoryFilter(BuiltInCategory.OST_Parts);
+            elementIdsToDivide = ActiveElement.GetDependentElements(filter);
+
+            Debug.WriteLine($"@Части для {ActiveElement.Name} Созданы успешно");
+            Debug.WriteLine($"@");
+            Debug.WriteLine($"@Конец транзакции");
+            Debug.WriteLine($"------------");
+
+            foreach (var item in elementIdsToDivide)
+            {
+                SplitGeometry.CreateSketchPlane(ActiveDoc, item);
+            }
+            FacadeParts = new List<ElementId>();
+            FacadeParts = (List <ElementId>)ActiveElement.GetDependentElements(filter);
         }
 
     }

@@ -55,7 +55,9 @@
   <ItemGroup>
     <Compile Include="App.cs" />
     <Compile Include="Architecture\SingleArchDoc.cs" />
+    <Compile Include="Architecture\SplitGeometry.cs" />
     <Compile Include="Architecture\WallParts.cs" />
+    <Compile Include="Commands\ARCH_SplitToParts.cs" />
     <Compile Include="Commands\ARCH_PlaceWindow.cs" />
     <Compile Include="Commands\ARCH_copyMarks.cs" />
     <Compile Include="Commands\Assemblies.cs" />

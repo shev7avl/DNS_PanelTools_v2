@@ -13,7 +13,7 @@ namespace DNS_PanelTools_v2.Commands
 {
     [Transaction(mode: TransactionMode.Manual)]
     [Regeneration(RegenerationOption.Manual)]
-    class ARCH_PlaceWindow : IExternalCommand
+    class ARCH_SplitToParts : IExternalCommand
     {
         Document ActiveDocument;
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
@@ -31,7 +31,7 @@ namespace DNS_PanelTools_v2.Commands
             foreach (Element item in fecWalls)
             {
                 WallParts wallParts = new WallParts(ActiveDocument, linkedDocSTR, linkedDocARCH, item);
-                wallParts.GetIntersectedWindows();
+                wallParts.SplitToParts();
                 Debug.WriteLine(item.Name);
             }
            
