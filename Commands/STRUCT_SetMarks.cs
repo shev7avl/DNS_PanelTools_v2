@@ -15,7 +15,7 @@ namespace DNS_PanelTools_v2.Commands
 {
     [Transaction(mode: TransactionMode.Manual)]
     [Regeneration(RegenerationOption.Manual)]
-    public class SetMarks : IExternalCommand
+    public class STRUCT_SetMarks : IExternalCommand
     {
         public Document Document;
         public IPanel Behaviour { get; set; }

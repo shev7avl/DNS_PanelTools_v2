@@ -5,53 +5,40 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
+using DNS_PanelTools_v2.Operations;
 
 namespace DNS_PanelTools_v2.StructuralApps.Panel
 {
     class VS_Panel : IPanel
     {
-        public Document ActiveDocument { get; set; }
-        public Element ActiveElement { get; set; }
-        public List<XYZ> IntersectedWindows { get; set; }
-        public XYZ Location { get; set; }
-        public string LongMark { get; set; }
+        #region Fields
+        public override Document ActiveDocument { get; set; }
+        public override Element ActiveElement { get; set; }
+        public override List<XYZ> IntersectedWindows { get; set; }
+        public override string LongMark { get; set; }
+        public override string ShortMark { get; set; }
 
-        public string ShortMark { get; set; }
+        #endregion
 
-        public bool FrontPVL { get; set; }
-
-        public bool Equal(IPanel panelMark)
-        {
-            if (LongMark == panelMark.LongMark && FrontPVL == panelMark.FrontPVL)
-            {
-                return true;
-            }
-            else return false;
-        }
-
-        public void SetFrontPVL()
-        {
-            FrontPVL = false;
-        }
-
+        #region Constructor
         public VS_Panel(Document document, Element element)
         {
             ActiveDocument = document;
             ActiveElement = element;
-
-            LocationPoint point = (LocationPoint)element.Location;
-            Location = point.Point;
-
         }
-        public void FillMarks()
+        #endregion
+
+        #region Public Methods
+        public override void CreateMarks()
         {
 
             LongMark = $"ВС {GetPanelCode()}_{GetClosureCode()}";
             ShortMark = $"{LongMark.Split('_')[0]}";
+            SetMarks();
 
         }
 
-        public void OverrideShortMark(string newMark)
+        public override void OverrideShortMark(string newMark)
         {
             ShortMark = newMark;
             Guid ADSK_panelMark = new Guid("92ae0425-031b-40a9-8904-023f7389963b");
@@ -61,15 +48,14 @@ namespace DNS_PanelTools_v2.StructuralApps.Panel
             transaction.Commit();
 
         }
+        #endregion
 
-        public void SetMarks()
+        #region Private Methods
+        private void SetMarks()
         {
             Guid DNS_panelMark = new Guid("db2bee76-ce6f-4203-9fde-b8f34f3477b5");
             Guid ADSK_panelMark = new Guid("92ae0425-031b-40a9-8904-023f7389963b");
             Transaction transaction = new Transaction(ActiveDocument);
-
-            FillMarks();
-
 
             transaction.Start($"Транзакция - {ActiveElement.Name}");
             ActiveElement.get_Parameter(DNS_panelMark).Set(LongMark);
@@ -77,15 +63,13 @@ namespace DNS_PanelTools_v2.StructuralApps.Panel
 
             transaction.Commit();
         }
-
-
         private string GetPanelCode()
         {
             var elementFamily = ActiveElement as FamilyInstance;
             var familySymbol = elementFamily.Symbol;
-            string i3 = GetDoubleValueAsDecimeterString(ActiveElement, "ГабаритДлина");
-            string i4 = GetDoubleValueAsDecimeterString(familySymbol, "ГабаритВысота");
-            string i5 = GetDoubleValueAsDecimeterString(familySymbol, "ГабаритТолщина");
+            string i3 = Marks.GetDoubleValueAsDecimeterString(ActiveElement, "ГабаритДлина");
+            string i4 = Marks.GetDoubleValueAsDecimeterString(familySymbol, "ГабаритВысота");
+            string i5 = Marks.GetDoubleValueAsDecimeterString(familySymbol, "ГабаритТолщина");
             string[] temp_i6 = ActiveElement.LookupParameter("Тип PVL_СТАРТ").AsValueString().Split(' ');
             string i6 = temp_i6[1];
             string[] temp_i7 = ActiveElement.LookupParameter("Тип PVL_ФИНИШ").AsValueString().Split(' ');
@@ -100,19 +84,19 @@ namespace DNS_PanelTools_v2.StructuralApps.Panel
 
             if (Closure1)
             {
-                string w1 = GetDoubleValueAsDecimeterString(ActiveElement, "ПР1.Отступ");
-                string w2 = GetDoubleValueAsDecimeterString(ActiveElement, "ПР1.Ширина");
-                string w3 = GetDoubleValueAsDecimeterString(ActiveElement, "ПР1.Высота");
-                string w4 = GetDoubleValueAsDecimeterString(ActiveElement, "ПР1.ВысотаСмещение");
+                string w1 = Marks.GetDoubleValueAsDecimeterString(ActiveElement, "ПР1.Отступ");
+                string w2 = Marks.GetDoubleValueAsDecimeterString(ActiveElement, "ПР1.Ширина");
+                string w3 = Marks.GetDoubleValueAsDecimeterString(ActiveElement, "ПР1.Высота");
+                string w4 = Marks.GetDoubleValueAsDecimeterString(ActiveElement, "ПР1.ВысотаСмещение");
                 window1 = $"{w2}.{w3}.{w4}.{w1}";
             }
             string window2 = "";
             if (Closure2)
             {
-                string w1 = GetDoubleValueAsDecimeterString(ActiveElement, "ПР2.Отступ");
-                string w2 = GetDoubleValueAsDecimeterString(ActiveElement, "ПР2.Ширина");
-                string w3 = GetDoubleValueAsDecimeterString(ActiveElement, "ПР2.Высота");
-                string w4 = GetDoubleValueAsDecimeterString(ActiveElement, "ПР2.ВысотаСмещение");
+                string w1 = Marks.GetDoubleValueAsDecimeterString(ActiveElement, "ПР2.Отступ");
+                string w2 = Marks.GetDoubleValueAsDecimeterString(ActiveElement, "ПР2.Ширина");
+                string w3 = Marks.GetDoubleValueAsDecimeterString(ActiveElement, "ПР2.Высота");
+                string w4 = Marks.GetDoubleValueAsDecimeterString(ActiveElement, "ПР2.ВысотаСмещение");
                 window2 = $"{w2}.{w3}.{w4}.{w1}";
             }
             string windows = "";
@@ -131,16 +115,7 @@ namespace DNS_PanelTools_v2.StructuralApps.Panel
 
             return windows;
         }
-
-
-        private string GetDoubleValueAsDecimeterString(Element element, string lkp)
-        {
-        return Math.Round(Convert.ToDouble(element.LookupParameter(lkp).AsValueString()) / 10, 0).ToString();
-        }
-        private string GetDoubleValueAsDecimeterString(FamilySymbol elementFamily, string lkp)
-        {
-            return Math.Round(Convert.ToDouble(elementFamily.LookupParameter(lkp).AsValueString()) / 10, 0).ToString();
-        }
+        #endregion
 
     }
 }

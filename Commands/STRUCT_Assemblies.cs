@@ -12,7 +12,7 @@ namespace DNS_PanelTools_v2.Commands
 {
     [Transaction(mode: TransactionMode.Manual)]
     [Regeneration(RegenerationOption.Manual)]
-    class Assemblies : IExternalCommand
+    class STRUCT_Assemblies : IExternalCommand
     {
         public Document Document;
 

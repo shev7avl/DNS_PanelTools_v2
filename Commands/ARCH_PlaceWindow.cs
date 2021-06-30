@@ -31,7 +31,12 @@ namespace DNS_PanelTools_v2.Commands
             foreach (Element item in fecWalls)
             {
                 WallParts wallParts = new WallParts(ActiveDocument, linkedDocSTR, linkedDocARCH, item);
-                wallParts.GetIntersectedWindows();
+                Operations.Openings.FindIntersectedWindows_Arch(linkedDocARCH, item, out List<Element> IntersectedWindows);
+                foreach (Element window in IntersectedWindows)
+                {
+                    LocationPoint locationPoint = (LocationPoint) window.Location;
+                    Operations.Openings.PlaceFacadeOpening(ActiveDocument, locationPoint.Point, window, item);
+                }
                 Debug.WriteLine(item.Name);
             }
            

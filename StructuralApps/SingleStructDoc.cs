@@ -30,7 +30,7 @@ namespace DNS_PanelTools_v2.StructuralApps
             foreach (var item in panelsList)
             {
                 SetPanelBehaviour(item);
-                Behaviour.FillMarks();
+                Behaviour.CreateMarks();
                 PanelMarks.Add(Behaviour);
                 Behaviour = null;
             }

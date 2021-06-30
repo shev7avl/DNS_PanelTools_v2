@@ -56,13 +56,17 @@
     <Compile Include="App.cs" />
     <Compile Include="Architecture\SingleArchDoc.cs" />
     <Compile Include="Architecture\SplitGeometry.cs" />
-    <Compile Include="Architecture\WallParts.cs" />
+    <Compile Include="Operations\Assemblies.cs" />
+    <Compile Include="Operations\Marks.cs" />
+    <Compile Include="Operations\Openings.cs" />
+    <Compile Include="Operations\Parts.cs" />
+    <Compile Include="StructuralApps\Panel\WallParts.cs" />
     <Compile Include="Commands\ARCH_SplitToParts.cs" />
     <Compile Include="Commands\ARCH_PlaceWindow.cs" />
     <Compile Include="Commands\ARCH_copyMarks.cs" />
-    <Compile Include="Commands\Assemblies.cs" />
-    <Compile Include="Commands\CreateOpenings.cs" />
-    <Compile Include="Commands\SetMarks.cs" />
+    <Compile Include="Commands\STRUCT_Assemblies.cs" />
+    <Compile Include="Commands\STRUCT_CreateOpenings.cs" />
+    <Compile Include="Commands\STRUCT_SetMarks.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resource.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -70,7 +74,7 @@
       <DependentUpon>Resource.resx</DependentUpon>
     </Compile>
     <Compile Include="StructuralApps\Assemblies\AssemblyBuilder.cs" />
-    <Compile Include="StructuralApps\RvtGeomStat.cs" />
+    <Compile Include="Operations\Geometry.cs" />
     <Compile Include="StructuralApps\SingleStructDoc.cs" />
     <Compile Include="StructuralApps\Panel\BP_Panel.cs" />
     <Compile Include="StructuralApps\Panel\PS_Panel.cs" />

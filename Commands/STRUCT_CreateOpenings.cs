@@ -13,7 +13,7 @@ namespace DNS_PanelTools_v2.Commands
 {
     [Transaction(mode: TransactionMode.Manual)]
     [Regeneration(RegenerationOption.Manual)]
-    class CreateOpenings : IExternalCommand
+    class STRUCT_CreateOpenings : IExternalCommand
     {
         Document ActiveDocument;
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)

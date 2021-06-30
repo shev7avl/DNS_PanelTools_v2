@@ -67,10 +67,18 @@ namespace DNS_PanelTools_v2.StructuralApps.Assemblies
                 }
                 elementIds.Add(item.ActiveElement.Id);
 
-                Transaction transaction = new Transaction(ActiveDoc, $"Создание сборки: {item.ShortMark}");
-                transaction.Start();
-                AssemblyInstance.Create(ActiveDoc, elementIds, item.ActiveElement.Category.Id);
-                transaction.Commit();
+                using (Transaction transaction = new Transaction(ActiveDoc, $"Создание сборки: {item.ShortMark}"))
+                {
+                    transaction.Start();
+                    AssemblyInstance assembly = AssemblyInstance.Create(ActiveDoc, elementIds, item.ActiveElement.Category.Id);
+                    //создание видов
+                    View3D view = AssemblyViewUtils.Create3DOrthographic(ActiveDoc, assembly.Id);
+                    ViewSheet sheet1 = AssemblyViewUtils.CreateSheet(ActiveDoc, assembly.Id, ElementId.InvalidElementId);
+                    XYZ origin = new XYZ();
+                    //размещение видов
+                    Viewport.Create(ActiveDoc, sheet1.Id, view.Id, origin);
+                    transaction.Commit();
+                }
             }
             transactionGroup.Assimilate();
         }
@@ -117,7 +125,6 @@ namespace DNS_PanelTools_v2.StructuralApps.Assemblies
             {
                 if (mark.LongMark.Contains(panelSubString))
                 {
-                    mark.SetFrontPVL();
                     if (PanelExists(mark))
                     {
                         int index = 0;
@@ -128,7 +135,6 @@ namespace DNS_PanelTools_v2.StructuralApps.Assemblies
                                 index = key;
                             }
                         }
-                        
                         mark.OverrideShortMark($"{mark.ShortMark} - {index}");
                     }
                     if (!PanelExists(mark))

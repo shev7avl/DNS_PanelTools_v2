@@ -31,7 +31,7 @@ namespace DNS_PanelTools_v2.Commands
             foreach (Element item in fecWalls)
             {
                 WallParts wallParts = new WallParts(ActiveDocument, linkedDocSTR, linkedDocARCH, item);
-                wallParts.GetIntersectedPanel();
+                wallParts.CreateMarks();
                 Debug.WriteLine(item.Name);
             }
 

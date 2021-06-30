@@ -8,7 +8,7 @@ using Autodesk.Revit.DB;
 
 namespace DNS_PanelTools_v2.StructuralApps
 {
-    public static class RvtGeomStat
+    public static class Geometry
     {
         /// <summary>
         /// Проверка находится ли заданная точка внутри BoundingBox
@@ -55,7 +55,7 @@ namespace DNS_PanelTools_v2.StructuralApps
             {
                 LocationPoint locationPoint = (LocationPoint)item.Location;
                 Debug.WriteLine($"{item.Name} попал в список");
-                if (RvtGeomStat.IsPointInsideBbox(panelBbox, locationPoint.Point))
+                if (Geometry.IsPointInsideBbox(panelBbox, locationPoint.Point))
                 {
                     IntersectedElements.Add(item);
                     Debug.WriteLine($"{item.Name} пересекается с {element.Name}");

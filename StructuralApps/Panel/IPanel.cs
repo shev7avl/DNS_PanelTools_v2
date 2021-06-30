@@ -7,38 +7,50 @@ using Autodesk.Revit.DB;
 
 namespace DNS_PanelTools_v2.StructuralApps.Panel
 {
-    public interface IPanel
+    public abstract class IPanel
     {
-        Document ActiveDocument { get; set; }
-        Element ActiveElement { get; set; }
-        List<XYZ> IntersectedWindows { get; set; }
+        public abstract Document ActiveDocument { get; set; }
+        public abstract Element ActiveElement { get; set; }
 
-        XYZ Location { get; set; }
+        public virtual List<XYZ> IntersectedWindows { get; set; } = null;
 
-        string LongMark { get; set; }
+        public abstract string LongMark { get; set; }
 
-        string ShortMark { get; set; }
+        public abstract string ShortMark { get; set; }
 
-        bool FrontPVL { get; set; }
-
-        void SetFrontPVL();
-
-        bool Equal(IPanel panelMark);
+        /// <summary>
+        /// Проверяет равенство двух панелей по значениям "Марка" и прочим логическим условиям
+        /// </summary>
+        /// <param name="panelMark">Панель для сравнения</param>
+        /// <returns></returns>
+        public virtual bool Equal(IPanel panelMark)
+        {
+            if (LongMark == panelMark.LongMark)
+            {
+                return true;
+            }
+            else return false;
+        }
 
         /// <summary>
         /// Заполняет значения короткой и длинной марки
         /// </summary>
-        void FillMarks();
+        public abstract void CreateMarks();
 
         /// <summary>
         /// Метод для переназначения значения короткой марки после присвоения индекса
         /// </summary>
-        void OverrideShortMark(string newMark);
+        public virtual void OverrideShortMark(string newMark)
+        {
+            ShortMark = newMark;
+            Guid ADSK_panelMark = new Guid("92ae0425-031b-40a9-8904-023f7389963b");
+            Transaction transaction = new Transaction(ActiveDocument, $"Назначение индекса: {newMark}");
+            transaction.Start();
+            ActiveElement.get_Parameter(ADSK_panelMark).Set(ShortMark);
+            transaction.Commit();
 
-        /// <summary>
-        /// Передает заполненные поля в семейство
-        /// </summary>
-        void SetMarks();
+        }
+
 
     }
 }
