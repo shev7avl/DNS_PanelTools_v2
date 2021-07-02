@@ -11,9 +11,9 @@ namespace DNS_PanelTools_v2.StructuralApps.Assemblies
 {
     class AssemblyBuilder
     {
-        Dictionary<int, IPanel> IndexMarkPairs;
+        Dictionary<int, Base_Panel> IndexMarkPairs;
 
-        List<IPanel> MarksList;
+        List<Base_Panel> MarksList;
 
         List<XYZ> frontPVLPts;
 
@@ -34,7 +34,7 @@ namespace DNS_PanelTools_v2.StructuralApps.Assemblies
         public void FillMxIdDict(string panelSubString)
         {
 
-            IndexMarkPairs = new Dictionary<int, IPanel>();
+            IndexMarkPairs = new Dictionary<int, Base_Panel>();
             Debug.WriteLine("Словарь Марка - индекс");
             Debug.WriteLine("------Начало словаря------");
 
@@ -148,7 +148,7 @@ namespace DNS_PanelTools_v2.StructuralApps.Assemblies
             }
         }
 
-        private bool PanelExists(IPanel item)
+        private bool PanelExists(Base_Panel item)
         {
             bool exists = false;
             foreach (int key in IndexMarkPairs.Keys)

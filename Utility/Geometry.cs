@@ -5,8 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
+using DNS_PanelTools_v2.StructuralApps;
 
-namespace DNS_PanelTools_v2.StructuralApps
+namespace DNS_PanelTools_v2.Utility
 {
     public static class Geometry
     {
@@ -16,7 +17,7 @@ namespace DNS_PanelTools_v2.StructuralApps
         /// <param name="boundingBox">Выбранный BoundingBox</param>
         /// <param name="point">Выбранная точка</param>
         /// <returns></returns>
-        public static bool IsPointInsideBbox(BoundingBoxXYZ boundingBox, XYZ point)
+        public static bool InBox(BoundingBoxXYZ boundingBox, XYZ point)
         {
             double maxX = boundingBox.Max.X;
             double maxY = boundingBox.Max.Y;
@@ -43,22 +44,30 @@ namespace DNS_PanelTools_v2.StructuralApps
         /// <param name="builtInCategory">К какой категории принадлежат искомые элементы</param>
         /// <param name="nameSubstring">Часть имени искомых элементов</param>
         /// <returns></returns>
-        public static List<Element> FindPointIntersections(Element element, Document document, BuiltInCategory builtInCategory, string nameSubstring)
+        public static List<Element> IntersectedOpenings(Element element, Document document, bool windows)
         {
             List<Element>  IntersectedElements = new List<Element>();
             Options options = new Options();
             BoundingBoxXYZ panelBbox = element.get_Geometry(options).GetBoundingBox();
 
-            IEnumerable<Element> listWindows = new FilteredElementCollector(document).OfCategory(builtInCategory).WhereElementIsNotElementType().ToElements().Where(o => o.Name.Contains(nameSubstring));
+            SingleArchDoc archDoc = SingleArchDoc.getInstance(document);
 
-            foreach (var item in listWindows)
+            List<Element> elems;
+            if (windows)
+            {
+                elems = archDoc.getWindows();
+            }
+            else
+            {
+                elems = archDoc.getDoors();
+            }
+
+            foreach (var item in elems)
             {
                 LocationPoint locationPoint = (LocationPoint)item.Location;
-                Debug.WriteLine($"{item.Name} попал в список");
-                if (Geometry.IsPointInsideBbox(panelBbox, locationPoint.Point))
+                if (Geometry.InBox(panelBbox, locationPoint.Point))
                 {
                     IntersectedElements.Add(item);
-                    Debug.WriteLine($"{item.Name} пересекается с {element.Name}");
                 }
             }
             return IntersectedElements;

@@ -18,7 +18,7 @@ namespace DNS_PanelTools_v2.Commands
     public class STRUCT_SetMarks : IExternalCommand
     {
         public Document Document;
-        public IPanel Behaviour { get; set; }
+        public Base_Panel Behaviour { get; set; }
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
             Document = commandData.Application.ActiveUIDocument.Document;
@@ -30,7 +30,7 @@ namespace DNS_PanelTools_v2.Commands
             foreach (var item in els)
             {             
                 SetPanelBehaviour(item);
-                Behaviour.SetMarks();
+                Behaviour.CreateMarks();
             }
             transactionGroup.Assimilate();
             transactionGroup.Dispose();

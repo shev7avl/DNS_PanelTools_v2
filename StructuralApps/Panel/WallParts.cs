@@ -9,10 +9,11 @@ using Autodesk.Revit.DB.Structure;
 using Autodesk.Revit.UI;
 using DNS_PanelTools_v2.StructuralApps;
 using DNS_PanelTools_v2.StructuralApps.Panel;
+using DNS_PanelTools_v2.Utility;
 
-namespace DNS_PanelTools_v2.Architecture
+namespace DNS_PanelTools_v2.StructuralApps.Panel
 {
-    public class WallParts : IPanel
+    public class WallParts : Base_Panel, IPerforable
     {
         public override Document ActiveDocument { get; set; }
 
@@ -28,7 +29,7 @@ namespace DNS_PanelTools_v2.Architecture
 
         private Document LinkedDocARCH;
 
-        private IPanel IntersectedPanel;
+        private Base_Panel IntersectedPanel;
 
         private List<Material> FacadeMaterials { get; set; }
 
@@ -42,6 +43,62 @@ namespace DNS_PanelTools_v2.Architecture
             ActiveElement = element;
         }
 
+        public WallParts(Document document, Element element)
+        {
+            ActiveDocument = document;
+            ActiveElement = element;
+        }
+
+        void IPerforable.GetOpenings(Document linkedArch, out List<Element> IntersectedWindows)
+        {
+            SingleArchDoc archDoc = SingleArchDoc.getInstance(linkedArch);
+            List<Element> windows = archDoc.getWindows();
+
+            IntersectedWindows = new List<Element>();
+
+            LocationCurve location = (LocationCurve)ActiveElement.Location;
+            Curve curve = location.Curve;
+
+            XYZ Start = curve.GetEndPoint(0);
+            XYZ End = curve.GetEndPoint(1);
+
+            Options options = new Options();
+
+            foreach (Element window in windows)
+            {
+                FamilyInstance windowFamInst = window as FamilyInstance;
+                Element hostWall = windowFamInst.Host;
+                BoundingBoxXYZ boundingBoxHostWall = hostWall.get_Geometry(options).GetBoundingBox();
+                if (Geometry.InBox(boundingBoxHostWall, Start) || Geometry.InBox(boundingBoxHostWall, End))
+                {
+                    IntersectedWindows.Add(window);
+                }
+            }
+        }
+
+        void IPerforable.Perforate(List<Element> IntersectedWindows)
+        {
+            IEnumerable<Element> familySymbols = new FilteredElementCollector(ActiveDocument).OfCategory(BuiltInCategory.OST_Windows).WhereElementIsElementType().Where(o => o.Name.Contains("DNS_ПроемДляПлитки"));
+            FamilySymbol familySymbol = (FamilySymbol)familySymbols.First();
+
+            foreach (Element window in IntersectedWindows)
+            {
+                FamilyInstance windowFamInst = window as FamilyInstance;
+                Element hostWall = windowFamInst.Host;
+                Level level = ActiveDocument.GetElement(hostWall.LevelId) as Level;
+
+                LocationPoint locationPoint = (LocationPoint)window.Location;
+
+                using (Transaction transaction = new Transaction(ActiveDocument, "Create window"))
+                {
+                    transaction.Start();
+                    ActiveDocument.Create.NewFamilyInstance(locationPoint.Point, familySymbol, ActiveElement, level, StructuralType.NonStructural);
+                    transaction.Commit();
+                }
+            }
+        }
+
+
         public override void CreateMarks()
         {
             Options options = new Options();
@@ -50,13 +107,13 @@ namespace DNS_PanelTools_v2.Architecture
             XYZ End = curve.Curve.GetEndPoint(0);
 
             SingleStructDoc marksList = SingleStructDoc.getInstance(LinkedDocSTR);
-            List<IPanel> panels = marksList.GetPanelMarks();
+            List<Base_Panel> panels = marksList.GetPanelMarks();
 
-            foreach (IPanel item in panels)
+            foreach (Base_Panel item in panels)
             {
                 BoundingBoxXYZ boundingBox = item.ActiveElement.get_Geometry(options).GetBoundingBox();
 
-                if (Geometry.IsPointInsideBbox(boundingBox, Start) && Geometry.IsPointInsideBbox(boundingBox, End))
+                if (Geometry.InBox(boundingBox, Start) && Geometry.InBox(boundingBox, End))
                 {
                     Debug.WriteLine($"{ActiveElement.Name} пересекается с: {item.LongMark}");
                     Transaction transaction = new Transaction(ActiveDocument, $"Назначение марки: {item.LongMark}");
@@ -68,7 +125,6 @@ namespace DNS_PanelTools_v2.Architecture
                     transaction.Commit();
                 }
             }
-
         }
 
 
@@ -104,11 +160,12 @@ namespace DNS_PanelTools_v2.Architecture
 
             foreach (var item in elementIdsToDivide)
             {
-                SplitGeometry.CreateSketchPlane(ActiveDocument, item);
+                //SplitGeometry.CreateSketchPlane(ActiveDocument, item);
             }
             FacadeParts = new List<ElementId>();
             FacadeParts = (List <ElementId>)ActiveElement.GetDependentElements(filter);
         }
 
+        
     }
 }

@@ -5,11 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
-using DNS_PanelTools_v2.Operations;
+using DNS_PanelTools_v2.Utility;
 
 namespace DNS_PanelTools_v2.StructuralApps.Panel
 {
-    public class PP_Panel : IPanel
+    public class PP_Panel : Base_Panel
     {
         public override Document ActiveDocument { get; set; }
         public override Element ActiveElement { get; set; }
@@ -55,8 +55,8 @@ namespace DNS_PanelTools_v2.StructuralApps.Panel
         }
         private string GetPanelCode()
         {
-            string i3 = Marks.GetDoubleValueAsDecimeterString(ActiveElement, "ADSK_Размер_Длина");
-            string i4 = Marks.GetDoubleValueAsDecimeterString(ActiveElement, "ADSK_Размер_Ширина");
+            string i3 = Marks.AsDecimString(ActiveElement, "ADSK_Размер_Длина");
+            string i4 = Marks.AsDecimString(ActiveElement, "ADSK_Размер_Ширина");
             string i5 = ActiveElement.LookupParameter("КодНагрузки").AsValueString();
             return $"{i3}.{i4}-{i5}";
         }
@@ -71,10 +71,10 @@ namespace DNS_PanelTools_v2.StructuralApps.Panel
 
             if (closureBool)
             {
-                string w1 = Marks.GetDoubleValueAsDecimeterString(ActiveElement, "Вырезы_Отступ_Начало");
-                string w2 = Marks.GetDoubleValueAsDecimeterString(familySymbol, "Вырезы_Шаг");
+                string w1 = Marks.AsDecimString(ActiveElement, "Вырезы_Отступ_Начало");
+                string w2 = Marks.AsDecimString(familySymbol, "Вырезы_Шаг");
                 string w3 = ActiveElement.LookupParameter("Отверстия_Количество").AsValueString();
-                string w4 = Marks.GetDoubleValueAsDecimeterString(ActiveElement, "Вырезы_Отступ_Конец");
+                string w4 = Marks.AsDecimString(ActiveElement, "Вырезы_Отступ_Конец");
                 closureCode = $"_{w1}.{w2}.{w3}.{w4}";
             }
 

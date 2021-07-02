@@ -5,11 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
-using DNS_PanelTools_v2.Operations;
+using DNS_PanelTools_v2.Utility;
 
 namespace DNS_PanelTools_v2.StructuralApps.Panel
 {
-    public class PS_Panel : IPanel
+    public class PS_Panel : Base_Panel
     {
         public override Document ActiveDocument { get; set; }
         public override Element ActiveElement { get; set; }
@@ -62,16 +62,16 @@ namespace DNS_PanelTools_v2.StructuralApps.Panel
             var familySymbol = elementFamily.Symbol;
             string i1 = ActiveElement.LookupParameter("СТАРТ").AsValueString();
             string i2 = ActiveElement.LookupParameter("ФИНИШ").AsValueString();
-            string i3 = Marks.GetDoubleValueAsDecimeterString(ActiveElement, "ГабаритДлина");
-            string i4 = Marks.GetDoubleValueAsDecimeterString(familySymbol, "ГабаритВысота");
-            string i5 = Marks.GetDoubleValueAsDecimeterString(familySymbol, "ГабаритТолщина");
+            string i3 = Marks.AsDecimString(ActiveElement, "ГабаритДлина");
+            string i4 = Marks.AsDecimString(familySymbol, "ГабаритВысота");
+            string i5 = Marks.AsDecimString(familySymbol, "ГабаритТолщина");
             
-            string i6 = Marks.GetDoubleValueAsDecimeterString(ActiveElement, "WELDA_Отступ");
-            string i7 = Marks.GetDoubleValueAsDecimeterString(ActiveElement, "WELDA_Шаг");
+            string i6 = Marks.AsDecimString(ActiveElement, "WELDA_Отступ");
+            string i7 = Marks.AsDecimString(ActiveElement, "WELDA_Шаг");
             string i8 = ActiveElement.LookupParameter("WELDA_Количество").AsValueString();
 
-            string i9 = Marks.GetDoubleValueAsDecimeterString(ActiveElement, "TR 24_Сверху_Отступ");
-            string i10 = Marks.GetDoubleValueAsDecimeterString(ActiveElement, "TR 24_Сверху_Шаг");
+            string i9 = Marks.AsDecimString(ActiveElement, "TR 24_Сверху_Отступ");
+            string i10 = Marks.AsDecimString(ActiveElement, "TR 24_Сверху_Шаг");
             string i11 = ActiveElement.LookupParameter("TR 24_Сверху_Количество").AsValueString();
 
            

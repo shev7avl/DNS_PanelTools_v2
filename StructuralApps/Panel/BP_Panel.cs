@@ -5,11 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
-using DNS_PanelTools_v2.Operations;
+using DNS_PanelTools_v2.Utility;
 
 namespace DNS_PanelTools_v2.StructuralApps.Panel
 {
-    public class BP_Panel : IPanel
+    public class BP_Panel : Base_Panel
     {
         #region Fields
         public override Document ActiveDocument { get; set; }
@@ -70,11 +70,11 @@ namespace DNS_PanelTools_v2.StructuralApps.Panel
         {
             var elementFamily = ActiveElement as FamilyInstance;
             var familySymbol = elementFamily.Symbol;
-            string i3 = Marks.GetDoubleValueAsDecimeterString(familySymbol, "Плита_Длина");
-            string i4 = Marks.GetDoubleValueAsDecimeterString(familySymbol, "Плита_Ширина");
-            string i5 = Marks.GetDoubleValueAsDecimeterString(familySymbol, "Плита_Толщина");
-            string i6 = Marks.GetDoubleValueAsDecimeterString(familySymbol, "Кронштейн_Отступ");
-            string i7 = Marks.GetDoubleValueAsDecimeterString(familySymbol, "Кронштейн_Шаг");
+            string i3 = Marks.AsDecimString(familySymbol, "Плита_Длина");
+            string i4 = Marks.AsDecimString(familySymbol, "Плита_Ширина");
+            string i5 = Marks.AsDecimString(familySymbol, "Плита_Толщина");
+            string i6 = Marks.AsDecimString(familySymbol, "Кронштейн_Отступ");
+            string i7 = Marks.AsDecimString(familySymbol, "Кронштейн_Шаг");
             string i8 = familySymbol.LookupParameter("Кронштейн_Количество").AsValueString();
             string i9 = familySymbol.LookupParameter("Отверстия_ПривязкаСлева").AsValueString();
             string i10 = familySymbol.LookupParameter("Отверстия_ПривязкаСправа").AsValueString();

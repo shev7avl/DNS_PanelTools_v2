@@ -5,11 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
-using DNS_PanelTools_v2.Operations;
+using DNS_PanelTools_v2.Utility;
 
 namespace DNS_PanelTools_v2.StructuralApps.Panel
 {
-    class VS_Panel : IPanel
+    class VS_Panel : Base_Panel, IPerforable
     {
         #region Fields
         public override Document ActiveDocument { get; set; }
@@ -48,6 +48,30 @@ namespace DNS_PanelTools_v2.StructuralApps.Panel
             transaction.Commit();
 
         }
+
+        void IPerforable.Perforate(List<Element> IntersectedWindows)
+        {
+            TransactionGroup transaction = new TransactionGroup(ActiveDocument, $"Создание проемов - {ActiveElement.Name}");
+            transaction.Start();
+            if (IntersectedWindows.Count == 1)
+            {
+                Element window = IntersectedWindows[0];
+                Utility.Openings.SetOpeningParams(ActiveDocument, ActiveElement, window);
+            }
+            else if (IntersectedWindows.Count == 2)
+            {
+                Element window1 = IntersectedWindows[0];
+                Element window2 = IntersectedWindows[1];
+                Utility.Openings.SetOpeningParams(ActiveDocument, ActiveElement, window1, window2);
+            }
+            transaction.Assimilate();
+        }
+
+        void IPerforable.GetOpenings(Document linkedArch, out List<Element> IntersectedWindows)
+        {
+            IntersectedWindows = Geometry.IntersectedOpenings(ActiveElement, linkedArch, windows: false);
+        }
+
         #endregion
 
         #region Private Methods
@@ -67,9 +91,9 @@ namespace DNS_PanelTools_v2.StructuralApps.Panel
         {
             var elementFamily = ActiveElement as FamilyInstance;
             var familySymbol = elementFamily.Symbol;
-            string i3 = Marks.GetDoubleValueAsDecimeterString(ActiveElement, "ГабаритДлина");
-            string i4 = Marks.GetDoubleValueAsDecimeterString(familySymbol, "ГабаритВысота");
-            string i5 = Marks.GetDoubleValueAsDecimeterString(familySymbol, "ГабаритТолщина");
+            string i3 = Marks.AsDecimString(ActiveElement, "ГабаритДлина");
+            string i4 = Marks.AsDecimString(familySymbol, "ГабаритВысота");
+            string i5 = Marks.AsDecimString(familySymbol, "ГабаритТолщина");
             string[] temp_i6 = ActiveElement.LookupParameter("Тип PVL_СТАРТ").AsValueString().Split(' ');
             string i6 = temp_i6[1];
             string[] temp_i7 = ActiveElement.LookupParameter("Тип PVL_ФИНИШ").AsValueString().Split(' ');
@@ -84,19 +108,19 @@ namespace DNS_PanelTools_v2.StructuralApps.Panel
 
             if (Closure1)
             {
-                string w1 = Marks.GetDoubleValueAsDecimeterString(ActiveElement, "ПР1.Отступ");
-                string w2 = Marks.GetDoubleValueAsDecimeterString(ActiveElement, "ПР1.Ширина");
-                string w3 = Marks.GetDoubleValueAsDecimeterString(ActiveElement, "ПР1.Высота");
-                string w4 = Marks.GetDoubleValueAsDecimeterString(ActiveElement, "ПР1.ВысотаСмещение");
+                string w1 = Marks.AsDecimString(ActiveElement, "ПР1.Отступ");
+                string w2 = Marks.AsDecimString(ActiveElement, "ПР1.Ширина");
+                string w3 = Marks.AsDecimString(ActiveElement, "ПР1.Высота");
+                string w4 = Marks.AsDecimString(ActiveElement, "ПР1.ВысотаСмещение");
                 window1 = $"{w2}.{w3}.{w4}.{w1}";
             }
             string window2 = "";
             if (Closure2)
             {
-                string w1 = Marks.GetDoubleValueAsDecimeterString(ActiveElement, "ПР2.Отступ");
-                string w2 = Marks.GetDoubleValueAsDecimeterString(ActiveElement, "ПР2.Ширина");
-                string w3 = Marks.GetDoubleValueAsDecimeterString(ActiveElement, "ПР2.Высота");
-                string w4 = Marks.GetDoubleValueAsDecimeterString(ActiveElement, "ПР2.ВысотаСмещение");
+                string w1 = Marks.AsDecimString(ActiveElement, "ПР2.Отступ");
+                string w2 = Marks.AsDecimString(ActiveElement, "ПР2.Ширина");
+                string w3 = Marks.AsDecimString(ActiveElement, "ПР2.Высота");
+                string w4 = Marks.AsDecimString(ActiveElement, "ПР2.ВысотаСмещение");
                 window2 = $"{w2}.{w3}.{w4}.{w1}";
             }
             string windows = "";

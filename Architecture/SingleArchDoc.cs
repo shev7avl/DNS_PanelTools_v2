@@ -16,13 +16,17 @@ namespace DNS_PanelTools_v2.StructuralApps
 
         private List<Element> Windows;
 
+        private List<Element> Doors;
+
         private SingleArchDoc(Document document)
         {
             Document = document;
 
             IEnumerable<Element> elements = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_Windows).WhereElementIsNotElementType().ToElements().Where<Element>(o => o.Name.Contains("DNS_"));
+            IEnumerable<Element> doors = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_Doors).WhereElementIsNotElementType().ToElements();
 
             Windows = elements.ToList();
+            Doors = doors.ToList();
         }
 
         public static SingleArchDoc getInstance(Document document)
@@ -37,6 +41,11 @@ namespace DNS_PanelTools_v2.StructuralApps
         public List<Element> getWindows()
         {
             return Windows;
+        }
+
+        public List<Element> getDoors()
+        {
+            return Doors;
         }
 
         public void Dispose()

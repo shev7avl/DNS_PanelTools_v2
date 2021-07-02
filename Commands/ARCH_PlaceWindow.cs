@@ -2,6 +2,7 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using DNS_PanelTools_v2.Architecture;
+using DNS_PanelTools_v2.StructuralApps.Panel;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -31,11 +32,11 @@ namespace DNS_PanelTools_v2.Commands
             foreach (Element item in fecWalls)
             {
                 WallParts wallParts = new WallParts(ActiveDocument, linkedDocSTR, linkedDocARCH, item);
-                Operations.Openings.FindIntersectedWindows_Arch(linkedDocARCH, item, out List<Element> IntersectedWindows);
+                Utility.Openings.GetWindows_Arch(linkedDocARCH, item, out List<Element> IntersectedWindows);
                 foreach (Element window in IntersectedWindows)
                 {
                     LocationPoint locationPoint = (LocationPoint) window.Location;
-                    Operations.Openings.PlaceFacadeOpening(ActiveDocument, locationPoint.Point, window, item);
+                    Utility.Openings.CreateFacadeOpening(ActiveDocument, locationPoint.Point, window, item);
                 }
                 Debug.WriteLine(item.Name);
             }

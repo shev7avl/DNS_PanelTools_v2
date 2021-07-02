@@ -14,9 +14,9 @@ namespace DNS_PanelTools_v2.StructuralApps
 
         private Document Document;
 
-        private IPanel Behaviour;
+        private Base_Panel Behaviour;
 
-        private List<IPanel> PanelMarks;
+        private List<Base_Panel> PanelMarks;
 
         private List<XYZ> frontPVLpts;
 
@@ -25,7 +25,7 @@ namespace DNS_PanelTools_v2.StructuralApps
             Document = document;
 
             List<Element> panelsList = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_StructuralFraming).WhereElementIsNotElementType().ToElements().Cast<Element>().ToList();
-            PanelMarks = new List<IPanel>();
+            PanelMarks = new List<Base_Panel>();
 
             foreach (var item in panelsList)
             {
@@ -46,7 +46,7 @@ namespace DNS_PanelTools_v2.StructuralApps
             return instance;
         }
 
-        public List<IPanel> GetPanelMarks()
+        public List<Base_Panel> GetPanelMarks()
         {
             return PanelMarks;
         }

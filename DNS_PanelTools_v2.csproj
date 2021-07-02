@@ -56,11 +56,13 @@
     <Compile Include="App.cs" />
     <Compile Include="Architecture\SingleArchDoc.cs" />
     <Compile Include="Architecture\SplitGeometry.cs" />
-    <Compile Include="Operations\Assemblies.cs" />
-    <Compile Include="Operations\Marks.cs" />
-    <Compile Include="Operations\Openings.cs" />
-    <Compile Include="Operations\Parts.cs" />
+    <Compile Include="Commands\IRoutine.cs" />
+    <Compile Include="StructuralApps\Panel\IPerforated.cs" />
     <Compile Include="StructuralApps\Panel\WallParts.cs" />
+    <Compile Include="Utility\Assemblies.cs" />
+    <Compile Include="Utility\Marks.cs" />
+    <Compile Include="Utility\Openings.cs" />
+    <Compile Include="Utility\Parts.cs" />
     <Compile Include="Commands\ARCH_SplitToParts.cs" />
     <Compile Include="Commands\ARCH_PlaceWindow.cs" />
     <Compile Include="Commands\ARCH_copyMarks.cs" />
@@ -74,15 +76,14 @@
       <DependentUpon>Resource.resx</DependentUpon>
     </Compile>
     <Compile Include="StructuralApps\Assemblies\AssemblyBuilder.cs" />
-    <Compile Include="Operations\Geometry.cs" />
+    <Compile Include="Utility\Geometry.cs" />
     <Compile Include="StructuralApps\SingleStructDoc.cs" />
     <Compile Include="StructuralApps\Panel\BP_Panel.cs" />
     <Compile Include="StructuralApps\Panel\PS_Panel.cs" />
     <Compile Include="StructuralApps\Panel\PP_Panel.cs" />
     <Compile Include="StructuralApps\Panel\VS_Panel.cs" />
     <Compile Include="StructuralApps\Panel\NS_Panel.cs" />
-    <Compile Include="StructuralApps\Panel\IPanel.cs" />
-    <Compile Include="StructuralApps\Openings\OpeningBuilder.cs" />
+    <Compile Include="StructuralApps\Panel\Base_Panel.cs" />
     <Compile Include="StructuralApps\StructureType.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -120,7 +121,9 @@
   <ItemGroup>
     <None Include="Resources\Test.ico" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Panel\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy /Y "$(SolutionDir)\bin\Debug" "C:\Users\shevyakov.a.PARTNER\AppData\Roaming\Autodesk\Revit\Addins\2022"</PostBuildEvent>

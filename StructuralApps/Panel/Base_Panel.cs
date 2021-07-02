@@ -7,7 +7,7 @@ using Autodesk.Revit.DB;
 
 namespace DNS_PanelTools_v2.StructuralApps.Panel
 {
-    public abstract class IPanel
+    public abstract class Base_Panel
     {
         public abstract Document ActiveDocument { get; set; }
         public abstract Element ActiveElement { get; set; }
@@ -23,7 +23,7 @@ namespace DNS_PanelTools_v2.StructuralApps.Panel
         /// </summary>
         /// <param name="panelMark">Панель для сравнения</param>
         /// <returns></returns>
-        public virtual bool Equal(IPanel panelMark)
+        public virtual bool Equal(Base_Panel panelMark)
         {
             if (LongMark == panelMark.LongMark)
             {

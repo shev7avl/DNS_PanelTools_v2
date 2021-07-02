@@ -2,6 +2,7 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using DNS_PanelTools_v2.Architecture;
+using DNS_PanelTools_v2.StructuralApps.Panel;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
