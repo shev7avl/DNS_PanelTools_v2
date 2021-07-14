@@ -18,6 +18,7 @@ namespace DNS_PanelTools_v2.StructuralApps.Panel
 
         public abstract string ShortMark { get; set; }
 
+
         /// <summary>
         /// Проверяет равенство двух панелей по значениям "Марка" и прочим логическим условиям
         /// </summary>
@@ -40,17 +41,20 @@ namespace DNS_PanelTools_v2.StructuralApps.Panel
         /// <summary>
         /// Метод для переназначения значения короткой марки после присвоения индекса
         /// </summary>
-        public virtual void OverrideShortMark(string newMark)
+        public virtual void SetIndex(int index, bool overwrite = false)
         {
-            ShortMark = newMark;
+            if (overwrite)
+            {
+                ShortMark = ShortMark.Split('-')[0];
+            }
+            ShortMark = $"{ShortMark}-{index}";
             Guid ADSK_panelMark = new Guid("92ae0425-031b-40a9-8904-023f7389963b");
-            Transaction transaction = new Transaction(ActiveDocument, $"Назначение индекса: {newMark}");
+            Transaction transaction = new Transaction(ActiveDocument, $"Назначение индекса: {ShortMark}");
             transaction.Start();
             ActiveElement.get_Parameter(ADSK_panelMark).Set(ShortMark);
             transaction.Commit();
 
         }
-
 
     }
 }

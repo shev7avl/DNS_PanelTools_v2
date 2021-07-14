@@ -18,7 +18,7 @@ namespace DNS_PanelTools_v2.StructuralApps
 
         private List<Base_Panel> PanelMarks;
 
-        private List<XYZ> frontPVLpts;
+        private List<Element> frontPVL;
 
         private SingleStructDoc(Document document)
         {
@@ -51,9 +51,9 @@ namespace DNS_PanelTools_v2.StructuralApps
             return PanelMarks;
         }
 
-        public List<XYZ> getPVLpts()
+        public List<Element> getPVLpts()
         {
-            return frontPVLpts;
+            return frontPVL;
         }
 
         public void Dispose()
@@ -62,20 +62,12 @@ namespace DNS_PanelTools_v2.StructuralApps
             instance = null;
             Behaviour = null;
             PanelMarks = null;
-            frontPVLpts = null;
+            frontPVL = null;
         }
 
         private void FillPVLList()
         {
-            IEnumerable<Element> frontPVLelements = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_GenericModel).WhereElementIsNotElementType().ToElements().Where(o => o.Name.Contains("PVL_Торцевая"));
-            frontPVLpts = new List<XYZ>();
-
-            foreach (var item in frontPVLelements)
-            {
-                LocationPoint point = (LocationPoint)item.Location;
-                frontPVLpts.Add(point.Point);
-            }
-
+            frontPVL = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_GenericModel).WhereElementIsNotElementType().ToElements().Where(o => o.Name.Contains("PVL_Торцевая")).ToList();
         }
 
         protected void SetPanelBehaviour(Element element)

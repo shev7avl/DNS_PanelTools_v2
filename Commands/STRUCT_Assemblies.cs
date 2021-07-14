@@ -20,13 +20,16 @@ namespace DNS_PanelTools_v2.Commands
         {
             Document = commandData.Application.ActiveUIDocument.Document;
 
+
+
             AssemblyBuilder assemblyBuilder = new AssemblyBuilder(Document);
-            assemblyBuilder.FillMxIdDict("НС");
-            assemblyBuilder.FillMxIdDict("ВС");
-            assemblyBuilder.FillMxIdDict("ПС");
-            assemblyBuilder.FillMxIdDict("ПП");
-            assemblyBuilder.FillMxIdDict("БП");
-            assemblyBuilder.CreateAssembly();
+            assemblyBuilder.AddIndex("НС");
+            assemblyBuilder.AddIndex("ВС");
+            assemblyBuilder.AddIndex("ПС");
+            assemblyBuilder.AddIndex("ПП");
+            assemblyBuilder.AddIndex("БП");
+            assemblyBuilder.CreateAssemblies();
+            assemblyBuilder.LeaveUniquePanels();
 
 
 

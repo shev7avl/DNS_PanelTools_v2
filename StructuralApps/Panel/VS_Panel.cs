@@ -38,17 +38,6 @@ namespace DNS_PanelTools_v2.StructuralApps.Panel
 
         }
 
-        public override void OverrideShortMark(string newMark)
-        {
-            ShortMark = newMark;
-            Guid ADSK_panelMark = new Guid("92ae0425-031b-40a9-8904-023f7389963b");
-            Transaction transaction = new Transaction(ActiveDocument, $"Назначение индекса: {newMark}");
-            transaction.Start();
-            ActiveElement.get_Parameter(ADSK_panelMark).Set(ShortMark);
-            transaction.Commit();
-
-        }
-
         void IPerforable.Perforate(List<Element> IntersectedWindows)
         {
             TransactionGroup transaction = new TransactionGroup(ActiveDocument, $"Создание проемов - {ActiveElement.Name}");

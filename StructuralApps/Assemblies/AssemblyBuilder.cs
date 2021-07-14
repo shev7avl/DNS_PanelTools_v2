@@ -9,116 +9,33 @@ using System.Diagnostics;
 
 namespace DNS_PanelTools_v2.StructuralApps.Assemblies
 {
-    class AssemblyBuilder
+    public class AssemblyBuilder
     {
-        Dictionary<int, Base_Panel> IndexMarkPairs;
+        private Dictionary<int, Base_Panel> IndexMarkPairs;
 
-        List<Base_Panel> MarksList;
+        private List<Base_Panel> MarksList;
 
-        List<XYZ> frontPVLPts;
-
-        Element ActiveElement;
-
-        Document ActiveDoc;
+        private Document ActiveDoc;
 
         public AssemblyBuilder(Document document)
         {
             ActiveDoc = document;
-            //ActiveElement = element;
-
             SingleStructDoc marksList = SingleStructDoc.getInstance(ActiveDoc);
             MarksList = marksList.GetPanelMarks();
-            frontPVLPts = marksList.getPVLpts();
         }
-
-        public void FillMxIdDict(string panelSubString)
+        #region Создание коротких индексов
+        public void AddIndex(string panelSubString)
         {
-
             IndexMarkPairs = new Dictionary<int, Base_Panel>();
             Debug.WriteLine("Словарь Марка - индекс");
             Debug.WriteLine("------Начало словаря------");
 
-            AddDictEntry(panelSubString);
-
-            //Перезаписываем марки панелей в интерфейсе
-            SingleStructDoc marksList = SingleStructDoc.getInstance(ActiveDoc);
-            marksList.Dispose();
-            marksList = SingleStructDoc.getInstance(ActiveDoc);
-            MarksList = marksList.GetPanelMarks();
+            SetIndexes(panelSubString);
 
             Debug.WriteLine("------Конец словаря------");
         }
 
-        public void CreateAssembly()
-        {
-            TransactionGroup transactionGroup = new TransactionGroup(ActiveDoc, "Создание сборок");
-            transactionGroup.Start();
-            foreach (var item in MarksList)
-            {
-                IList<Subelement> subElements = item.ActiveElement.GetSubelements();
-                ICollection<ElementId> elementIds = new List<ElementId>();
-                
-                if (subElements.Count > 0)
-                {
-                    foreach (var thing in subElements)
-                    {
-                        elementIds.Add(thing.Element.Id);
-                    }
-                }
-                elementIds.Add(item.ActiveElement.Id);
-
-                using (Transaction transaction = new Transaction(ActiveDoc, $"Создание сборки: {item.ShortMark}"))
-                {
-                    transaction.Start();
-                    AssemblyInstance assembly = AssemblyInstance.Create(ActiveDoc, elementIds, item.ActiveElement.Category.Id);
-                    //создание видов
-                    View3D view = AssemblyViewUtils.Create3DOrthographic(ActiveDoc, assembly.Id);
-                    ViewSheet sheet1 = AssemblyViewUtils.CreateSheet(ActiveDoc, assembly.Id, ElementId.InvalidElementId);
-                    XYZ origin = new XYZ();
-                    //размещение видов
-                    Viewport.Create(ActiveDoc, sheet1.Id, view.Id, origin);
-                    transaction.Commit();
-                }
-            }
-            transactionGroup.Assimilate();
-        }
-
-        private bool PVLComingClause(Element element)
-        {
-            bool result = false;
-            Options options = new Options();
-            BoundingBoxXYZ elBB = element.get_Geometry(options).GetBoundingBox();
-
-            foreach (var item in frontPVLPts)
-            {
-                if (IsPointInsideBbox(elBB, item))
-                {
-                    result = true;
-                    break;
-                }
-            }
-            return result;
-        }
-
-        private bool IsPointInsideBbox(BoundingBoxXYZ boundingBox, XYZ point)
-        {
-            double maxX = boundingBox.Max.X;
-            double maxY = boundingBox.Max.Y;
-            double maxZ = boundingBox.Max.Z;
-
-            double minX = boundingBox.Min.X;
-            double minY = boundingBox.Min.Y;
-            double minZ = boundingBox.Min.Z;
-
-            bool XCheck = (point.X >= minX && point.X <= maxX);
-            bool YCheck = (point.Y >= minY && point.Y <= maxY);
-            bool ZCheck = (point.Z >= minZ && point.Z <= maxZ);
-
-            return XCheck && YCheck && ZCheck;
-
-        }
-
-        private void AddDictEntry(string panelSubString)
+        private void SetIndexes(string panelSubString)
         {
             int counter = 1;
             foreach (var mark in MarksList)
@@ -135,13 +52,13 @@ namespace DNS_PanelTools_v2.StructuralApps.Assemblies
                                 index = key;
                             }
                         }
-                        mark.OverrideShortMark($"{mark.ShortMark} - {index}");
+                        mark.SetIndex(index);
                     }
                     if (!PanelExists(mark))
                     {
-                        Debug.WriteLine($"{mark.ShortMark} - {counter}");
                         IndexMarkPairs.Add(counter, mark);
-                        mark.OverrideShortMark($"{mark.ShortMark} - {counter}");
+                        mark.SetIndex(counter, overwrite: true);
+                        Debug.WriteLine($"{mark.ShortMark}");
                         counter++;
                     }
                 }
@@ -165,6 +82,125 @@ namespace DNS_PanelTools_v2.StructuralApps.Assemblies
             }
             return exists;
         }
+        #endregion
+
+        #region Создание сборок
+
+        public void CreateAssemblies()
+        {
+            TransactionGroup transactionGroup = new TransactionGroup(ActiveDoc, "Создание сборок");
+            transactionGroup.Start();
+
+            foreach (var item in MarksList)
+            {
+                FamilyInstance familyInstance = (FamilyInstance)item.ActiveElement;
+                ICollection<ElementId> elementIds = familyInstance.GetSubComponentIds();
+                
+                elementIds.Add(item.ActiveElement.Id);
+                if (item is VS_Panel)
+                {
+                    ICollection<ElementId> essentials = new List<ElementId>();
+                    foreach (var id in elementIds)
+                    {
+                        Element element = ActiveDoc.GetElement(id);
+                        if (!element.Name.Contains("Торцевая"))
+                        {
+                            essentials.Add(id);
+                        }
+                    }
+                    elementIds = essentials;
+                    
+                }
+                if (item is NS_Panel _Panel)
+                {
+                    _Panel = (NS_Panel)item;
+                    foreach (Element frontPVL in _Panel.GetPVLList())
+                    {
+                        elementIds.Add(frontPVL.Id);
+                    }
+                }
+
+                using (Transaction transaction = new Transaction(ActiveDoc, $"Создание сборки: {item.ShortMark}"))
+                {
+                    Category category = item.ActiveElement.Category;
+                    transaction.Start();
+                    AssemblyInstance assembly = AssemblyInstance.Create(ActiveDoc, elementIds, category.Id);
+                    transaction.Commit();
+                    transaction.Start();
+                    assembly.AssemblyTypeName = item.ShortMark;
+                    //создание видов
+                    //View3D view = AssemblyViewUtils.Create3DOrthographic(ActiveDoc, assembly.Id);
+                    //ViewSheet sheet1 = AssemblyViewUtils.CreateSheet(ActiveDoc, assembly.Id, ElementId.InvalidElementId);
+                    //XYZ origin = new XYZ();
+                    ////размещение видов
+                    //Viewport.Create(ActiveDoc, sheet1.Id, view.Id, origin);
+                    transaction.Commit();
+                }
+            }
+            transactionGroup.Assimilate();
+        }
+
+        #endregion
+
+
+
+        #region Разборка сборок
+
+        public void LeaveUniquePanels()
+        {
+            List<AssemblyInstance> assemblies = new FilteredElementCollector(ActiveDoc).OfCategory(BuiltInCategory.OST_Assemblies).WhereElementIsNotElementType().Cast<AssemblyInstance>().ToList();
+            List<AssemblyInstance> disposables = new List<AssemblyInstance>();
+
+            assemblies.Sort(CompareAssembliesByName);
+
+            AssemblyInstance as1 = assemblies[0];
+            for (int i = 1; i < assemblies.Count; i++)
+            {
+                if (assemblies[i].AssemblyTypeName == as1.AssemblyTypeName)
+                {
+                    disposables.Add(assemblies[i]);
+                }
+                as1 = assemblies[i];
+            }
+
+            using (Transaction transaction = new Transaction(ActiveDoc, "Разбираем сборки"))
+            {
+                
+                foreach (AssemblyInstance assembly in disposables)
+                {
+                    transaction.Start();
+                    assembly.Disassemble();
+                    transaction.Commit();
+                }
+               
+            }
+
+        }
+        #endregion
+
+        #region Сравнение панелей и сборок
+        private int CompareAssembliesByName(AssemblyInstance x, AssemblyInstance y)
+        {
+            string _postfixX = x.AssemblyTypeName;
+
+            string _postfixY = y.AssemblyTypeName;
+
+            int res = String.Compare(_postfixX, _postfixY);
+
+            if (res>0)
+            {
+                return 1;
+            }
+            else if (res == 0)
+            {
+                return 0;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+        #endregion
 
     }
 }

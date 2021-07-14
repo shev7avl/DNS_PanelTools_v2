@@ -4,14 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Autodesk.Revit.UI;
 
 namespace DNS_PanelTools_v2.Commands
 {
-    public interface IRoutine
+    public abstract class Base_Routine
     {
-        IRoutine CreateRoutine(Base_Panel panel);
 
-        void Run();
+        public abstract void ExecuteRoutine(ExternalCommandData commandData);
 
     }
 }

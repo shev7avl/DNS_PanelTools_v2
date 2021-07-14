@@ -28,7 +28,7 @@ namespace DNS_PanelTools_v2
             application.CreateRibbonTab(tabName);
             RibbonPanel panel = application.CreateRibbonPanel(tabName, panelName);
 
-            PushButtonData JsonButtonData = new PushButtonData("DNS Panel", $"Создать марки", Assembly.GetExecutingAssembly().Location, "DNS_PanelTools_v2.Commands.STRUCT_SetMarks");
+            PushButtonData JsonButtonData = new PushButtonData("DNS Panel", $"Создать марки", Assembly.GetExecutingAssembly().Location, "DNS_PanelTools_v2.Commands.Run");
             var JSONbutton = panel.AddItem(JsonButtonData) as PushButton;
             Image image = Properties.Resource.Test.ToBitmap();
             ImageSource imageSource = Convert(image);

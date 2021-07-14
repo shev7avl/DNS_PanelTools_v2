@@ -15,11 +15,20 @@ namespace DNS_PanelTools_v2.Commands
 {
     [Transaction(mode: TransactionMode.Manual)]
     [Regeneration(RegenerationOption.Manual)]
-    public class STRUCT_SetMarks : IExternalCommand
+    public class STRUCT_SetMarks : Base_Routine, IExternalCommand
     {
         public Document Document;
         public Base_Panel Behaviour { get; set; }
+
+
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
+        {
+            ExecuteRoutine(commandData);
+
+            return Result.Succeeded;
+        }
+
+        public override void ExecuteRoutine(ExternalCommandData commandData)
         {
             Document = commandData.Application.ActiveUIDocument.Document;
 
@@ -28,15 +37,13 @@ namespace DNS_PanelTools_v2.Commands
             FilteredElementCollector fec = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_StructuralFraming).WhereElementIsNotElementType();
             List<Element> els = fec.ToElements().Cast<Element>().ToList();
             foreach (var item in els)
-            {             
+            {
                 SetPanelBehaviour(item);
                 Behaviour.CreateMarks();
             }
             transactionGroup.Assimilate();
             transactionGroup.Dispose();
-            
 
-            return Result.Succeeded;
         }
 
         protected void SetPanelBehaviour(Element element)

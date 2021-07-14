@@ -22,7 +22,7 @@ namespace DNS_PanelTools_v2.StructuralApps.Panel
 
         private bool FrontPVL { get; set; }
 
-        private List<XYZ> frontPVLPts { get; set; }
+        private List<Element> frontPVLs { get; set; }
         #endregion
 
         #region Constructor
@@ -71,16 +71,6 @@ namespace DNS_PanelTools_v2.StructuralApps.Panel
             SetMarks();
         }
 
-        public override void OverrideShortMark(string newMark)
-        {
-            ShortMark = newMark;
-            Guid ADSK_panelMark = new Guid("92ae0425-031b-40a9-8904-023f7389963b");
-            Transaction transaction = new Transaction(ActiveDocument, $"Назначение индекса: {newMark}");
-            transaction.Start();
-            ActiveElement.get_Parameter(ADSK_panelMark).Set(ShortMark);
-            transaction.Commit();
-
-        }
 
         public override bool Equal(Base_Panel panelMark)
         {
@@ -96,10 +86,22 @@ namespace DNS_PanelTools_v2.StructuralApps.Panel
 
         #endregion
 
-        public void SetFrontPVL()
+        private void SetFrontPVL()
         {
             SingleStructDoc singletonMarks = SingleStructDoc.getInstance(ActiveDocument);
-            frontPVLPts = singletonMarks.getPVLpts();
+            frontPVLs = new List<Element>();
+            Options options = new Options();
+            BoundingBoxXYZ elBB = ActiveElement.get_Geometry(options).GetBoundingBox();
+            foreach (var item in singletonMarks.getPVLpts())
+            {
+                LocationPoint locationPoint = (LocationPoint) item.Location;
+                XYZ xYZ = locationPoint.Point;
+                if (Geometry.InBox(elBB, xYZ))
+                {
+                    frontPVLs.Add(item);
+                }
+            }
+            
             FrontPVL = PVLComingClause(ActiveElement);
         }
         public bool GetFrontPVL()
@@ -107,6 +109,10 @@ namespace DNS_PanelTools_v2.StructuralApps.Panel
             return FrontPVL;
         }
 
+        public List<Element> GetPVLList()
+        {
+            return frontPVLs;
+        }
         #endregion
 
         #region Private Methods
@@ -185,9 +191,11 @@ namespace DNS_PanelTools_v2.StructuralApps.Panel
             Options options = new Options();
             BoundingBoxXYZ elBB = element.get_Geometry(options).GetBoundingBox();
 
-            foreach (var item in frontPVLPts)
+            foreach (var item in frontPVLs)
             {
-                if (Geometry.InBox(elBB, item))
+                LocationPoint location = (LocationPoint)item.Location;
+                XYZ point = location.Point;
+                if (Geometry.InBox(elBB, point))
                 {
                     result = true;
                     break;
