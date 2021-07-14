@@ -1,5 +1,5 @@
 ﻿
-namespace DNS_PanelTools_v2.GUI
+namespace DSKPrim.PanelTools_v2.GUI
 {
     partial class PanelWizard
     {
@@ -190,7 +190,7 @@ namespace DNS_PanelTools_v2.GUI
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Image = global::DNS_PanelTools_v2.Properties.Resources.DSK_Prim;
+            this.pictureBox1.Image = global::DSKPrim.PanelTools_v2.Properties.Resources.DSK_Prim;
             this.pictureBox1.Location = new System.Drawing.Point(33, 12);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(141, 69);

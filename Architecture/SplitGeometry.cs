@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 
-namespace DNS_PanelTools_v2.Architecture
+namespace DSKPrim.PanelTools_v2.Architecture
 {
     public static class SplitGeometry
     {

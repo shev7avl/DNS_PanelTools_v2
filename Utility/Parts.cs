@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DNS_PanelTools_v2.Utility
+namespace DSKPrim.PanelTools_v2.Utility
 {
     class Parts
     {

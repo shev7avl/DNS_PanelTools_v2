@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 
-namespace DNS_PanelTools_v2.StructuralApps.Panel
+namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 {
-    public abstract class Base_Panel
+    public abstract class Panel
     {
         public abstract Document ActiveDocument { get; set; }
         public abstract Element ActiveElement { get; set; }
@@ -24,7 +24,7 @@ namespace DNS_PanelTools_v2.StructuralApps.Panel
         /// </summary>
         /// <param name="panelMark">Панель для сравнения</param>
         /// <returns></returns>
-        public virtual bool Equal(Base_Panel panelMark)
+        public virtual bool Equal(Panel panelMark)
         {
             if (LongMark == panelMark.LongMark)
             {

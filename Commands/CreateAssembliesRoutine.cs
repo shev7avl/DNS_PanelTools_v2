@@ -6,21 +6,21 @@ using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.Attributes;
-using DNS_PanelTools_v2.StructuralApps.Assemblies;
+using DSKPrim.PanelTools_v2.StructuralApps.Assemblies;
 
-namespace DNS_PanelTools_v2.Commands
+namespace DSKPrim.PanelTools_v2.Commands
 {
     [Transaction(mode: TransactionMode.Manual)]
     [Regeneration(RegenerationOption.Manual)]
-    class STRUCT_Assemblies : IExternalCommand
+    class CreateAssembliesRoutine
+        : Routine
     {
-        public Document Document;
+        public override Document Document { get; set; }
+        public override StructuralApps.Panel.Panel Behaviour { get; set; }
 
-        public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
+        public override void ExecuteRoutine(ExternalCommandData commandData)
         {
             Document = commandData.Application.ActiveUIDocument.Document;
-
-
 
             AssemblyBuilder assemblyBuilder = new AssemblyBuilder(Document);
             assemblyBuilder.AddIndex("НС");
@@ -30,10 +30,6 @@ namespace DNS_PanelTools_v2.Commands
             assemblyBuilder.AddIndex("БП");
             assemblyBuilder.CreateAssemblies();
             assemblyBuilder.LeaveUniquePanels();
-
-
-
-            return Result.Succeeded;
         }
     }
 }

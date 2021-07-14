@@ -1,8 +1,8 @@
 ﻿using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using DNS_PanelTools_v2.Architecture;
-using DNS_PanelTools_v2.StructuralApps.Panel;
+using DSKPrim.PanelTools_v2.Architecture;
+using DSKPrim.PanelTools_v2.StructuralApps.Panel;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DNS_PanelTools_v2.Commands
+namespace DSKPrim.PanelTools_v2.Commands
 {
     [Transaction(mode: TransactionMode.Manual)]
     [Regeneration(RegenerationOption.Manual)]

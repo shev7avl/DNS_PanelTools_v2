@@ -5,11 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
-using DNS_PanelTools_v2.Utility;
+using DSKPrim.PanelTools_v2.Utility;
 
-namespace DNS_PanelTools_v2.StructuralApps.Panel
+namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 {
-    class NS_Panel : Base_Panel, IPerforable
+    class NS_Panel : Panel, IPerforable
     {
         #region Fields
         public override Document ActiveDocument { get; set; }
@@ -72,7 +72,7 @@ namespace DNS_PanelTools_v2.StructuralApps.Panel
         }
 
 
-        public override bool Equal(Base_Panel panelMark)
+        public override bool Equal(Panel panelMark)
         {
             NS_Panel panel = (NS_Panel)panelMark;
             panel.SetFrontPVL();

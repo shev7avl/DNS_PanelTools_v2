@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
-using DNS_PanelTools_v2.StructuralApps;
+using DSKPrim.PanelTools_v2.StructuralApps;
 
-namespace DNS_PanelTools_v2.Utility
+namespace DSKPrim.PanelTools_v2.Utility
 {
     public static class Geometry
     {

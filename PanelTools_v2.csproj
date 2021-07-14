@@ -58,7 +58,7 @@
     <Compile Include="Architecture\SingleArchDoc.cs" />
     <Compile Include="Architecture\SplitGeometry.cs" />
     <Compile Include="Commands\Run.cs" />
-    <Compile Include="Commands\IRoutine.cs" />
+    <Compile Include="Commands\Routine.cs" />
     <Compile Include="GUI\PanelWizard.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -80,9 +80,9 @@
     <Compile Include="Commands\ARCH_SplitToParts.cs" />
     <Compile Include="Commands\ARCH_PlaceWindow.cs" />
     <Compile Include="Commands\ARCH_copyMarks.cs" />
-    <Compile Include="Commands\STRUCT_Assemblies.cs" />
-    <Compile Include="Commands\STRUCT_CreateOpenings.cs" />
-    <Compile Include="Commands\STRUCT_SetMarks.cs" />
+    <Compile Include="Commands\CreateAssembliesRoutine.cs" />
+    <Compile Include="Commands\CreateOpeningsRoutine.cs" />
+    <Compile Include="Commands\SetMarksRoutine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resource.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -97,7 +97,7 @@
     <Compile Include="StructuralApps\Panel\PP_Panel.cs" />
     <Compile Include="StructuralApps\Panel\VS_Panel.cs" />
     <Compile Include="StructuralApps\Panel\NS_Panel.cs" />
-    <Compile Include="StructuralApps\Panel\Base_Panel.cs" />
+    <Compile Include="StructuralApps\Panel\Panel.cs" />
     <Compile Include="StructuralApps\StructureType.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -12,7 +12,7 @@ using System.IO;
 using System.Drawing.Imaging;
 using System.Windows.Media;
 
-namespace DNS_PanelTools_v2
+namespace DSKPrim.PanelTools_v2
 {
     class App : IExternalApplication
     {
@@ -28,25 +28,25 @@ namespace DNS_PanelTools_v2
             application.CreateRibbonTab(tabName);
             RibbonPanel panel = application.CreateRibbonPanel(tabName, panelName);
 
-            PushButtonData JsonButtonData = new PushButtonData("DNS Panel", $"Создать марки", Assembly.GetExecutingAssembly().Location, "DNS_PanelTools_v2.Commands.Run");
+            PushButtonData JsonButtonData = new PushButtonData("DNS Panel", $"Создать марки", Assembly.GetExecutingAssembly().Location, "DSKPrim.PanelTools_v2.Commands.Run");
             var JSONbutton = panel.AddItem(JsonButtonData) as PushButton;
             Image image = Properties.Resource.Test.ToBitmap();
             ImageSource imageSource = Convert(image);
             JSONbutton.LargeImage = imageSource;
 
-            PushButtonData JsonButtonData1 = new PushButtonData("DNS Panel1", $"Создать проемы", Assembly.GetExecutingAssembly().Location, "DNS_PanelTools_v2.Commands.STRUCT_CreateOpenings");
+            PushButtonData JsonButtonData1 = new PushButtonData("DNS Panel1", $"Создать проемы", Assembly.GetExecutingAssembly().Location, "DSKPrim.PanelTools_v2.Commands.STRUCT_CreateOpenings");
             var JSONbutton1 = panel.AddItem(JsonButtonData1) as PushButton;
             JSONbutton1.LargeImage = imageSource;
 
-            PushButtonData JsonButtonData2 = new PushButtonData("DNS Panel2", $"Маркисборки", Assembly.GetExecutingAssembly().Location, "DNS_PanelTools_v2.Commands.STRUCT_Assemblies");
+            PushButtonData JsonButtonData2 = new PushButtonData("DNS Panel2", $"Маркисборки", Assembly.GetExecutingAssembly().Location, "DSKPrim.PanelTools_v2.Commands.STRUCT_Assemblies");
             var JSONbutton2 = panel.AddItem(JsonButtonData2) as PushButton;
             JSONbutton2.LargeImage = imageSource;
 
-            PushButtonData JsonButtonData3 = new PushButtonData("DNS Panel3", $"ФасадМарки", Assembly.GetExecutingAssembly().Location, "DNS_PanelTools_v2.Commands.ARCH_copyMarks");
+            PushButtonData JsonButtonData3 = new PushButtonData("DNS Panel3", $"ФасадМарки", Assembly.GetExecutingAssembly().Location, "DSKPrim.PanelTools_v2.Commands.ARCH_copyMarks");
             var JSONbutton3 = panel.AddItem(JsonButtonData3) as PushButton;
             JSONbutton3.LargeImage = imageSource;
 
-            PushButtonData JsonButtonData5 = new PushButtonData("DNS Panel5", $"ФасадПлитка", Assembly.GetExecutingAssembly().Location, "DNS_PanelTools_v2.Commands.ARCH_SplitToParts");
+            PushButtonData JsonButtonData5 = new PushButtonData("DNS Panel5", $"ФасадПлитка", Assembly.GetExecutingAssembly().Location, "DSKPrim.PanelTools_v2.Commands.ARCH_SplitToParts");
             var JSONbutton5 = panel.AddItem(JsonButtonData5) as PushButton;
             JSONbutton5.LargeImage = imageSource;
 

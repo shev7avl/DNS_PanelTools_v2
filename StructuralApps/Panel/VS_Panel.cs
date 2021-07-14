@@ -5,11 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
-using DNS_PanelTools_v2.Utility;
+using DSKPrim.PanelTools_v2.Utility;
 
-namespace DNS_PanelTools_v2.StructuralApps.Panel
+namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 {
-    class VS_Panel : Base_Panel, IPerforable
+    class VS_Panel : Panel, IPerforable
     {
         #region Fields
         public override Document ActiveDocument { get; set; }

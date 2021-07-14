@@ -5,11 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
-using DNS_PanelTools_v2.Utility;
+using DSKPrim.PanelTools_v2.Utility;
 
-namespace DNS_PanelTools_v2.StructuralApps.Panel
+namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 {
-    public class PS_Panel : Base_Panel
+    public class PS_Panel : Panel
     {
         public override Document ActiveDocument { get; set; }
         public override Element ActiveElement { get; set; }

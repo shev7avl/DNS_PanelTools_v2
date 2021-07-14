@@ -8,7 +8,7 @@ using Autodesk.Revit.UI;
 using Autodesk.Revit.Attributes;
 using System.Threading;
 
-namespace DNS_PanelTools_v2.Commands
+namespace DSKPrim.PanelTools_v2.Commands
 {
 
 
@@ -16,7 +16,7 @@ namespace DNS_PanelTools_v2.Commands
     [Regeneration(RegenerationOption.Manual)]
     class Run : IExternalCommand
     {
-        private Base_Routine RoutineBehaviour;
+        private Routine RoutineBehaviour;
 
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {

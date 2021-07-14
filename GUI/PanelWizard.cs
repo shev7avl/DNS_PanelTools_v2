@@ -1,4 +1,4 @@
-﻿using DNS_PanelTools_v2.Commands;
+﻿using DSKPrim.PanelTools_v2.Commands;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -9,18 +9,18 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace DNS_PanelTools_v2.GUI
+namespace DSKPrim.PanelTools_v2.GUI
 {
     public partial class PanelWizard : Form
     {
-        public Base_Routine Routine { get; set; }
+        public Routine Routine { get; set; }
         public PanelWizard()
         {
             InitializeComponent();
             SetPanelVisibility(1);
         }
         [STAThread]
-        public Base_Routine GetRoutine()
+        public Routine GetRoutine()
         {
             return Routine;
         }
@@ -109,11 +109,13 @@ namespace DNS_PanelTools_v2.GUI
             switch (opName)
             {
                 case ("Создать проемы"):
+                    Routine = new CreateOpeningsRoutine();
                     break;
                 case ("Создать марки"):
-                    Routine = new STRUCT_SetMarks();
+                    Routine = new SetMarksRoutine();
                     break;
                 case ("Создать сборки"):
+                    Routine = new CreateAssembliesRoutine();
                     break;
                 case ("Разобрать сборки"):
                     break;

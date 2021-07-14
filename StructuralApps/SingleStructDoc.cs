@@ -1,4 +1,4 @@
-﻿using DNS_PanelTools_v2.StructuralApps.Panel;
+﻿using DSKPrim.PanelTools_v2.StructuralApps.Panel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 
-namespace DNS_PanelTools_v2.StructuralApps
+namespace DSKPrim.PanelTools_v2.StructuralApps
 {
     public class SingleStructDoc
     {
@@ -14,9 +14,9 @@ namespace DNS_PanelTools_v2.StructuralApps
 
         private Document Document;
 
-        private Base_Panel Behaviour;
+        private Panel.Panel Behaviour;
 
-        private List<Base_Panel> PanelMarks;
+        private List<Panel.Panel> PanelMarks;
 
         private List<Element> frontPVL;
 
@@ -25,7 +25,7 @@ namespace DNS_PanelTools_v2.StructuralApps
             Document = document;
 
             List<Element> panelsList = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_StructuralFraming).WhereElementIsNotElementType().ToElements().Cast<Element>().ToList();
-            PanelMarks = new List<Base_Panel>();
+            PanelMarks = new List<Panel.Panel>();
 
             foreach (var item in panelsList)
             {
@@ -46,7 +46,7 @@ namespace DNS_PanelTools_v2.StructuralApps
             return instance;
         }
 
-        public List<Base_Panel> GetPanelMarks()
+        public List<Panel.Panel> GetPanelMarks()
         {
             return PanelMarks;
         }

@@ -3,8 +3,8 @@
 	<AddIn Type="Application">
 		<Name>Application DNS Panel tools</Name>
 		<Description>Export button</Description>
-		<Assembly>DNS_PanelTools_v2.dll</Assembly>
-		<FullClassName>DNS_PanelTools_v2.App</FullClassName>
+		<Assembly>DSKPrim.PanelTools_v2.dll</Assembly>
+		<FullClassName>DSKPrim.PanelTools_v2.App</FullClassName>
 		<ClientId>fdb7ce44-8fe5-405f-9bd2-a8f895ca23d7</ClientId>
 		<VendorId>Shevyakov Anton</VendorId>
 		<VendorDescription>shevyakov.a@dnsgroup.ru</VendorDescription>

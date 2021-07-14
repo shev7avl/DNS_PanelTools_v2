@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using Autodesk.Revit.UI;
-using DNS_PanelTools_v2.StructuralApps;
-using DNS_PanelTools_v2.StructuralApps.Panel;
-using DNS_PanelTools_v2.Utility;
+using DSKPrim.PanelTools_v2.StructuralApps;
+using DSKPrim.PanelTools_v2.StructuralApps.Panel;
+using DSKPrim.PanelTools_v2.Utility;
 
-namespace DNS_PanelTools_v2.StructuralApps.Panel
+namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 {
-    public class WallParts : Base_Panel, IPerforable
+    public class WallParts : Panel, IPerforable
     {
         public override Document ActiveDocument { get; set; }
 
@@ -29,7 +29,7 @@ namespace DNS_PanelTools_v2.StructuralApps.Panel
 
         private Document LinkedDocARCH;
 
-        private Base_Panel IntersectedPanel;
+        private Panel IntersectedPanel;
 
         private List<Material> FacadeMaterials { get; set; }
 
@@ -109,9 +109,9 @@ namespace DNS_PanelTools_v2.StructuralApps.Panel
             XYZ End = curve.Curve.GetEndPoint(0);
 
             SingleStructDoc marksList = SingleStructDoc.getInstance(LinkedDocSTR);
-            List<Base_Panel> panels = marksList.GetPanelMarks();
+            List<Panel> panels = marksList.GetPanelMarks();
 
-            foreach (Base_Panel item in panels)
+            foreach (Panel item in panels)
             {
                 BoundingBoxXYZ boundingBox = item.ActiveElement.get_Geometry(options).GetBoundingBox();
 

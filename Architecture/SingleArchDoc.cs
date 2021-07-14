@@ -1,4 +1,4 @@
-﻿using DNS_PanelTools_v2.StructuralApps.Panel;
+﻿using DSKPrim.PanelTools_v2.StructuralApps.Panel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 
-namespace DNS_PanelTools_v2.StructuralApps
+namespace DSKPrim.PanelTools_v2.StructuralApps
 {
     public class SingleArchDoc
     {

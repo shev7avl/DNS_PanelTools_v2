@@ -1,4 +1,4 @@
-﻿using DNS_PanelTools_v2.StructuralApps.Panel;
+﻿using DSKPrim.PanelTools_v2.StructuralApps.Panel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using System.Diagnostics;
 
-namespace DNS_PanelTools_v2.StructuralApps.Assemblies
+namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
 {
     public class AssemblyBuilder
     {
-        private Dictionary<int, Base_Panel> IndexMarkPairs;
+        private Dictionary<int, Panel.Panel> IndexMarkPairs;
 
-        private List<Base_Panel> MarksList;
+        private List<Panel.Panel> MarksList;
 
         private Document ActiveDoc;
 
@@ -26,7 +26,7 @@ namespace DNS_PanelTools_v2.StructuralApps.Assemblies
         #region Создание коротких индексов
         public void AddIndex(string panelSubString)
         {
-            IndexMarkPairs = new Dictionary<int, Base_Panel>();
+            IndexMarkPairs = new Dictionary<int, Panel.Panel>();
             Debug.WriteLine("Словарь Марка - индекс");
             Debug.WriteLine("------Начало словаря------");
 
@@ -65,7 +65,7 @@ namespace DNS_PanelTools_v2.StructuralApps.Assemblies
             }
         }
 
-        private bool PanelExists(Base_Panel item)
+        private bool PanelExists(Panel.Panel item)
         {
             bool exists = false;
             foreach (int key in IndexMarkPairs.Keys)
