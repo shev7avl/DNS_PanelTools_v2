@@ -169,9 +169,8 @@ namespace DSKPrim.PanelTools_v2.Utility
             {
                 result = value - remainder;
             }
-
-
         }
+
         private static double RoundToOnes(double value)
         {
             double remainder = value % 1;

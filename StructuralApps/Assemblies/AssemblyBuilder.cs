@@ -11,6 +11,9 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
 {
     public class AssemblyBuilder
     {
+
+        public AssemblyInstance result;
+
         private Dictionary<int, Panel.Panel> IndexMarkPairs;
 
         private List<Panel.Panel> MarksList;
@@ -90,7 +93,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
         {
             TransactionGroup transactionGroup = new TransactionGroup(ActiveDoc, "Создание сборок");
             transactionGroup.Start();
-
+            MarksList.Sort(CompareMarksByName);
             foreach (var item in MarksList)
             {
                 FamilyInstance familyInstance = (FamilyInstance)item.ActiveElement;
@@ -114,10 +117,14 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
                 if (item is NS_Panel _Panel)
                 {
                     _Panel = (NS_Panel)item;
-                    foreach (Element frontPVL in _Panel.GetPVLList())
+                    if (_Panel.GetPVLList() != null)
                     {
-                        elementIds.Add(frontPVL.Id);
+                        foreach (Element frontPVL in _Panel.GetPVLList())
+                        {
+                            elementIds.Add(frontPVL.Id);
+                        }
                     }
+                    
                 }
 
                 using (Transaction transaction = new Transaction(ActiveDoc, $"Создание сборки: {item.ShortMark}"))
@@ -176,6 +183,23 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
             }
 
         }
+
+        public void DisassembleAll()
+        {
+            List<AssemblyInstance> assemblies = new FilteredElementCollector(ActiveDoc).OfCategory(BuiltInCategory.OST_Assemblies).WhereElementIsNotElementType().Cast<AssemblyInstance>().ToList();
+
+            using (Transaction transaction = new Transaction(ActiveDoc, "Разбираем сборки"))
+            {
+
+                foreach (AssemblyInstance assembly in assemblies)
+                {
+                    transaction.Start();
+                    assembly.Disassemble();
+                    transaction.Commit();
+                }
+
+            }
+        }
         #endregion
 
         #region Сравнение панелей и сборок
@@ -200,6 +224,29 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
                 return -1;
             }
         }
+
+        private int CompareMarksByName(Panel.Panel x, Panel.Panel y)
+        {
+            string _panelNameX = x.LongMark;
+
+            string _panelNameY = y.LongMark;
+
+            int res = String.Compare(_panelNameX, _panelNameY);
+
+            if (res > 0)
+            {
+                return 1;
+            }
+            else if (res == 0)
+            {
+                return 0;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+
         #endregion
 
     }

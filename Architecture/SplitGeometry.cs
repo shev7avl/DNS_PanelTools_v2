@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -27,7 +27,7 @@ namespace DSKPrim.PanelTools_v2.Architecture
                     geomSolid = solid;
                 }
             }
-            
+
 
             FaceArray faceArray = geomSolid.Faces;
             foreach (PlanarFace face in faceArray)
@@ -42,7 +42,7 @@ namespace DSKPrim.PanelTools_v2.Architecture
                     Debug.WriteLine($"Нашли нормаль к грани: {normal}");
                     using (Transaction transaction = new Transaction(document, "Creating a SketchPlane"))
                     {
-                        
+
                         transaction.Start();
                         Debug.WriteLine($"Начали транзакцию: {transaction.GetName()}");
                         Plane plane = Plane.CreateByNormalAndOrigin(normal, origin);
@@ -62,7 +62,7 @@ namespace DSKPrim.PanelTools_v2.Architecture
 
         public static IList<Curve> CreateCurveArray(Element partEl, Face face, Plane plane)
         {
-            IList <Curve> curves = new List<Curve>();
+            IList<Curve> curves = new List<Curve>();
             BoundingBoxUV boxUV = plane.GetBoundingBoxUV();
 
             UV origin = boxUV.Min;
@@ -84,29 +84,31 @@ namespace DSKPrim.PanelTools_v2.Architecture
             double LenU = partEl.get_Parameter(BuiltInParameter.DPART_LENGTH_COMPUTED).AsDouble();
             double HeiV = partEl.get_Parameter(BuiltInParameter.DPART_HEIGHT_COMPUTED).AsDouble();
 
-            Curve curveLeft = Line.CreateBound(originXYZ, verticalBase);
-            Curve curveRight = Line.CreateBound(maxXYZ, horizontalBase);
-            Curve curveBot = Line.CreateBound(originXYZ, horizontalBase);
-            Curve curveTop = Line.CreateBound(verticalBase, maxXYZ);
+            Curve curveLeft = Line.CreateBound(originXYZ, verticalBase*0.5);
+            Curve curveRight = Line.CreateBound(maxXYZ*0.5, horizontalBase*0.5);
+            Curve curveBot = Line.CreateBound(originXYZ, horizontalBase*0.5);
+            Curve curveTop = Line.CreateBound(verticalBase*0.5, maxXYZ*0.5);
 
             curves.Add(curveRight);
             curves.Add(curveTop);
+            curves.Add(curveLeft);
+            curves.Add(curveBot);
 
-            for (double i = 0; i < LenU; i=i+stepV+gapV)
-            {
-                curves.Add(curveLeft);
-                Curve curve1 = curveLeft.CreateOffset(stepV, -horizontalBase);
-                curves.Add(curve1);
-                curveLeft = curve1.CreateOffset(gapV, -horizontalBase);
-            }
-            
-            for (double i = 0; i < HeiV; i = i + stepH + gapH)
-            {
-                curves.Add(curveBot);
-                Curve curve1 = curveBot.CreateOffset(stepH, verticalBase);
-                curves.Add(curve1);
-                curveBot = curve1.CreateOffset(gapH, verticalBase);
-            }
+            //for (double i = 0; i < LenU; i = i + stepV + gapV)
+            //{
+            //    curves.Add(curveLeft);
+            //    Curve curve1 = curveLeft.CreateOffset(stepV, -horizontalBase);
+            //    curves.Add(curve1);
+            //    curveLeft = curve1.CreateOffset(gapV, -horizontalBase);
+            //}
+
+            //for (double i = 0; i < HeiV; i = i + stepH + gapH)
+            //{
+            //    curves.Add(curveBot);
+            //    Curve curve1 = curveBot.CreateOffset(stepH, verticalBase);
+            //    curves.Add(curve1);
+            //    curveBot = curve1.CreateOffset(gapH, verticalBase);
+            //}
 
             return curves;
         }

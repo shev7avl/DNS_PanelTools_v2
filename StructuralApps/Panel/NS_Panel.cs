@@ -5,11 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
+using DSKPrim.PanelTools_v2.StructuralApps.AssemblyDefiningSubelements;
 using DSKPrim.PanelTools_v2.Utility;
 
 namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 {
-    class NS_Panel : Panel, IPerforable
+    class NS_Panel : Panel, IPerforable, IAssembler
     {
         #region Fields
         public override Document ActiveDocument { get; set; }
@@ -20,9 +21,8 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 
         public override string ShortMark { get; set; }
 
-        private bool FrontPVL { get; set; }
-
-        private List<Element> frontPVLs { get; set; }
+        public List<ElementId> AssemblyElements { get; set; }
+        public List<ITransferable> OutList { get; set; }
         #endregion
 
         #region Constructor
@@ -31,6 +31,8 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
             ActiveDocument = document;
             ActiveElement = element;
         }
+
+        public event EventHandler TransferRequested;
 
         #endregion
 
@@ -202,6 +204,32 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
                 }
             }
             return result;
+        }
+
+        public void TransferFromPanel(Panel panel)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void TransferHandler(object senger, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetAssemblyElements()
+        {
+            if (AssemblyElements == null)
+            {
+                AssemblyElements = new List<ElementId>();
+            }
+
+            this.AssemblyElements.Add(ActiveElement.Id);
+
+            foreach (Element item in ActiveElement.GetSubelements().Cast<Element>().ToList())
+            {
+                this.AssemblyElements.Add(item.Id);
+            }
+
         }
 
         #endregion

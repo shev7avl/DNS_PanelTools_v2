@@ -7,6 +7,7 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.Attributes;
 using DSKPrim.PanelTools_v2.StructuralApps.Assemblies;
+using DSKPrim.PanelTools_v2.StructuralApps;
 
 namespace DSKPrim.PanelTools_v2.Commands
 {
@@ -21,6 +22,7 @@ namespace DSKPrim.PanelTools_v2.Commands
         public override void ExecuteRoutine(ExternalCommandData commandData)
         {
             Document = commandData.Application.ActiveUIDocument.Document;
+            SingleStructDoc structDoc = SingleStructDoc.getInstance(Document);
 
             AssemblyBuilder assemblyBuilder = new AssemblyBuilder(Document);
             assemblyBuilder.AddIndex("НС");
@@ -29,7 +31,8 @@ namespace DSKPrim.PanelTools_v2.Commands
             assemblyBuilder.AddIndex("ПП");
             assemblyBuilder.AddIndex("БП");
             assemblyBuilder.CreateAssemblies();
-            assemblyBuilder.LeaveUniquePanels();
+
+            structDoc.Dispose();
         }
     }
 }

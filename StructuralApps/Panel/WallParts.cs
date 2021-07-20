@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using Autodesk.Revit.UI;
+using DSKPrim.PanelTools_v2.Architecture;
 using DSKPrim.PanelTools_v2.StructuralApps;
 using DSKPrim.PanelTools_v2.StructuralApps.Panel;
 using DSKPrim.PanelTools_v2.Utility;
@@ -162,7 +163,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 
             foreach (var item in elementIdsToDivide)
             {
-                //SplitGeometry.CreateSketchPlane(ActiveDocument, item);
+                SplitGeometry.CreateSketchPlane(ActiveDocument, item);
             }
             FacadeParts = new List<ElementId>();
             FacadeParts = (List <ElementId>)ActiveElement.GetDependentElements(filter);

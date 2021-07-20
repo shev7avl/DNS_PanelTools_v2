@@ -7,8 +7,8 @@
     <ProjectGuid>{E5D1FBF6-29A5-4031-8E0B-CD7A88EDE02E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DNS_PanelTools_v2</RootNamespace>
-    <AssemblyName>DNS_PanelTools_v2</AssemblyName>
+    <RootNamespace>DSKPrim.PanelTools_v2</RootNamespace>
+    <AssemblyName>PanelTools_v2</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -57,6 +57,8 @@
     <Compile Include="App.cs" />
     <Compile Include="Architecture\SingleArchDoc.cs" />
     <Compile Include="Architecture\SplitGeometry.cs" />
+    <Compile Include="Architecture\SplitGeometry_bu.cs" />
+    <Compile Include="Commands\DisassembleAllRoutine.cs" />
     <Compile Include="Commands\Run.cs" />
     <Compile Include="Commands\Routine.cs" />
     <Compile Include="GUI\PanelWizard.cs">
@@ -71,6 +73,18 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="StructuralApps\Assemblies\CompleteAssemblyBuilder.cs" />
+    <Compile Include="StructuralApps\Assemblies\DemolishAssemblyBuilder.cs" />
+    <Compile Include="StructuralApps\Assemblies\FacadeAssemblyBuilder.cs" />
+    <Compile Include="StructuralApps\Assemblies\UniqueAssemblyBuilder.cs" />
+    <Compile Include="StructuralApps\AssemblyDefiningSubelements\AnchorDefining.cs" />
+    <Compile Include="StructuralApps\AssemblyDefiningSubelements\DefiningBase.cs" />
+    <Compile Include="StructuralApps\AssemblyDefiningSubelements\DefiningSubelement.cs" />
+    <Compile Include="StructuralApps\AssemblyDefiningSubelements\PShapedTransferable.cs" />
+    <Compile Include="StructuralApps\AssemblyDefiningSubelements\StraightTransferable.cs" />
+    <Compile Include="StructuralApps\AssemblyDefiningSubelements\FrontPVLTransferable.cs" />
+    <Compile Include="StructuralApps\AssemblyDefiningSubelements\ITransferable.cs" />
+    <Compile Include="StructuralApps\Panel\IAssembler.cs" />
     <Compile Include="StructuralApps\Panel\IPerforated.cs" />
     <Compile Include="StructuralApps\Panel\WallParts.cs" />
     <Compile Include="Utility\Assemblies.cs" />
@@ -101,7 +115,7 @@
     <Compile Include="StructuralApps\StructureType.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="DNS_PanelTools_v2.addin" />
+    <None Include="PanelTools_v2.addin" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="EnvDTE">

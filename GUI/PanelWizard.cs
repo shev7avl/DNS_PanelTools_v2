@@ -118,6 +118,7 @@ namespace DSKPrim.PanelTools_v2.GUI
                     Routine = new CreateAssembliesRoutine();
                     break;
                 case ("Разобрать сборки"):
+                    Routine = new DisassembleAllRoutine();
                     break;
                 case ("Создать уникальные сборки"):
                     break;

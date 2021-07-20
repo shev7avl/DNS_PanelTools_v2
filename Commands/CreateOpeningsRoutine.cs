@@ -26,6 +26,7 @@ namespace DSKPrim.PanelTools_v2.Commands
         public override void ExecuteRoutine(ExternalCommandData commandData)
         {
             Document = commandData.Application.ActiveUIDocument.Document;
+            SingleStructDoc structDoc = SingleStructDoc.getInstance(Document);
 
             IEnumerable<Element> fecLinksARCH = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_RvtLinks).WhereElementIsNotElementType().Where(doc => doc.Name.Contains("_АР"));
 
@@ -55,7 +56,10 @@ namespace DSKPrim.PanelTools_v2.Commands
                     panel.Perforate(IntersectedWindows);
                 }
             }
-        }
 
+
+            structDoc.Dispose();
+        }
+        
     }
 }
