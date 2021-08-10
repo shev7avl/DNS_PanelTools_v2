@@ -117,13 +117,13 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
                 if (item is NS_Panel _Panel)
                 {
                     _Panel = (NS_Panel)item;
-                    if (_Panel.GetPVLList() != null)
-                    {
-                        foreach (Element frontPVL in _Panel.GetPVLList())
-                        {
-                            elementIds.Add(frontPVL.Id);
-                        }
-                    }
+                    //if (_Panel.GetPVLList() != null)
+                    //{
+                    //    foreach (Element frontPVL in _Panel.GetPVLList())
+                    //    {
+                    //        elementIds.Add(frontPVL.Id);
+                    //    }
+                    //}
                     
                 }
 

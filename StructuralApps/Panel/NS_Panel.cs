@@ -12,7 +12,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 {
     class NS_Panel : Panel, IPerforable, IAssembler
     {
-        #region Fields
+        #region Fields&Props
         public override Document ActiveDocument { get; set; }
         public override Element ActiveElement { get; set; }
         public override List<XYZ> IntersectedWindows { get; set; }
@@ -32,11 +32,9 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
             ActiveElement = element;
         }
 
-        public event EventHandler TransferRequested;
-
         #endregion
 
-        #region Public Methods
+
 
         #region IPerforable
         void IPerforable.Perforate(List<Element> IntersectedWindows)
@@ -64,7 +62,59 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
         }
         #endregion
 
-        #region Base_Panel
+        #region IAssembler
+
+        public IAssembler TransferPal { get; set; }
+
+        public event TransferHandler TransferRequested;
+
+        public void TransferFromPanel(IAssembler panel)
+        {
+            TransferRequested += ExTransferHandler;
+            TransferRequested += InTransferHandler;
+            TransferRequested.Invoke(panel, new EventArgs());
+            TransferRequested -= ExTransferHandler;
+            TransferRequested -= InTransferHandler;
+        }
+
+        public void InTransferHandler(object sender, EventArgs e)
+        {
+            IAssembler assembler = (IAssembler)sender;
+            foreach (var item in assembler.OutList)
+            {
+                DefiningBase defining = (DefiningBase)item;
+                assembler.AssemblyElements.Remove(defining.Id);
+            }
+            assembler.OutList = null;
+        }
+
+        public void ExTransferHandler(object sender, EventArgs e)
+        {
+            IAssembler assembler = (IAssembler)sender;
+            foreach (var item in assembler.OutList)
+            {
+                DefiningBase definingBase = (DefiningBase)item;
+                this.AssemblyElements.Add(definingBase.Id);
+            }
+        }
+
+        public void SetAssemblyElements()
+        {
+            if (AssemblyElements == null)
+            {
+                AssemblyElements = new List<ElementId>();
+            }
+
+            this.AssemblyElements.Add(ActiveElement.Id);
+
+            foreach (Element item in ActiveElement.GetSubelements().Cast<Element>().ToList())
+            {
+                this.AssemblyElements.Add(item.Id);
+            }
+
+        }
+
+        #endregion
 
         public override void CreateMarks()
         {
@@ -77,8 +127,8 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
         public override bool Equal(Panel panelMark)
         {
             NS_Panel panel = (NS_Panel)panelMark;
-            panel.SetFrontPVL();
-            if (LongMark == panel.LongMark && FrontPVL == panel.GetFrontPVL())
+           
+            if (LongMark == panel.LongMark && AssemblyElements.Count == panel.AssemblyElements.Count)
             {
                 return true;
             }
@@ -86,38 +136,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
             else return false;
         }
 
-        #endregion
 
-        private void SetFrontPVL()
-        {
-            SingleStructDoc singletonMarks = SingleStructDoc.getInstance(ActiveDocument);
-            frontPVLs = new List<Element>();
-            Options options = new Options();
-            BoundingBoxXYZ elBB = ActiveElement.get_Geometry(options).GetBoundingBox();
-            foreach (var item in singletonMarks.getPVLpts())
-            {
-                LocationPoint locationPoint = (LocationPoint) item.Location;
-                XYZ xYZ = locationPoint.Point;
-                if (Geometry.InBox(elBB, xYZ))
-                {
-                    frontPVLs.Add(item);
-                }
-            }
-            
-            FrontPVL = PVLComingClause(ActiveElement);
-        }
-        public bool GetFrontPVL()
-        {
-            return FrontPVL;
-        }
-
-        public List<Element> GetPVLList()
-        {
-            return frontPVLs;
-        }
-        #endregion
-
-        #region Private Methods
 
         private void SetMarks()
         {
@@ -187,52 +206,8 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
             return windows;
         }
 
-        private bool PVLComingClause(Element element)
-        {
-            bool result = false;
-            Options options = new Options();
-            BoundingBoxXYZ elBB = element.get_Geometry(options).GetBoundingBox();
+       
 
-            foreach (var item in frontPVLs)
-            {
-                LocationPoint location = (LocationPoint)item.Location;
-                XYZ point = location.Point;
-                if (Geometry.InBox(elBB, point))
-                {
-                    result = true;
-                    break;
-                }
-            }
-            return result;
-        }
-
-        public void TransferFromPanel(Panel panel)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void TransferHandler(object senger, EventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetAssemblyElements()
-        {
-            if (AssemblyElements == null)
-            {
-                AssemblyElements = new List<ElementId>();
-            }
-
-            this.AssemblyElements.Add(ActiveElement.Id);
-
-            foreach (Element item in ActiveElement.GetSubelements().Cast<Element>().ToList())
-            {
-                this.AssemblyElements.Add(item.Id);
-            }
-
-        }
-
-        #endregion
 
     }
 }

@@ -8,19 +8,24 @@ using DSKPrim.PanelTools_v2.StructuralApps.AssemblyDefiningSubelements;
 
 namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 {
+    public delegate void TransferHandler(object sender, EventArgs e);
     public interface IAssembler
     {
         List<ElementId> AssemblyElements { get; set; }
 
         List<ITransferable> OutList { get; set; }
 
+        IAssembler TransferPal { get; set; }
+
         void SetAssemblyElements();
 
-        void TransferFromPanel(Panel panel);
+        void TransferFromPanel(IAssembler panel);
 
-        event EventHandler TransferRequested;
+        event TransferHandler TransferRequested;
 
-        void TransferHandler(object senger, EventArgs e);
+        void InTransferHandler(object senger, EventArgs e);
+
+        void ExTransferHandler(object senger, EventArgs e);
 
     }
 }

@@ -156,9 +156,7 @@
   <ItemGroup>
     <None Include="Resources\Test.ico" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Panel\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <None Include="Resources\DSK_Prim.png" />
   </ItemGroup>
