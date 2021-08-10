@@ -12,7 +12,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 {
     class NS_Panel : Panel, IPerforable, IAssembler
     {
-        #region Fields
+        #region Fields&Props
         public override Document ActiveDocument { get; set; }
         public override Element ActiveElement { get; set; }
         public override List<XYZ> IntersectedWindows { get; set; }
@@ -20,6 +20,8 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
         public override string LongMark { get; set; }
 
         public override string ShortMark { get; set; }
+
+        public override string Index { get; set; }
 
         public List<ElementId> AssemblyElements { get; set; }
         public List<ITransferable> OutList { get; set; }
@@ -32,53 +34,144 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
             ActiveElement = element;
         }
 
-        public event EventHandler TransferRequested;
-
         #endregion
 
-        #region Public Methods
+
 
         #region IPerforable
-        void IPerforable.Perforate(List<Element> IntersectedWindows)
+        void IPerforable.Perforate(List<Element> IntersectedWindows,RevitLinkInstance revitLink)
         {
 
             TransactionGroup transaction = new TransactionGroup(ActiveDocument, $"Создание проемов - {ActiveElement.Name}");
             transaction.Start();
+
             if (IntersectedWindows.Count == 1)
             {
                 Element window = IntersectedWindows[0];
-                Utility.Openings.SetOpeningParams(ActiveDocument, ActiveElement, window);
+                Utility.Openings.SetOpeningParams(ActiveDocument, revitLink, ActiveElement, window);
             }
             else if (IntersectedWindows.Count == 2)
             {
                 Element window1 = IntersectedWindows[0];
                 Element window2 = IntersectedWindows[1];
-                Utility.Openings.SetOpeningParams(ActiveDocument, ActiveElement, window1, window2);
+                Utility.Openings.SetOpeningParams(ActiveDocument, revitLink, ActiveElement, window1, window2);
             }
+            else if (IntersectedWindows.Count >= 3)
+            {
+
+                Element window1 = IntersectedWindows[0];
+                Element window2 = IntersectedWindows[1];
+                Element window3 = IntersectedWindows[2];
+
+                Openings.CalculateOffset(revitLink, ActiveElement, window1, out double offsetLine);
+                Openings.CalculateOffset(revitLink, ActiveElement, window2, out double offsetLine1);
+                Openings.CalculateOffset(revitLink, ActiveElement, window3, out double offsetLine2);
+
+                if (offsetLine == offsetLine1)
+                {
+                    Utility.Openings.SetOpeningParams(ActiveDocument, revitLink, ActiveElement, window1, window3);
+                }
+                else if (offsetLine1 == offsetLine2)
+                {
+                    Utility.Openings.SetOpeningParams(ActiveDocument, revitLink, ActiveElement, window2, window3);
+                }
+                else
+                {
+                    Utility.Openings.SetOpeningParams(ActiveDocument, revitLink, ActiveElement, window1, window2);
+                }
+
+            }
+
             transaction.Assimilate();
         }
 
-        void IPerforable.GetOpenings(Document linkedArch, out List<Element> IntersectedWindows)
+        void IPerforable.GetOpeningsFromLink(Document linkedArch, RevitLinkInstance revitLink, out List<Element> IntersectedWindows)
         {
-            IntersectedWindows = Geometry.IntersectedOpenings(ActiveElement, linkedArch, windows: true);
+            IntersectedWindows = Geometry.IntersectedOpenings(ActiveElement, revitLink, linkedArch, windows: true);
         }
         #endregion
 
-        #region Base_Panel
+        #region IAssembler
+
+        public IAssembler TransferPal { get; set; }
+
+        public event TransferHandler TransferRequested;
+
+        public void TransferFromPanel(IAssembler panel)
+        {
+            TransferRequested += ExTransferHandler;
+            TransferRequested += InTransferHandler;
+            TransferRequested.Invoke(panel, new EventArgs());
+            TransferRequested -= ExTransferHandler;
+            TransferRequested -= InTransferHandler;
+        }
+
+        public void InTransferHandler(object sender, EventArgs e)
+        {
+            IAssembler assembler = (IAssembler)sender;
+            foreach (var item in assembler.OutList)
+            {
+                DefiningBase defining = (DefiningBase)item;
+                assembler.AssemblyElements.Remove(defining.Id);
+            }
+            assembler.OutList = null;
+        }
+
+        public void ExTransferHandler(object sender, EventArgs e)
+        {
+            IAssembler assembler = (IAssembler)sender;
+            foreach (var item in assembler.OutList)
+            {
+                DefiningBase definingBase = (DefiningBase)item;
+                this.AssemblyElements.Add(definingBase.Id);
+            }
+        }
+
+        public void SetAssemblyElements()
+        {
+            if (AssemblyElements == null)
+            {
+                AssemblyElements = new List<ElementId>();
+            }
+
+            this.AssemblyElements.Add(ActiveElement.Id);
+
+            foreach (Element item in ActiveElement.GetSubelements().Cast<Element>().ToList())
+            {
+                this.AssemblyElements.Add(item.Id);
+            }
+
+        }
+
+        #endregion
 
         public override void CreateMarks()
         {
             LongMark = $"НС {GetPanelCode()}_{GetClosureCode()}";
-            ShortMark = $"НС {LongMark.Split('_')[1]}";
+            
+
+            Guid ADSK_panelNum = new Guid("a531f6df-1e58-48e0-8c14-77cf7c1809b8");
+            if (ActiveElement.get_Parameter(ADSK_panelNum).AsString() == "")
+            {
+                Index = $"{ActiveElement.Id}-Id";
+            }
+            else
+            {
+                Index = ActiveElement.get_Parameter(ADSK_panelNum).AsString();
+            }
+
+            ShortMark = $"НС {LongMark.Split('_')[1]} - {Index}";
+
             SetMarks();
+
         }
 
 
         public override bool Equal(Panel panelMark)
         {
             NS_Panel panel = (NS_Panel)panelMark;
-            panel.SetFrontPVL();
-            if (LongMark == panel.LongMark && FrontPVL == panel.GetFrontPVL())
+           
+            if (LongMark == panel.LongMark && AssemblyElements.Count == panel.AssemblyElements.Count)
             {
                 return true;
             }
@@ -86,51 +179,6 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
             else return false;
         }
 
-        #endregion
-
-        private void SetFrontPVL()
-        {
-            SingleStructDoc singletonMarks = SingleStructDoc.getInstance(ActiveDocument);
-            frontPVLs = new List<Element>();
-            Options options = new Options();
-            BoundingBoxXYZ elBB = ActiveElement.get_Geometry(options).GetBoundingBox();
-            foreach (var item in singletonMarks.getPVLpts())
-            {
-                LocationPoint locationPoint = (LocationPoint) item.Location;
-                XYZ xYZ = locationPoint.Point;
-                if (Geometry.InBox(elBB, xYZ))
-                {
-                    frontPVLs.Add(item);
-                }
-            }
-            
-            FrontPVL = PVLComingClause(ActiveElement);
-        }
-        public bool GetFrontPVL()
-        {
-            return FrontPVL;
-        }
-
-        public List<Element> GetPVLList()
-        {
-            return frontPVLs;
-        }
-        #endregion
-
-        #region Private Methods
-
-        private void SetMarks()
-        {
-            Guid DNS_panelMark = new Guid("db2bee76-ce6f-4203-9fde-b8f34f3477b5");
-            Guid ADSK_panelMark = new Guid("92ae0425-031b-40a9-8904-023f7389963b");
-            Transaction transaction = new Transaction(ActiveDocument);
-
-            transaction.Start($"Транзакция - {ActiveElement.Name}");
-            ActiveElement.get_Parameter(DNS_panelMark).Set(LongMark);
-            ActiveElement.get_Parameter(ADSK_panelMark).Set(ShortMark);
-
-            transaction.Commit();
-        }
 
         private string GetPanelCode()
         {
@@ -170,7 +218,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
                 string w4 = Marks.AsDecimString(ActiveElement, "ПР2.ВысотаСмещение");
                 window2 = $"{w2}.{w3}.{w4}.{w1}";
             }
-            string windows = "";
+            string windows;
             if (Closure1 && Closure2)
             {
                 windows = $"{window1}_{window2}";
@@ -187,52 +235,8 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
             return windows;
         }
 
-        private bool PVLComingClause(Element element)
-        {
-            bool result = false;
-            Options options = new Options();
-            BoundingBoxXYZ elBB = element.get_Geometry(options).GetBoundingBox();
+       
 
-            foreach (var item in frontPVLs)
-            {
-                LocationPoint location = (LocationPoint)item.Location;
-                XYZ point = location.Point;
-                if (Geometry.InBox(elBB, point))
-                {
-                    result = true;
-                    break;
-                }
-            }
-            return result;
-        }
-
-        public void TransferFromPanel(Panel panel)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void TransferHandler(object senger, EventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetAssemblyElements()
-        {
-            if (AssemblyElements == null)
-            {
-                AssemblyElements = new List<ElementId>();
-            }
-
-            this.AssemblyElements.Add(ActiveElement.Id);
-
-            foreach (Element item in ActiveElement.GetSubelements().Cast<Element>().ToList())
-            {
-                this.AssemblyElements.Add(item.Id);
-            }
-
-        }
-
-        #endregion
 
     }
 }

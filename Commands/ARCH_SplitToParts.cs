@@ -33,6 +33,7 @@ namespace DSKPrim.PanelTools_v2.Commands
             {
                 WallParts wallParts = new WallParts(ActiveDocument, linkedDocSTR, linkedDocARCH, item);
                 wallParts.SplitToParts();
+                wallParts.ExcludeStitches();
                 Debug.WriteLine(item.Name);
             }
            

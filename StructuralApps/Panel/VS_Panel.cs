@@ -18,6 +18,8 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
         public override string LongMark { get; set; }
         public override string ShortMark { get; set; }
 
+        public override string Index { get; set; }
+
         #endregion
 
         #region Constructor
@@ -33,49 +35,51 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
         {
 
             LongMark = $"ВС {GetPanelCode()}_{GetClosureCode()}";
-            ShortMark = $"{LongMark.Split('_')[0]}";
+
+            Guid ADSK_panelNum = new Guid("a531f6df-1e58-48e0-8c14-77cf7c1809b8");
+            if (ActiveElement.get_Parameter(ADSK_panelNum).AsString() == "")
+            {
+                Index = $"{ActiveElement.Id}-Id";
+            }
+            else
+            {
+                Index = ActiveElement.get_Parameter(ADSK_panelNum).AsString();
+            }
+
+            ShortMark = $"{LongMark.Split('_')[0]} - {Index}";
+
+
             SetMarks();
 
         }
 
-        void IPerforable.Perforate(List<Element> IntersectedWindows)
+        void IPerforable.Perforate(List<Element> IntersectedWindows, RevitLinkInstance revitLink)
         {
             TransactionGroup transaction = new TransactionGroup(ActiveDocument, $"Создание проемов - {ActiveElement.Name}");
             transaction.Start();
             if (IntersectedWindows.Count == 1)
             {
                 Element window = IntersectedWindows[0];
-                Utility.Openings.SetOpeningParams(ActiveDocument, ActiveElement, window);
+                Utility.Openings.SetOpeningParams(ActiveDocument, revitLink, ActiveElement, window);
             }
             else if (IntersectedWindows.Count == 2)
             {
                 Element window1 = IntersectedWindows[0];
                 Element window2 = IntersectedWindows[1];
-                Utility.Openings.SetOpeningParams(ActiveDocument, ActiveElement, window1, window2);
+                Utility.Openings.SetOpeningParams(ActiveDocument, revitLink, ActiveElement, window1, window2);
             }
             transaction.Assimilate();
         }
 
-        void IPerforable.GetOpenings(Document linkedArch, out List<Element> IntersectedWindows)
+        void IPerforable.GetOpeningsFromLink(Document linkedArch, RevitLinkInstance revitLink, out List<Element> IntersectedWindows)
         {
-            IntersectedWindows = Geometry.IntersectedOpenings(ActiveElement, linkedArch, windows: false);
+            IntersectedWindows = Geometry.IntersectedOpenings(ActiveElement, revitLink, linkedArch, windows: false);
         }
 
         #endregion
 
         #region Private Methods
-        private void SetMarks()
-        {
-            Guid DNS_panelMark = new Guid("db2bee76-ce6f-4203-9fde-b8f34f3477b5");
-            Guid ADSK_panelMark = new Guid("92ae0425-031b-40a9-8904-023f7389963b");
-            Transaction transaction = new Transaction(ActiveDocument);
-
-            transaction.Start($"Транзакция - {ActiveElement.Name}");
-            ActiveElement.get_Parameter(DNS_panelMark).Set(LongMark);
-            ActiveElement.get_Parameter(ADSK_panelMark).Set(ShortMark);
-
-            transaction.Commit();
-        }
+        
         private string GetPanelCode()
         {
             var elementFamily = ActiveElement as FamilyInstance;

@@ -88,6 +88,7 @@
     <Compile Include="StructuralApps\Panel\IPerforated.cs" />
     <Compile Include="StructuralApps\Panel\WallParts.cs" />
     <Compile Include="Utility\Assemblies.cs" />
+    <Compile Include="Utility\WarningDiscard.cs" />
     <Compile Include="Utility\Marks.cs" />
     <Compile Include="Utility\Openings.cs" />
     <Compile Include="Utility\Parts.cs" />
@@ -113,6 +114,7 @@
     <Compile Include="StructuralApps\Panel\NS_Panel.cs" />
     <Compile Include="StructuralApps\Panel\Panel.cs" />
     <Compile Include="StructuralApps\StructureType.cs" />
+    <Compile Include="Utility\StructComparison.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="PanelTools_v2.addin" />
@@ -156,9 +158,7 @@
   <ItemGroup>
     <None Include="Resources\Test.ico" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Panel\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <None Include="Resources\DSK_Prim.png" />
   </ItemGroup>

@@ -17,12 +17,11 @@ namespace DSKPrim.PanelTools_v2.StructuralApps
             NS = 0x00000001, // 1
             VS = 0x00000002, //2
             PP = 0x00000003,//3
-            VS_elev = 0x00000004, //4
+//4
             BP = 0x0000003D,//61
-            VS_balc = 0x0000003E, //62      
+ //62      
             PS = 0x00000007, //7
-            Balcony = VS_balc | BP,
-            VS_all = VS_balc | VS_elev | VS
+            None = 0x00000008
         }
 
         public StructureType(Element element)
@@ -32,7 +31,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps
 
         public string GetPanelType(Element element)
         {
-            if (element.Name.Contains("НС"))
+            if (element.Name.Contains("НС") || element.Name.Contains("есущая"))
             {
                 return Panels.NS.ToString();
             }
@@ -54,7 +53,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps
             }
             else
             {
-                return Panels.NS.ToString();
+                return Panels.None.ToString();
             }
         }
 

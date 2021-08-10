@@ -44,7 +44,7 @@ namespace DSKPrim.PanelTools_v2.Utility
         /// <param name="builtInCategory">К какой категории принадлежат искомые элементы</param>
         /// <param name="nameSubstring">Часть имени искомых элементов</param>
         /// <returns></returns>
-        public static List<Element> IntersectedOpenings(Element element, Document document, bool windows)
+        public static List<Element> IntersectedOpenings(Element element, RevitLinkInstance revitLink, Document document, bool windows)
         {
             List<Element>  IntersectedElements = new List<Element>();
             Options options = new Options();
@@ -55,17 +55,22 @@ namespace DSKPrim.PanelTools_v2.Utility
             List<Element> elems;
             if (windows)
             {
-                elems = archDoc.getWindows();
+                elems = archDoc.Windows;
             }
             else
             {
-                elems = archDoc.getDoors();
+                elems = archDoc.Doors;
             }
+
+            XYZ transform = revitLink.GetTransform().Origin;
 
             foreach (var item in elems)
             {
-                LocationPoint locationPoint = (LocationPoint)item.Location;
-                if (Geometry.InBox(panelBbox, locationPoint.Point))
+                LocationPoint locationPointBase = (LocationPoint)item.Location;
+                
+                XYZ newPoint = new XYZ(locationPointBase.Point.X + transform.X, locationPointBase.Point.Y + transform.Y, locationPointBase.Point.Z + transform.Z);
+
+                if (Geometry.InBox(panelBbox, newPoint))
                 {
                     IntersectedElements.Add(item);
                 }

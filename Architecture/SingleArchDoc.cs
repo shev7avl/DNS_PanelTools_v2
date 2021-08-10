@@ -14,18 +14,21 @@ namespace DSKPrim.PanelTools_v2.StructuralApps
 
         private Document Document;
 
-        private List<Element> Windows;
+        public List<Element> Windows { get; private set; }
 
-        private List<Element> Doors;
+        public List<Element> Doors { get; private set; }
+
+        public Transform Transform;
 
         private SingleArchDoc(Document document)
         {
             Document = document;
 
-            IEnumerable<Element> elements = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_Windows).WhereElementIsNotElementType().ToElements().Where<Element>(o => o.Name.Contains("DNS_"));
+
+            IEnumerable<Element> windows = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_Windows).WhereElementIsNotElementType().ToElements().Where<Element>(o => o.Name.Contains("DNS_"));
             IEnumerable<Element> doors = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_Doors).WhereElementIsNotElementType().ToElements();
 
-            Windows = elements.ToList();
+            Windows = windows.ToList();
             Doors = doors.ToList();
         }
 
@@ -38,15 +41,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps
             return instance;
         }
 
-        public List<Element> getWindows()
-        {
-            return Windows;
-        }
-
-        public List<Element> getDoors()
-        {
-            return Doors;
-        }
+       
 
         public void Dispose()
         {

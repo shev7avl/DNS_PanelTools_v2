@@ -18,6 +18,8 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 
         public override string ShortMark { get; set; }
 
+        public override string Index { get; set; }
+
 
         public PP_Panel(Document document, Element element)
         {
@@ -27,22 +29,22 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
         public override void CreateMarks()
         {
             LongMark = $"ПП {GetPanelCode()}{GetClosureCode()}";
-            ShortMark = LongMark.Split('_')[0];
+
+            Guid ADSK_panelNum = new Guid("a531f6df-1e58-48e0-8c14-77cf7c1809b8");
+            if (ActiveElement.get_Parameter(ADSK_panelNum).AsString() == "")
+            {
+                Index = $"{ActiveElement.Id}-Id";
+            }
+            else
+            {
+                Index = ActiveElement.get_Parameter(ADSK_panelNum).AsString();
+            }
+
+            ShortMark = $"{LongMark.Split('_')[0]} - {Index}";
+
             SetMarks();
         }
 
-        private void SetMarks()
-        {
-            Guid DNS_panelMark = new Guid("db2bee76-ce6f-4203-9fde-b8f34f3477b5");
-            Guid ADSK_panelMark = new Guid("92ae0425-031b-40a9-8904-023f7389963b");
-            Transaction transaction = new Transaction(ActiveDocument);
-
-            transaction.Start($"Транзакция - {ActiveElement.Name}");
-            ActiveElement.get_Parameter(DNS_panelMark).Set(LongMark);
-            ActiveElement.get_Parameter(ADSK_panelMark).Set(ShortMark);
-
-            transaction.Commit();
-        }
         private string GetPanelCode()
         {
             string i3 = Marks.AsDecimString(ActiveElement, "ADSK_Размер_Длина");

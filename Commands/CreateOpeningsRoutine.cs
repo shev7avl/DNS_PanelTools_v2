@@ -26,14 +26,34 @@ namespace DSKPrim.PanelTools_v2.Commands
         public override void ExecuteRoutine(ExternalCommandData commandData)
         {
             Document = commandData.Application.ActiveUIDocument.Document;
+            IEnumerable<Element> fecLinksARCH = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_RvtLinks).WhereElementIsNotElementType().Where(doc => doc.Name.Contains("_АР"));
+
+            if (fecLinksARCH.Count() == 0)
+            {
+                throw new NullReferenceException("Не вижу связей");
+            }
+
+            Stopwatch stopWatch = new Stopwatch();
+            stopWatch.Start();
+
+            
             SingleStructDoc structDoc = SingleStructDoc.getInstance(Document);
 
-            IEnumerable<Element> fecLinksARCH = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_RvtLinks).WhereElementIsNotElementType().Where(doc => doc.Name.Contains("_АР"));
+            stopWatch.Stop();
+            // Get the elapsed time as a TimeSpan value.
+            TimeSpan ts = stopWatch.Elapsed;
+
+            // Format and display the TimeSpan value.
+            string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                ts.Hours, ts.Minutes, ts.Seconds,
+                ts.Milliseconds / 10);
+            Debug.WriteLine(elapsedTime, "RunTime");
+            Debug.WriteLine($"{structDoc.PanelMarks.Count} panels analyzed");
+
+           
 
             FilteredElementCollector fecStruct = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_StructuralFraming).WhereElementIsNotElementType();
             FilteredElementCollector fecWalls = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_Walls).WhereElementIsNotElementType();
-
-            LinkedArch = fecLinksARCH.Cast<RevitLinkInstance>().ToList()[0].GetLinkDocument();
 
             List<Element> els;
             if (fecStruct.GetElementCount() == 0)
@@ -45,16 +65,31 @@ namespace DSKPrim.PanelTools_v2.Commands
                 els = fecStruct.Cast<Element>().ToList();
             }
 
-            foreach (Element item in els)
+
+            foreach (RevitLinkInstance link in fecLinksARCH.Cast<RevitLinkInstance>().ToList())
             {
-                SetPanelBehaviour(item);
-                if (Behaviour is IPerforable perforable)
+                RevitLinkInstance revitLink = link;
+                LinkedArch = revitLink.GetLinkDocument();
+
+                SingleArchDoc archDoc = SingleArchDoc.getInstance(LinkedArch);
+
+                
+
+                foreach (Element item in els)
                 {
-                    Debug.WriteLine($"Панель: {item.Name}; Id: {item.Id}");
-                    IPerforable panel = perforable;
-                    panel.GetOpenings(LinkedArch, out List<Element> IntersectedWindows);
-                    panel.Perforate(IntersectedWindows);
+
+                    SetPanelBehaviour(item);
+                    if (Behaviour is IPerforable perforable)
+                    {
+
+                        IPerforable panel = perforable;
+                        panel.GetOpeningsFromLink(LinkedArch, revitLink, out List<Element> IntersectedWindows);
+                        Debug.WriteLine($"Панель: {item.Name}; Id: {item.Id}; Проёмов: {IntersectedWindows.Count}");
+                        panel.Perforate(IntersectedWindows, revitLink);
+                    }
                 }
+
+                archDoc.Dispose();
             }
 
 

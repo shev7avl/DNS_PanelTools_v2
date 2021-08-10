@@ -23,30 +23,37 @@ namespace DSKPrim.PanelTools_v2.Commands
         {
             StructureType structureType = new StructureType(element);
             string type = structureType.GetPanelType(element);
-            if (type == StructureType.Panels.NS.ToString())
+            if (type != StructureType.Panels.None.ToString())
             {
-                NS_Panel nS = new NS_Panel(Document, element);
-                Behaviour = nS;
+                if (type == StructureType.Panels.NS.ToString())
+                {
+                    NS_Panel nS = new NS_Panel(Document, element);
+                    Behaviour = nS;
+                }
+                if (type == StructureType.Panels.VS.ToString())
+                {
+                    VS_Panel vS = new VS_Panel(Document, element);
+                    Behaviour = vS;
+                }
+                if (type == StructureType.Panels.BP.ToString())
+                {
+                    BP_Panel bP = new BP_Panel(Document, element);
+                    Behaviour = bP;
+                }
+                if (type == StructureType.Panels.PS.ToString())
+                {
+                    PS_Panel pS = new PS_Panel(Document, element);
+                    Behaviour = pS;
+                }
+                if (type == StructureType.Panels.PP.ToString())
+                {
+                    PP_Panel pP = new PP_Panel(Document, element);
+                    Behaviour = pP;
+                }
             }
-            if (type == StructureType.Panels.VS.ToString())
+            else
             {
-                VS_Panel vS = new VS_Panel(Document, element);
-                Behaviour = vS;
-            }
-            if (type == StructureType.Panels.BP.ToString())
-            {
-                BP_Panel bP = new BP_Panel(Document, element);
-                Behaviour = bP;
-            }
-            if (type == StructureType.Panels.PS.ToString())
-            {
-                PS_Panel pS = new PS_Panel(Document, element);
-                Behaviour = pS;
-            }
-            if (type == StructureType.Panels.PP.ToString())
-            {
-                PP_Panel pP = new PP_Panel(Document, element);
-                Behaviour = pP;
+                Behaviour = null;
             }
 
         }

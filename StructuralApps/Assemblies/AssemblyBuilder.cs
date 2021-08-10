@@ -24,8 +24,12 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
         {
             ActiveDoc = document;
             SingleStructDoc marksList = SingleStructDoc.getInstance(ActiveDoc);
-            MarksList = marksList.GetPanelMarks();
+            MarksList = marksList.PanelMarks;
         }
+
+        public AssemblyBuilder()
+        { }
+
         #region Создание коротких индексов
         public void AddIndex(string panelSubString)
         {
@@ -117,13 +121,13 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
                 if (item is NS_Panel _Panel)
                 {
                     _Panel = (NS_Panel)item;
-                    if (_Panel.GetPVLList() != null)
-                    {
-                        foreach (Element frontPVL in _Panel.GetPVLList())
-                        {
-                            elementIds.Add(frontPVL.Id);
-                        }
-                    }
+                    //if (_Panel.GetPVLList() != null)
+                    //{
+                    //    foreach (Element frontPVL in _Panel.GetPVLList())
+                    //    {
+                    //        elementIds.Add(frontPVL.Id);
+                    //    }
+                    //}
                     
                 }
 
@@ -184,23 +188,47 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
 
         }
 
-        public void DisassembleAll()
+        public void DisassembleAll(Document document)
         {
-            List<AssemblyInstance> assemblies = new FilteredElementCollector(ActiveDoc).OfCategory(BuiltInCategory.OST_Assemblies).WhereElementIsNotElementType().Cast<AssemblyInstance>().ToList();
+            List<AssemblyInstance> assemblies = new FilteredElementCollector(document).OfCategory(BuiltInCategory.OST_Assemblies).WhereElementIsNotElementType().Cast<AssemblyInstance>().ToList();
 
-            using (Transaction transaction = new Transaction(ActiveDoc, "Разбираем сборки"))
+            using (Transaction transaction = new Transaction(document, "Разбираем сборки"))
             {
+                
 
                 foreach (AssemblyInstance assembly in assemblies)
                 {
-                    transaction.Start();
-                    assembly.Disassemble();
-                    transaction.Commit();
-                }
+                    if (Eligible(assembly) )
+                    {
+                        transaction.Start();
 
+                        FailureHandlingOptions failOpt
+          = transaction.GetFailureHandlingOptions();
+
+                        failOpt.SetFailuresPreprocessor(
+                          new WarningSwallower());
+
+                        transaction.SetFailureHandlingOptions(failOpt);
+
+                        assembly.Disassemble();
+                        transaction.Commit();
+                    }                  
+                }
             }
         }
+
+        private bool Eligible(AssemblyInstance assembly)
+        {
+            if (assembly.AssemblyTypeName.Contains("НС") ||
+                assembly.AssemblyTypeName.Contains("ВС") ||
+                assembly.AssemblyTypeName.Contains("ПС") ||
+                assembly.AssemblyTypeName.Contains("ПП") ||
+                assembly.AssemblyTypeName.Contains("БП")) return true;
+            else return false;
+        }
         #endregion
+
+
 
         #region Сравнение панелей и сборок
         private int CompareAssembliesByName(AssemblyInstance x, AssemblyInstance y)
@@ -250,4 +278,31 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
         #endregion
 
     }
+
+    public class WarningSwallower : IFailuresPreprocessor
+    {
+        public FailureProcessingResult PreprocessFailures(
+      FailuresAccessor a)
+        {
+            IList<FailureMessageAccessor> failures
+            = a.GetFailureMessages();
+
+            foreach (FailureMessageAccessor f in failures)
+            {
+                FailureSeverity fseverity = a.GetSeverity();
+
+                if (fseverity == FailureSeverity.Warning)
+                {
+                    a.DeleteWarning(f);
+                }
+                else
+                {
+                    a.ResolveFailure(f);
+                    return FailureProcessingResult.ProceedWithCommit;
+                }
+            }
+            return FailureProcessingResult.Continue;
+        }
+    }
+
 }

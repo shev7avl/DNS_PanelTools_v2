@@ -10,8 +10,8 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
     public interface IPerforable
     {
 
-        void GetOpenings(Document linkedArch, out List<Element> IntersectedWindows);
+        void GetOpeningsFromLink(Document linkedArch, RevitLinkInstance revitLink, out List<Element> IntersectedWindows);
 
-        void Perforate(List<Element> IntersectedWindows);
+        void Perforate(List<Element> IntersectedWindows, RevitLinkInstance revitLink);
     }
 }

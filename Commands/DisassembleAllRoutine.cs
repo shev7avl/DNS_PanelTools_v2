@@ -19,9 +19,18 @@ namespace DSKPrim.PanelTools_v2.Commands
         {
             Document = commandData.Application.ActiveUIDocument.Document;
 
-            AssemblyBuilder assemblyBuilder = new AssemblyBuilder(Document);
-            assemblyBuilder.DisassembleAll();
+            AssemblyBuilder assemblyBuilder = new AssemblyBuilder();
+
+            
+
+            assemblyBuilder.DisassembleAll(Document);
 
         }
+
+
     }
+
+
+    
+
 }

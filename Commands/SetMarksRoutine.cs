@@ -32,7 +32,11 @@ namespace DSKPrim.PanelTools_v2.Commands
             foreach (var item in els)
             {
                 SetPanelBehaviour(item);
-                Behaviour.CreateMarks();
+                if (Behaviour != null)
+                {
+                    Behaviour.CreateMarks();
+                }
+                
             }
             transactionGroup.Assimilate();
             transactionGroup.Dispose();

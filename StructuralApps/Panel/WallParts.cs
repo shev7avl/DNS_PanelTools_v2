@@ -24,6 +24,8 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 
         public override string LongMark { get; set; }
 
+        public override string Index { get; set; }
+
         public override List<XYZ> IntersectedWindows { get; set; }
 
         private Document LinkedDocSTR;
@@ -50,10 +52,10 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
             ActiveElement = element;
         }
 
-        void IPerforable.GetOpenings(Document linkedArch, out List<Element> IntersectedWindows)
+        void IPerforable.GetOpeningsFromLink(Document linkedArch, RevitLinkInstance revitLink, out List<Element> IntersectedWindows)
         {
             SingleArchDoc archDoc = SingleArchDoc.getInstance(linkedArch);
-            List<Element> windows = archDoc.getWindows();
+            List<Element> windows = archDoc.Windows;
 
             IntersectedWindows = new List<Element>();
 
@@ -77,7 +79,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
             }
         }
 
-        void IPerforable.Perforate(List<Element> IntersectedWindows)
+        void IPerforable.Perforate(List<Element> IntersectedWindows, RevitLinkInstance revitLink)
         {
             IEnumerable<Element> familySymbols = new FilteredElementCollector(ActiveDocument).OfCategory(BuiltInCategory.OST_Windows).WhereElementIsElementType().Where(o => o.Name.Contains("DNS_ПроемДляПлитки"));
             FamilySymbol familySymbol = (FamilySymbol)familySymbols.First();
@@ -110,7 +112,9 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
             XYZ End = curve.Curve.GetEndPoint(0);
 
             SingleStructDoc marksList = SingleStructDoc.getInstance(LinkedDocSTR);
-            List<Panel> panels = marksList.GetPanelMarks();
+            List<Panel> panels = marksList.PanelMarks;
+
+
 
             foreach (Panel item in panels)
             {
@@ -169,6 +173,27 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
             FacadeParts = (List <ElementId>)ActiveElement.GetDependentElements(filter);
         }
 
+        public void ExcludeStitches()
+        {
+            ElementFilter categoryFilter = new ElementCategoryFilter(BuiltInCategory.OST_Parts);
+            List<ElementId> partsId = (List<ElementId>)ActiveElement.GetDependentElements(categoryFilter);
+            using (Transaction t = new Transaction(ActiveDocument, "excludin stitches"))
+            {
+                t.Start();
+                foreach (ElementId id in partsId)
+                {
+                    Element item = ActiveDocument.GetElement(id);
+                    if (item.get_Parameter(BuiltInParameter.DPART_AREA_COMPUTED).AsDouble() < 0.1)
+                    {
+                        Part part = (Part)item;
+                        part.Excluded = true;
+                    }
+                }
+                t.Commit();
+
+            }
+           
+        }
         
     }
 }

@@ -1,4 +1,5 @@
 ﻿
+
 namespace DSKPrim.PanelTools_v2.GUI
 {
     partial class PanelWizard
