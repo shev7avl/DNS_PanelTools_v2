@@ -35,6 +35,7 @@ namespace DSKPrim.PanelTools_v2.Commands
                 if (Behaviour != null)
                 {
                     Behaviour.CreateMarks();
+                    Behaviour.SetMarks();
                 }
                 
             }

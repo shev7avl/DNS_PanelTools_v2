@@ -24,7 +24,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
         public override string Index { get; set; }
 
         public List<ElementId> AssemblyElements { get; set; }
-        public List<ITransferable> OutList { get; set; }
+        public List<ElementId> OutList { get; set; }
         #endregion
 
         #region Constructor
@@ -56,31 +56,6 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
                 Element window2 = IntersectedWindows[1];
                 Utility.Openings.SetOpeningParams(ActiveDocument, revitLink, ActiveElement, window1, window2);
             }
-            else if (IntersectedWindows.Count >= 3)
-            {
-
-                Element window1 = IntersectedWindows[0];
-                Element window2 = IntersectedWindows[1];
-                Element window3 = IntersectedWindows[2];
-
-                Openings.CalculateOffset(revitLink, ActiveElement, window1, out double offsetLine);
-                Openings.CalculateOffset(revitLink, ActiveElement, window2, out double offsetLine1);
-                Openings.CalculateOffset(revitLink, ActiveElement, window3, out double offsetLine2);
-
-                if (offsetLine == offsetLine1)
-                {
-                    Utility.Openings.SetOpeningParams(ActiveDocument, revitLink, ActiveElement, window1, window3);
-                }
-                else if (offsetLine1 == offsetLine2)
-                {
-                    Utility.Openings.SetOpeningParams(ActiveDocument, revitLink, ActiveElement, window2, window3);
-                }
-                else
-                {
-                    Utility.Openings.SetOpeningParams(ActiveDocument, revitLink, ActiveElement, window1, window2);
-                }
-
-            }
 
             transaction.Assimilate();
         }
@@ -88,6 +63,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
         void IPerforable.GetOpeningsFromLink(Document linkedArch, RevitLinkInstance revitLink, out List<Element> IntersectedWindows)
         {
             IntersectedWindows = Geometry.IntersectedOpenings(ActiveElement, revitLink, linkedArch, windows: true);
+
         }
         #endregion
 
@@ -99,11 +75,32 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 
         public void TransferFromPanel(IAssembler panel)
         {
-            TransferRequested += ExTransferHandler;
-            TransferRequested += InTransferHandler;
-            TransferRequested.Invoke(panel, new EventArgs());
-            TransferRequested -= ExTransferHandler;
-            TransferRequested -= InTransferHandler;
+            if (ChangeClause(this, panel))
+            {
+
+                TransferRequested += ExTransferHandler;
+                TransferRequested += InTransferHandler;
+                TransferRequested.Invoke(panel, new EventArgs());
+                TransferRequested -= ExTransferHandler;
+                TransferRequested -= InTransferHandler;
+            }
+
+        }
+
+        private bool ChangeClause(IAssembler x, IAssembler y)
+        {
+            Panel xPanel = (Panel)x;
+            Panel yPanel = (Panel)y;
+
+            bool vSnSlvl = ((xPanel is NS_Panel && yPanel is VS_Panel) || (yPanel is NS_Panel && xPanel is VS_Panel)) && (xPanel.ActiveElement.LevelId == yPanel.ActiveElement.LevelId);
+
+            int lvlX = int.Parse(ActiveDocument.GetElement(xPanel.ActiveElement.LevelId).Name.Substring(ActiveDocument.GetElement(xPanel.ActiveElement.LevelId).Name.Length - 2, 2));
+            int lvlY = int.Parse(ActiveDocument.GetElement(yPanel.ActiveElement.LevelId).Name.Substring(ActiveDocument.GetElement(yPanel.ActiveElement.LevelId).Name.Length - 2, 2));
+
+            bool nSlvl = (xPanel is NS_Panel && yPanel is NS_Panel) && (lvlY - lvlX == 1);
+
+            return vSnSlvl || nSlvl;
+
         }
 
         public void InTransferHandler(object sender, EventArgs e)
@@ -111,8 +108,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
             IAssembler assembler = (IAssembler)sender;
             foreach (var item in assembler.OutList)
             {
-                DefiningBase defining = (DefiningBase)item;
-                assembler.AssemblyElements.Remove(defining.Id);
+                assembler.AssemblyElements.Remove(item);
             }
             assembler.OutList = null;
         }
@@ -120,10 +116,13 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
         public void ExTransferHandler(object sender, EventArgs e)
         {
             IAssembler assembler = (IAssembler)sender;
+            if (assembler.OutList == null)
+            {
+                assembler.SetAssemblyElements();
+            }
             foreach (var item in assembler.OutList)
             {
-                DefiningBase definingBase = (DefiningBase)item;
-                this.AssemblyElements.Add(definingBase.Id);
+                this.AssemblyElements.Add(item);
             }
         }
 
@@ -133,13 +132,24 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
             {
                 AssemblyElements = new List<ElementId>();
             }
+            FamilyInstance family = (FamilyInstance)ActiveElement;
+
+            foreach (var item in family.GetSubComponentIds())
+            {
+                this.AssemblyElements.Add(item);
+            }
+
+            FamilyInstance familyInstance = (FamilyInstance) ActiveElement;
+            ICollection<ElementId> elementIds0 = familyInstance.GetSubComponentIds();
+
+            //Удаляем нижние элементы
+            int q = ActiveElement.GetParameters("Количество пазов")[0].AsInteger() * 5;
+
+            AssemblyElements.Sort(CompareElementIdsByZCoord);
+            OutList = AssemblyElements.GetRange(0, q);
+            AssemblyElements.RemoveRange(0, q);
 
             this.AssemblyElements.Add(ActiveElement.Id);
-
-            foreach (Element item in ActiveElement.GetSubelements().Cast<Element>().ToList())
-            {
-                this.AssemblyElements.Add(item.Id);
-            }
 
         }
 
@@ -147,8 +157,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 
         public override void CreateMarks()
         {
-            LongMark = $"НС {GetPanelCode()}_{GetClosureCode()}";
-            
+            LongMark = $"НС {GetPanelCode()}_{GetClosureCode()}";        
 
             Guid ADSK_panelNum = new Guid("a531f6df-1e58-48e0-8c14-77cf7c1809b8");
             if (ActiveElement.get_Parameter(ADSK_panelNum).AsString() == "")
@@ -161,8 +170,6 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
             }
 
             ShortMark = $"НС {LongMark.Split('_')[1]} - {Index}";
-
-            SetMarks();
 
         }
 
@@ -235,7 +242,28 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
             return windows;
         }
 
-       
+        private int CompareElementIdsByZCoord(ElementId x, ElementId y)
+        {
+            Element elX = ActiveDocument.GetElement(x);
+            Element elY = ActiveDocument.GetElement(y);
+
+            BoundingBoxXYZ boxX = elX.get_Geometry(new Options()).GetBoundingBox();
+            BoundingBoxXYZ boxY = elY.get_Geometry(new Options()).GetBoundingBox();
+
+            if (boxX.Min.Z > boxY.Min.Z)
+            {
+                return 1;
+            }
+            else if (boxX.Min.Z == boxY.Min.Z)
+            {
+                return 0;
+            }
+            else
+            {
+                return -1;
+            }
+
+        }
 
 
     }

@@ -20,7 +20,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps
 
         private List<Element> frontPVL;
 
-        private SingleStructDoc(Document document)
+        private SingleStructDoc(Document document, bool exist = false)
         {
             Document = document;
 
@@ -37,7 +37,15 @@ namespace DSKPrim.PanelTools_v2.StructuralApps
                 SetPanelBehaviour(item);
                 if (Behaviour != null)
                 {
-                    Behaviour.CreateMarks();
+                    if (exist)
+                    {
+                        Behaviour.ReadMarks();
+                    }
+                    else
+                    {
+                        Behaviour.CreateMarks();
+                    }
+                    
                     PanelMarks.Add(Behaviour);
                     Behaviour = null;
                 }
@@ -95,11 +103,11 @@ namespace DSKPrim.PanelTools_v2.StructuralApps
             else return 0;
         }
 
-        public static SingleStructDoc getInstance(Document document)
+        public static SingleStructDoc getInstance(Document document, bool exist = false)
         {
             if (instance == null)
             {
-                instance = new SingleStructDoc(document);
+                instance = new SingleStructDoc(document, exist);
             }
             return instance;
         }

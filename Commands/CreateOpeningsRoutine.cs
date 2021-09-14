@@ -35,7 +35,6 @@ namespace DSKPrim.PanelTools_v2.Commands
 
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
-
             
             SingleStructDoc structDoc = SingleStructDoc.getInstance(Document);
 
@@ -50,8 +49,6 @@ namespace DSKPrim.PanelTools_v2.Commands
             Debug.WriteLine(elapsedTime, "RunTime");
             Debug.WriteLine($"{structDoc.PanelMarks.Count} panels analyzed");
 
-           
-
             FilteredElementCollector fecStruct = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_StructuralFraming).WhereElementIsNotElementType();
             FilteredElementCollector fecWalls = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_Walls).WhereElementIsNotElementType();
 
@@ -65,7 +62,6 @@ namespace DSKPrim.PanelTools_v2.Commands
                 els = fecStruct.Cast<Element>().ToList();
             }
 
-
             foreach (RevitLinkInstance link in fecLinksARCH.Cast<RevitLinkInstance>().ToList())
             {
                 RevitLinkInstance revitLink = link;
@@ -73,27 +69,34 @@ namespace DSKPrim.PanelTools_v2.Commands
 
                 SingleArchDoc archDoc = SingleArchDoc.getInstance(LinkedArch);
 
-                
+                List<IPerforable> intersected = new List<IPerforable>();
 
-                foreach (Element item in els)
+                int counter = els.Count;
+                for (int i = 0; i < counter; i++)
                 {
-
+                    Element item = els[i];
                     SetPanelBehaviour(item);
                     if (Behaviour is IPerforable perforable)
                     {
-
                         IPerforable panel = perforable;
                         panel.GetOpeningsFromLink(LinkedArch, revitLink, out List<Element> IntersectedWindows);
-                        Debug.WriteLine($"Панель: {item.Name}; Id: {item.Id}; Проёмов: {IntersectedWindows.Count}");
-                        panel.Perforate(IntersectedWindows, revitLink);
+                        if (IntersectedWindows.Count>0)
+                        {
+                            intersected.Add(panel);
+                        }
                     }
                 }
 
+                foreach (IPerforable item in intersected)
+                {
+                    item.GetOpeningsFromLink(LinkedArch, revitLink, out List<Element> IntersectedWindows);
+                    item.Perforate(IntersectedWindows, revitLink);
+                }
+
                 archDoc.Dispose();
+                structDoc.Dispose();
             }
 
-
-            structDoc.Dispose();
         }
         
     }
