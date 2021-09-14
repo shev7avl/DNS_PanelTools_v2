@@ -9,7 +9,7 @@ using DSKPrim.PanelTools_v2.Utility;
 
 namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 {
-    public class BP_Panel : Panel
+    public class BP_Panel : Panel, IAssembler
     {
         #region Fields
         public override Document ActiveDocument { get; set; }
@@ -21,6 +21,10 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
         public override string ShortMark { get; set; }
 
         public override string Index { get; set; }
+        public List<ElementId> AssemblyElements { get; set; }
+        public List<ElementId> OutList { get; set; }
+        public List<ElementId> PVLList { get; set; }
+        public IAssembler TransferPal { get; set; }
 
         #endregion
 
@@ -31,6 +35,8 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
             ActiveElement = element;
 
         }
+
+        public event TransferHandler TransferRequested;
         #endregion
 
         #region Public Methods
@@ -74,6 +80,40 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
             string i12 = familySymbol.LookupParameter("Отверстия_РасстояниеМеждуПоY").AsValueString();
 
             return $"{i3}.{i4}.{i5}_{i6}.{i7}.{i8}.1_{i9}.{i10}_{i11}.{i12}";
+        }
+
+        public void SetAssemblyElements()
+        {
+            AssemblyElements = new List<ElementId>();
+
+            FamilyInstance family = (FamilyInstance)ActiveElement;
+
+            foreach (var item in family.GetSubComponentIds())
+            {
+                this.AssemblyElements.Add(item);
+                FamilyInstance element = (FamilyInstance)ActiveDocument.GetElement(item);
+                if (element.Name.Contains("Каркас") || element.Name.Contains("Сетка") || element.Name.Contains("Пенополистирол_Массив"))
+                {
+                    AssemblyElements.AddRange(element.GetSubComponentIds());
+                }
+            }
+
+            this.AssemblyElements.Add(ActiveElement.Id);
+        }
+
+        public void TransferFromPanel(IAssembler panel)
+        {
+           
+        }
+
+        public void InTransferHandler(object senger, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ExTransferHandler(object senger, EventArgs e)
+        {
+            throw new NotImplementedException();
         }
         #endregion
 

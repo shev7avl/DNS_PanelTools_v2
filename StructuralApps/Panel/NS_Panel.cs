@@ -25,6 +25,8 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 
         public List<ElementId> AssemblyElements { get; set; }
         public List<ElementId> OutList { get; set; }
+
+        public List<ElementId> PVLList { get; set; }
         #endregion
 
         #region Constructor
@@ -75,16 +77,19 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 
         public void TransferFromPanel(IAssembler panel)
         {
+            if (panel.AssemblyElements == null)
+            {
+                panel.SetAssemblyElements();
+            }
+
             if (ChangeClause(this, panel))
             {
-
                 TransferRequested += ExTransferHandler;
                 TransferRequested += InTransferHandler;
                 TransferRequested.Invoke(panel, new EventArgs());
                 TransferRequested -= ExTransferHandler;
                 TransferRequested -= InTransferHandler;
             }
-
         }
 
         private bool ChangeClause(IAssembler x, IAssembler y)
@@ -106,44 +111,86 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
         public void InTransferHandler(object sender, EventArgs e)
         {
             IAssembler assembler = (IAssembler)sender;
-            foreach (var item in assembler.OutList)
+            if (assembler is NS_Panel)
             {
-                assembler.AssemblyElements.Remove(item);
+                foreach (var item in assembler.OutList)
+                {
+                    assembler.AssemblyElements.Remove(item);
+                }
+                assembler.OutList = null;
             }
-            assembler.OutList = null;
         }
 
         public void ExTransferHandler(object sender, EventArgs e)
         {
             IAssembler assembler = (IAssembler)sender;
+            
             if (assembler.OutList == null)
             {
                 assembler.SetAssemblyElements();
             }
-            foreach (var item in assembler.OutList)
+
+            if (assembler is NS_Panel)
             {
-                this.AssemblyElements.Add(item);
+                foreach (var item in assembler.OutList)
+                {
+                    if (IfIntersects(this, item))
+                    {
+                        this.AssemblyElements.Add(item);
+                    }
+                    
+                }
             }
+
+            else if (assembler is VS_Panel)
+            {
+                foreach (var item in assembler.PVLList)
+                {
+                    if (IfIntersects(this, item))
+                    {
+                        this.AssemblyElements.Add(item);
+                    }
+                }
+            }
+           
+        }
+
+        private bool IfIntersects(IAssembler assembler, ElementId elementId)
+        {
+            Element element = ActiveDocument.GetElement(elementId);
+            LocationPoint _point = (LocationPoint)element.Location;
+            XYZ point = _point.Point;
+
+            Panel panel = (Panel)assembler;
+            BoundingBoxXYZ boxXYZ = panel.ActiveElement.get_Geometry(new Options()).GetBoundingBox();
+
+            return Utility.Geometry.InBox(boxXYZ, point);
+
         }
 
         public void SetAssemblyElements()
         {
-            if (AssemblyElements == null)
-            {
                 AssemblyElements = new List<ElementId>();
-            }
+
             FamilyInstance family = (FamilyInstance)ActiveElement;
 
             foreach (var item in family.GetSubComponentIds())
             {
                 this.AssemblyElements.Add(item);
+                FamilyInstance element = (FamilyInstance)ActiveDocument.GetElement(item);
+                if (element.Name.Contains("Каркас") || element.Name.Contains("Сетка") || element.Name.Contains("Пенополистирол_Массив"))
+                {
+                    AssemblyElements.AddRange(element.GetSubComponentIds());
+                }
             }
 
-            FamilyInstance familyInstance = (FamilyInstance) ActiveElement;
-            ICollection<ElementId> elementIds0 = familyInstance.GetSubComponentIds();
-
             //Удаляем нижние элементы
-            int q = ActiveElement.GetParameters("Количество пазов")[0].AsInteger() * 5;
+            int n = 1;
+            if (family.Symbol.Family.Name.Contains("Medium"))
+            {
+                n = 5;
+            }
+            int q = ActiveElement.GetParameters("Количество пазов")[0].AsInteger() * n;
 
             AssemblyElements.Sort(CompareElementIdsByZCoord);
             OutList = AssemblyElements.GetRange(0, q);

@@ -15,6 +15,8 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 
         List<ElementId> OutList { get; set; }
 
+        List<ElementId> PVLList { get; set; }
+
         IAssembler TransferPal { get; set; }
 
         void SetAssemblyElements();

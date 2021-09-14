@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using System.Diagnostics;
+using System.Collections;
 
 namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
 {
@@ -18,7 +19,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
 
         private List<Panel.Panel> MarksList;
 
-        private Document ActiveDoc;
+        private Document ActiveDoc { get; set; }
 
         public AssemblyBuilder(Document document)
         {
@@ -30,26 +31,6 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
         public AssemblyBuilder()
         { }
 
-        #region Создание коротких индексов
-       
-        private bool PanelExists(Panel.Panel item)
-        {
-            bool exists = false;
-            foreach (int key in IndexMarkPairs.Keys)
-            {
-                if (item.Equal(IndexMarkPairs[key]))
-                {
-                    exists = true;
-                    break;
-                }
-                else
-                {
-                    exists = false;
-                }
-            }
-            return exists;
-        }
-        #endregion
 
         #region Создание сборок
 
@@ -143,32 +124,83 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
         public void LeaveUniquePanels()
         {
             List<AssemblyInstance> assemblies = new FilteredElementCollector(ActiveDoc).OfCategory(BuiltInCategory.OST_Assemblies).WhereElementIsNotElementType().Cast<AssemblyInstance>().ToList();
-            List<AssemblyInstance> disposables = new List<AssemblyInstance>();
-
             assemblies.Sort(CompareAssembliesByName);
 
-            AssemblyInstance as1 = assemblies[0];
-            for (int i = 1; i < assemblies.Count; i++)
+            List<AssemblyType> assemblyTypes = new FilteredElementCollector(ActiveDoc).OfClass(typeof(AssemblyType)).WhereElementIsElementType().Cast<AssemblyType>().ToList();
+
+            List<List<AssemblyInstance>> instances = new List<List<AssemblyInstance>>();
+
+            foreach (var assemblyType in assemblyTypes)
             {
-                if (assemblies[i].AssemblyTypeName == as1.AssemblyTypeName)
+                List<AssemblyInstance> inst = new List<AssemblyInstance>();
+                foreach (var assembly in assemblies)
                 {
-                    disposables.Add(assemblies[i]);
+                    if (assembly.Name == assemblyType.Name)
+                    {
+                        inst.Add(assembly);
+                    }
                 }
-                as1 = assemblies[i];
+                instances.Add(inst);
             }
+
+            List<AssemblyInstance> disposables = new List<AssemblyInstance>();
+
+            IEqualityComparer<AssemblyInstance> comparer = new AssemblyComparer();
+
+
+            int amount = assemblies.Count;
+
+                foreach (var lst in instances)
+                {
+                int cnt = lst.Count;
+                lst.Sort(CompareAsembliesbyLvl);
+                    foreach (var assembly in lst)
+                    {
+                        if (cnt>1)
+                        {
+                            disposables.Add(assembly);
+                        }
+                        cnt--;
+                    }
+                        Debug.WriteLine($"Число сборок: {disposables.Count} / {amount - assemblyTypes.Count}");
+                    }
+    
+        
+            Debug.WriteLine($"Уникальные сборки определены");
+
 
             using (Transaction transaction = new Transaction(ActiveDoc, "Разбираем сборки"))
             {
-                
+                Debug.WriteLine("Начинаем разборку");
+                int counter = 1;
                 foreach (AssemblyInstance assembly in disposables)
                 {
+                    Debug.WriteLine($"Прогресс {counter} / {disposables.Count}");
                     transaction.Start();
-                    assembly.Disassemble();
+                    FailureHandlingOptions opts = transaction.GetFailureHandlingOptions();
+                    IFailuresPreprocessor preprocessor = new WarningSwallower();
+                    opts.SetFailuresPreprocessor(preprocessor);
+                    transaction.SetFailureHandlingOptions(opts);
+                    //assembly.Disassemble();
+                    ActiveDoc.Delete(assembly.Id);
                     transaction.Commit();
+                    counter++;
                 }
                
             }
 
+        }
+
+        private static IEnumerable<AssemblyInstance> GetFamilyInstancesByType(AssemblyType familyName, AssemblyInstance typeName)
+        {
+
+            //return new FilteredElementCollector(ActiveDoc)
+            //  .OfClass(typeof(AssemblyInstance))
+            //  .Cast<AssemblyInstance>()
+            //  .Where(x => x.AssemblyTypeName.Equals(familyName.Name)
+            //  .Where(x => x.Symbol.Family.Name.Equals(familyName)) // family
+            //  .Where(x => x.Name.Equals(typeName)); // family type
+            return null;
         }
 
         public void DisassembleAll(Document document)
@@ -219,20 +251,8 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
 
             string _postfixY = y.AssemblyTypeName;
 
-            int res = String.Compare(_postfixX, _postfixY);
+            return String.Compare(_postfixX, _postfixY);
 
-            if (res>0)
-            {
-                return 1;
-            }
-            else if (res == 0)
-            {
-                return 0;
-            }
-            else
-            {
-                return -1;
-            }
         }
 
         private int CompareMarksByName(Panel.Panel x, Panel.Panel y)
@@ -268,12 +288,35 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
 
         }
 
+        private int CompareAsembliesbyLvl(AssemblyInstance x, AssemblyInstance y)
+        {
+            LocationPoint locoPocoX = (LocationPoint)x.Location;
+            LocationPoint locoPocoY = (LocationPoint)y.Location;
+
+            XYZ X = locoPocoX.Point;
+            XYZ Y = locoPocoY.Point;
+
+            if (X.Z > Y.Z)
+            {
+                return 1;
+            }
+            else if (X.Z == Y.Z)
+            {
+                return 0;
+            }
+            else
+            {
+                return -1;
+            }
+
+        }
+
         #endregion
 
         #region убираем ненужные элементы
 
-        
-       
+
+
         #endregion
     }
 
@@ -304,4 +347,19 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
         }
     }
 
+    public class AssemblyComparer : IEqualityComparer<AssemblyInstance>
+    {
+
+
+
+        public bool Equals(AssemblyInstance x, AssemblyInstance y)
+        {
+                return x.AssemblyTypeName == y.AssemblyTypeName;
+        }
+
+        public int GetHashCode(AssemblyInstance obj)
+        {
+            return 1;
+        }
+    }
 }

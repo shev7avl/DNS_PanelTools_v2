@@ -58,6 +58,7 @@
     <Compile Include="Architecture\SingleArchDoc.cs" />
     <Compile Include="Architecture\SplitGeometry.cs" />
     <Compile Include="Architecture\SplitGeometry_bu.cs" />
+    <Compile Include="Commands\UniqueAssemblies.cs" />
     <Compile Include="Commands\DisassembleAllRoutine.cs" />
     <Compile Include="Commands\Run.cs" />
     <Compile Include="Commands\Routine.cs" />

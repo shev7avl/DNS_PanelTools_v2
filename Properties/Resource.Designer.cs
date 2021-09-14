@@ -61,6 +61,33 @@ namespace DSKPrim.PanelTools_v2.Properties {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на 5d369dfb-17a2-4ae2-a1a1-bdfc33ba7405.
+        /// </summary>
+        internal static string ADSK_Марка_изделия {
+            get {
+                return ResourceManager.GetString("ADSK_Марка изделия", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на a531f6df-1e58-48e0-8c14-77cf7c1809b8.
+        /// </summary>
+        internal static string ADSK_Номер_изделия {
+            get {
+                return ResourceManager.GetString("ADSK_Номер изделия", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на 61078a81-82f3-41e2-bcfd-ae64f9430577.
+        /// </summary>
+        internal static string DNS_Полная_марка_изделия {
+            get {
+                return ResourceManager.GetString("DNS_Полная марка изделия", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap DSK_Prim {

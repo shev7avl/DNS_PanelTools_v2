@@ -9,7 +9,7 @@ using DSKPrim.PanelTools_v2.Utility;
 
 namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 {
-    class VS_Panel : Panel, IPerforable
+    class VS_Panel : Panel, IPerforable, IAssembler
     {
         #region Fields
         public override Document ActiveDocument { get; set; }
@@ -19,6 +19,10 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
         public override string ShortMark { get; set; }
 
         public override string Index { get; set; }
+        public List<ElementId> AssemblyElements { get; set; }
+        public List<ElementId> OutList { get; set ; }
+        public List<ElementId> PVLList { get; set; }
+        public IAssembler TransferPal { get; set; }
 
         #endregion
 
@@ -28,6 +32,8 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
             ActiveDocument = document;
             ActiveElement = element;
         }
+
+        public event TransferHandler TransferRequested;
         #endregion
 
         #region Public Methods
@@ -36,7 +42,8 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 
             LongMark = $"ВС {GetPanelCode()}_{GetClosureCode()}";
 
-            Guid ADSK_panelNum = new Guid("a531f6df-1e58-48e0-8c14-77cf7c1809b8");
+            Guid ADSK_panelNum = new Guid(Properties.Resource.ADSK_Номер_изделия);
+
             if (ActiveElement.get_Parameter(ADSK_panelNum).AsString() == "")
             {
                 Index = $"{ActiveElement.Id}-Id";
@@ -47,9 +54,6 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
             }
 
             ShortMark = $"{LongMark.Split('_')[0]} - {Index}";
-
-
-            SetMarks();
 
         }
 
@@ -132,7 +136,128 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 
             return windows;
         }
+
+        public void SetAssemblyElements()
+        {
+            AssemblyElements = new List<ElementId>();
+            PVLList = new List<ElementId>();
+
+            FamilyInstance family = (FamilyInstance)ActiveElement;
+
+            foreach (var item in family.GetSubComponentIds())
+            {
+     
+                FamilyInstance element = (FamilyInstance)ActiveDocument.GetElement(item);
+
+                if (element.Name.Contains("орцевая"))
+                {
+                    PVLList.Add(item);
+                }
+                else
+                {
+                    this.AssemblyElements.Add(item);
+                    if (element.Name.Contains("Каркас") || element.Name.Contains("Сетка") || element.Name.Contains("Пенополистирол_Массив"))
+                    {
+                        AssemblyElements.AddRange(element.GetSubComponentIds());
+                    }
+                }
+
+
+            }
+
+            //Удаляем нижние элементы
+
+            int n = 1;
+            if (family.Symbol.Family.Name.Contains("Medium"))
+            {
+                n *= 5;
+            }
+            int q = ActiveElement.GetParameters("Количество пазов")[0].AsInteger() * n;
+
+            AssemblyElements.Sort(CompareElementIdsByZCoord);
+            OutList = AssemblyElements.GetRange(0, q);
+            AssemblyElements.RemoveRange(0, q);
+
+
+
+            this.AssemblyElements.Add(ActiveElement.Id);
+        }
+
+        public void TransferFromPanel(IAssembler panel)
+        {
+            if (ChangeClause(this, panel))
+            {
+
+                TransferRequested += ExTransferHandler;
+                TransferRequested += InTransferHandler;
+                TransferRequested.Invoke(panel, new EventArgs());
+                TransferRequested -= ExTransferHandler;
+                TransferRequested -= InTransferHandler;
+            }
+        }
+
+        private bool ChangeClause(IAssembler x, IAssembler y)
+        {
+            Panel xPanel = (Panel)x;
+            Panel yPanel = (Panel)y;
+
+            bool vSnSlvl = ((xPanel is NS_Panel && yPanel is VS_Panel) || (yPanel is NS_Panel && xPanel is VS_Panel)) && (xPanel.ActiveElement.LevelId == yPanel.ActiveElement.LevelId);
+
+            int lvlX = int.Parse(ActiveDocument.GetElement(xPanel.ActiveElement.LevelId).Name.Substring(ActiveDocument.GetElement(xPanel.ActiveElement.LevelId).Name.Length - 2, 2));
+            int lvlY = int.Parse(ActiveDocument.GetElement(yPanel.ActiveElement.LevelId).Name.Substring(ActiveDocument.GetElement(yPanel.ActiveElement.LevelId).Name.Length - 2, 2));
+
+            bool vSlvl = (xPanel is VS_Panel && yPanel is VS_Panel) && (lvlY - lvlX == 1);
+
+            return vSlvl;
+
+        }
+
+        public void InTransferHandler(object sender, EventArgs e)
+        {
+            IAssembler assembler = (IAssembler)sender;
+            foreach (var item in assembler.OutList)
+            {
+                assembler.AssemblyElements.Remove(item);
+            }
+            assembler.OutList = null;
+        }
+
+        public void ExTransferHandler(object sender, EventArgs e)
+        {
+            IAssembler assembler = (IAssembler)sender;
+            if (assembler.OutList == null)
+            {
+                assembler.SetAssemblyElements();
+            }
+            foreach (var item in assembler.OutList)
+            {
+                this.AssemblyElements.Add(item);
+            }
+        }
         #endregion
+
+        private int CompareElementIdsByZCoord(ElementId x, ElementId y)
+        {
+            Element elX = ActiveDocument.GetElement(x);
+            Element elY = ActiveDocument.GetElement(y);
+
+            BoundingBoxXYZ boxX = elX.get_Geometry(new Options()).GetBoundingBox();
+            BoundingBoxXYZ boxY = elY.get_Geometry(new Options()).GetBoundingBox();
+
+            if (boxX.Min.Z > boxY.Min.Z)
+            {
+                return 1;
+            }
+            else if (boxX.Min.Z == boxY.Min.Z)
+            {
+                return 0;
+            }
+            else
+            {
+                return -1;
+            }
+
+        }
 
     }
 }

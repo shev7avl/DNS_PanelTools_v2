@@ -9,7 +9,7 @@ using DSKPrim.PanelTools_v2.Utility;
 
 namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 {
-    public class PP_Panel : Panel
+    public class PP_Panel : Panel, IAssembler
     {
         public override Document ActiveDocument { get; set; }
         public override Element ActiveElement { get; set; }
@@ -19,13 +19,19 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
         public override string ShortMark { get; set; }
 
         public override string Index { get; set; }
-
+        public List<ElementId> AssemblyElements { get; set; }
+        public List<ElementId> OutList { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public List<ElementId> PVLList { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public IAssembler TransferPal { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public PP_Panel(Document document, Element element)
         {
             ActiveDocument = document;
             ActiveElement = element;
         }
+
+        public event TransferHandler TransferRequested;
+
         public override void CreateMarks()
         {
             LongMark = $"ПП {GetPanelCode()}{GetClosureCode()}";
@@ -73,5 +79,38 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
             return closureCode;
         }
 
+        public void SetAssemblyElements()
+        {
+            AssemblyElements = new List<ElementId>();
+
+            FamilyInstance family = (FamilyInstance)ActiveElement;
+
+            foreach (var item in family.GetSubComponentIds())
+            {
+                this.AssemblyElements.Add(item);
+                FamilyInstance element = (FamilyInstance)ActiveDocument.GetElement(item);
+                if (element.Name.Contains("Каркас") || element.Name.Contains("Сетка") || element.Name.Contains("Пенополистирол_Массив"))
+                {
+                    AssemblyElements.AddRange(element.GetSubComponentIds());
+                }
+            }
+
+            this.AssemblyElements.Add(ActiveElement.Id);
+        }
+
+        public void TransferFromPanel(IAssembler panel)
+        {
+            
+        }
+
+        public void InTransferHandler(object senger, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ExTransferHandler(object senger, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

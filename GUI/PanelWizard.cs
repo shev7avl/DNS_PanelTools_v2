@@ -90,7 +90,7 @@ namespace DSKPrim.PanelTools_v2.GUI
                 case (1):
                     this.CommandSelector.Items.Clear();
                     this.CommandSelector.Text = "";
-                    this.CommandSelector.Items.Add("Создать уникальные сборки");
+                    this.CommandSelector.Items.Add("Уникальные сборки");
                     this.CommandSelector.Items.Add("Создать виды и листы");
                     break;
                 case (2):
@@ -120,7 +120,8 @@ namespace DSKPrim.PanelTools_v2.GUI
                 case ("Разобрать сборки"):
                     Routine = new DisassembleAllRoutine();
                     break;
-                case ("Создать уникальные сборки"):
+                case ("Уникальные сборки"):
+                    Routine = new UniqueAssemblies();
                     break;
                 case ("Создать виды и листы"):
                     break;
