@@ -13,7 +13,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
     {
         List<ElementId> AssemblyElements { get; set; }
 
-        List<ITransferable> OutList { get; set; }
+        List<ElementId> OutList { get; set; }
 
         IAssembler TransferPal { get; set; }
 

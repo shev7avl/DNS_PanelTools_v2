@@ -30,6 +30,11 @@ namespace DSKPrim.PanelTools_v2.Utility
                     failuresAccessor.ResolveFailure(fma);
                     isResolved = true;
                 }
+                if (fma.GetSeverity() == FailureSeverity.Warning)
+                {
+                    failuresAccessor.DeleteWarning(fma);
+                    isResolved = true;
+                }
             }
 
             if (isResolved)

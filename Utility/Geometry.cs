@@ -70,7 +70,7 @@ namespace DSKPrim.PanelTools_v2.Utility
                 
                 XYZ newPoint = new XYZ(locationPointBase.Point.X + transform.X, locationPointBase.Point.Y + transform.Y, locationPointBase.Point.Z + transform.Z);
 
-                if (Geometry.InBox(panelBbox, newPoint))
+                if (Geometry.InBox(panelBbox, newPoint) && LevelEq(element, item))
                 {
                     IntersectedElements.Add(item);
                 }
@@ -78,7 +78,16 @@ namespace DSKPrim.PanelTools_v2.Utility
             return IntersectedElements;
         }
 
+        private static bool LevelEq(Element i1, Element i2)
+        {
+            string l1 = i1.get_Parameter(BuiltInParameter.FAMILY_LEVEL_PARAM).AsValueString();
+            string l2 = i2.get_Parameter(BuiltInParameter.FAMILY_LEVEL_PARAM).AsValueString();
 
+            string lv1 = l1.Substring(l1.Length - 2);
+            string lv2 = l2.Substring(l2.Length - 2);
+
+            return lv1 == lv2;
+        }
 
     }
 }

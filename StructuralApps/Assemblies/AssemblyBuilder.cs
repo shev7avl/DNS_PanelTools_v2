@@ -23,7 +23,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
         public AssemblyBuilder(Document document)
         {
             ActiveDoc = document;
-            SingleStructDoc marksList = SingleStructDoc.getInstance(ActiveDoc);
+            SingleStructDoc marksList = SingleStructDoc.getInstance(ActiveDoc, exist: true);
             MarksList = marksList.PanelMarks;
         }
 
@@ -31,47 +31,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
         { }
 
         #region Создание коротких индексов
-        public void AddIndex(string panelSubString)
-        {
-            IndexMarkPairs = new Dictionary<int, Panel.Panel>();
-            Debug.WriteLine("Словарь Марка - индекс");
-            Debug.WriteLine("------Начало словаря------");
-
-            SetIndexes(panelSubString);
-
-            Debug.WriteLine("------Конец словаря------");
-        }
-
-        private void SetIndexes(string panelSubString)
-        {
-            int counter = 1;
-            foreach (var mark in MarksList)
-            {
-                if (mark.LongMark.Contains(panelSubString))
-                {
-                    if (PanelExists(mark))
-                    {
-                        int index = 0;
-                        foreach (var key in IndexMarkPairs.Keys)
-                        {
-                            if (IndexMarkPairs[key].Equal(mark))
-                            {
-                                index = key;
-                            }
-                        }
-                        mark.SetIndex(index);
-                    }
-                    if (!PanelExists(mark))
-                    {
-                        IndexMarkPairs.Add(counter, mark);
-                        mark.SetIndex(counter, overwrite: true);
-                        Debug.WriteLine($"{mark.ShortMark}");
-                        counter++;
-                    }
-                }
-            }
-        }
-
+       
         private bool PanelExists(Panel.Panel item)
         {
             bool exists = false;
@@ -101,9 +61,29 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
             foreach (var item in MarksList)
             {
                 FamilyInstance familyInstance = (FamilyInstance)item.ActiveElement;
-                ICollection<ElementId> elementIds = familyInstance.GetSubComponentIds();
-                
+                ICollection<ElementId> elementIds0 = familyInstance.GetSubComponentIds();
+
+                //Удаляем нижние элементы
+                    int q = item.ActiveElement.GetParameters("Количество пазов")[0].AsInteger() * 5;
+                    List<ElementId> elements = (List<ElementId>)elementIds0;
+                    elements.Sort(CompareElementIdsByZCoord);
+                    elements.RemoveRange(0, q);
+                    ICollection<ElementId> elementIds = elements;
+
+
+
                 elementIds.Add(item.ActiveElement.Id);
+                List<ElementId> subSubElIds = new List<ElementId>();
+                foreach (var id in elementIds)
+                {
+                    FamilyInstance element = (FamilyInstance) ActiveDoc.GetElement(id);
+                    if (element.Name.Contains("Каркас") || element.Name.Contains("Сетка") || element.Name.Contains("Пенополистирол_Массив"))
+                    {
+                        subSubElIds.AddRange(element.GetSubComponentIds());
+                    }
+
+                }
+
                 if (item is VS_Panel)
                 {
                     ICollection<ElementId> essentials = new List<ElementId>();
@@ -118,9 +98,9 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
                     elementIds = essentials;
                     
                 }
-                if (item is NS_Panel _Panel)
+                if (item is NS_Panel Panel)
                 {
-                    _Panel = (NS_Panel)item;
+                    
                     //if (_Panel.GetPVLList() != null)
                     //{
                     //    foreach (Element frontPVL in _Panel.GetPVLList())
@@ -128,7 +108,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
                     //        elementIds.Add(frontPVL.Id);
                     //    }
                     //}
-                    
+
                 }
 
                 using (Transaction transaction = new Transaction(ActiveDoc, $"Создание сборки: {item.ShortMark}"))
@@ -139,6 +119,9 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
                     transaction.Commit();
                     transaction.Start();
                     assembly.AssemblyTypeName = item.ShortMark;
+                    transaction.Commit();
+                    transaction.Start();
+                    assembly.AddMemberIds(subSubElIds);
                     //создание видов
                     //View3D view = AssemblyViewUtils.Create3DOrthographic(ActiveDoc, assembly.Id);
                     //ViewSheet sheet1 = AssemblyViewUtils.CreateSheet(ActiveDoc, assembly.Id, ElementId.InvalidElementId);
@@ -153,7 +136,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
 
         #endregion
 
-
+        
 
         #region Разборка сборок
 
@@ -229,7 +212,6 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
         #endregion
 
 
-
         #region Сравнение панелей и сборок
         private int CompareAssembliesByName(AssemblyInstance x, AssemblyInstance y)
         {
@@ -259,13 +241,23 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
 
             string _panelNameY = y.LongMark;
 
-            int res = String.Compare(_panelNameX, _panelNameY);
+            return String.Compare(_panelNameX, _panelNameY);
 
-            if (res > 0)
+        }
+
+        private int CompareElementIdsByZCoord(ElementId x, ElementId y)
+        {
+            Element elX = ActiveDoc.GetElement(x);
+            Element elY = ActiveDoc.GetElement(y);
+
+            BoundingBoxXYZ boxX = elX.get_Geometry(new Options()).GetBoundingBox();
+            BoundingBoxXYZ boxY = elY.get_Geometry(new Options()).GetBoundingBox();
+
+            if (boxX.Min.Z > boxY.Min.Z)
             {
                 return 1;
             }
-            else if (res == 0)
+            else if (boxX.Min.Z == boxY.Min.Z)
             {
                 return 0;
             }
@@ -273,11 +265,18 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
             {
                 return -1;
             }
+
         }
 
         #endregion
 
+        #region убираем ненужные элементы
+
+        
+       
+        #endregion
     }
+
 
     public class WarningSwallower : IFailuresPreprocessor
     {

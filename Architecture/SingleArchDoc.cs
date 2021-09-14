@@ -26,7 +26,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps
 
 
             IEnumerable<Element> windows = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_Windows).WhereElementIsNotElementType().ToElements().Where<Element>(o => o.Name.Contains("DNS_"));
-            IEnumerable<Element> doors = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_Doors).WhereElementIsNotElementType().ToElements();
+            IEnumerable<Element> doors = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_Doors).WhereElementIsNotElementType().ToElements().Where<Element>(o => !o.Name.Contains("стекл"));
 
             Windows = windows.ToList();
             Doors = doors.ToList();
