@@ -23,9 +23,14 @@ namespace DSKPrim.PanelTools_v2.Commands
 
             SetRoutineBehaviour();
 
-            RoutineBehaviour.ExecuteRoutine(commandData);
+                RoutineBehaviour.ExecuteRoutine(commandData);
+                return Result.Succeeded;
 
-            return Result.Succeeded;
+                //return Result.Cancelled;
+
+            
+
+            
 
         }
 

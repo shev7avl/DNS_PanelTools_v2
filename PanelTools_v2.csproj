@@ -58,6 +58,7 @@
     <Compile Include="Architecture\SingleArchDoc.cs" />
     <Compile Include="Architecture\SplitGeometry.cs" />
     <Compile Include="Architecture\SplitGeometry_bu.cs" />
+    <Compile Include="Commands\SheetsAndViewsCreationRoutine.cs" />
     <Compile Include="Commands\UniqueAssemblies.cs" />
     <Compile Include="Commands\DisassembleAllRoutine.cs" />
     <Compile Include="Commands\Run.cs" />
@@ -69,6 +70,7 @@
       <DependentUpon>PanelWizard.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\IRoutineSettable.cs" />
+    <Compile Include="Logger\Logger.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -115,7 +117,6 @@
     <Compile Include="StructuralApps\Panel\NS_Panel.cs" />
     <Compile Include="StructuralApps\Panel\Panel.cs" />
     <Compile Include="StructuralApps\StructureType.cs" />
-    <Compile Include="Utility\StructComparison.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="PanelTools_v2.addin" />

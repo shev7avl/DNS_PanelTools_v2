@@ -349,9 +349,6 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
 
     public class AssemblyComparer : IEqualityComparer<AssemblyInstance>
     {
-
-
-
         public bool Equals(AssemblyInstance x, AssemblyInstance y)
         {
                 return x.AssemblyTypeName == y.AssemblyTypeName;

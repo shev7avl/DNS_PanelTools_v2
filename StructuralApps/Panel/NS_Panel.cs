@@ -193,8 +193,8 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
             int q = ActiveElement.GetParameters("Количество пазов")[0].AsInteger() * n;
 
             AssemblyElements.Sort(CompareElementIdsByZCoord);
-            OutList = AssemblyElements.GetRange(0, q);
-            AssemblyElements.RemoveRange(0, q);
+            OutList = AssemblyElements.GetRange(0, q+1);
+            AssemblyElements.RemoveRange(0, q+1);
 
             this.AssemblyElements.Add(ActiveElement.Id);
 

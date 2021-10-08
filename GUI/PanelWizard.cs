@@ -124,6 +124,7 @@ namespace DSKPrim.PanelTools_v2.GUI
                     Routine = new UniqueAssemblies();
                     break;
                 case ("Создать виды и листы"):
+                    Routine = new SheetsAndViewsCreationRoutine();
                     break;
                 case ("Создать проемы в фасаде"):
                     break;

@@ -202,9 +202,9 @@ namespace DSKPrim.PanelTools_v2.GUI
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.ClientSize = new System.Drawing.Size(446, 317);
+            this.Controls.Add(this.Step1Panel);
             this.Controls.Add(this.Step2Panel);
             this.Controls.Add(this.pictureBox1);
-            this.Controls.Add(this.Step1Panel);
             this.Controls.Add(this.NextButton);
             this.Controls.Add(this.BackButton);
             this.Controls.Add(this.CancelButton);

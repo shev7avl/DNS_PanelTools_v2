@@ -167,7 +167,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 
             foreach (var item in elementIdsToDivide)
             {
-                SplitGeometry.CreateSketchPlane(ActiveDocument, item);
+                SplitGeometry.CreatePartsSection(ActiveDocument, item);
             }
             FacadeParts = new List<ElementId>();
             FacadeParts = (List <ElementId>)ActiveElement.GetDependentElements(filter);

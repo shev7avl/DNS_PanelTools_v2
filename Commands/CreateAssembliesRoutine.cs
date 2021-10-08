@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using Autodesk.Revit.UI.Selection;
+using Autodesk.Revit.UI.Selection;
 using Autodesk.Revit.Attributes;
 using DSKPrim.PanelTools_v2.StructuralApps.Assemblies;
 using DSKPrim.PanelTools_v2.StructuralApps;
@@ -25,13 +27,20 @@ namespace DSKPrim.PanelTools_v2.Commands
         public override void ExecuteRoutine(ExternalCommandData commandData)
         {
             Document = commandData.Application.ActiveUIDocument.Document;
-            SingleStructDoc structDoc = SingleStructDoc.getInstance(Document);
 
+            Document = commandData.Application.ActiveUIDocument.Document;
+
+            Selection selection = commandData.Application.ActiveUIDocument.Selection;
+
+            IList<Element> elements = selection.PickElementsByRectangle(new AssemblyCreationFilter());
+
+            SingleStructDoc structDoc = SingleStructDoc.getInstance(Document, elements);
             structDoc.PanelMarks.Sort(CompareElementIdsByZCoord);
+
+
             int counter = 1;
             foreach (var item in structDoc.PanelMarks)
             {
-                
                 Debug.WriteLine($"Итерация: {counter}//{structDoc.PanelMarks.Count}");
                 Debug.WriteLine($"Панель: {item.ShortMark}");
                 if (item is IAssembler)
@@ -58,7 +67,7 @@ namespace DSKPrim.PanelTools_v2.Commands
 
                         }
                     }
-                    
+
 
                     Transaction transaction = new Transaction(Document, "CreateAssembly");
                     FailureHandlingOptions opts = transaction.GetFailureHandlingOptions();
@@ -90,7 +99,7 @@ namespace DSKPrim.PanelTools_v2.Commands
                     catch (Autodesk.Revit.Exceptions.ArgumentException)
                     {
                         Debug.WriteLine($"Произошла ошибка в панели {item.ShortMark} на уровне {item.ActiveElement.LevelId}");
-                        AssemblyInstance instance = AssemblyInstance.Create(Document,new List<ElementId>() { item.ActiveElement.Id}, item.ActiveElement.Category.Id);
+                        AssemblyInstance instance = AssemblyInstance.Create(Document, new List<ElementId>() { item.ActiveElement.Id }, item.ActiveElement.Category.Id);
                         transaction.Commit();
 
                         transaction.Start();
@@ -105,8 +114,8 @@ namespace DSKPrim.PanelTools_v2.Commands
 
                         transaction.Commit();
                     }
-                        
-                    
+
+
                 }
                 counter++;
             }
@@ -116,6 +125,7 @@ namespace DSKPrim.PanelTools_v2.Commands
 
             structDoc.Dispose();
         }
+
 
         private int CompareElementIdsByZCoord(StructuralApps.Panel.Panel x, StructuralApps.Panel.Panel y)
         {
@@ -140,5 +150,26 @@ namespace DSKPrim.PanelTools_v2.Commands
 
         }
 
+    }
+
+    class AssemblyCreationFilter : ISelectionFilter
+    {
+        public bool AllowElement(Element elem)
+        {
+
+            StructureType structureType = new StructureType(elem);
+
+            if (structureType.GetPanelType(elem) == StructureType.Panels.None.ToString() && elem.Category.Name.Contains("Каркас несущий"))
+            {
+                return false;
+            }
+
+            else return true;
+        }
+
+        public bool AllowReference(Reference reference, XYZ position)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

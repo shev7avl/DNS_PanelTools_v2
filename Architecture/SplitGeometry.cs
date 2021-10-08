@@ -10,7 +10,7 @@ namespace DSKPrim.PanelTools_v2.Architecture
 {
     public static class SplitGeometry
     {
-        public static void CreateSketchPlane(Document document, ElementId partId)
+        public static void CreatePartsSection(Document document, ElementId partId)
         {
 
             Options options = new Options();
@@ -47,7 +47,7 @@ namespace DSKPrim.PanelTools_v2.Architecture
                         Debug.WriteLine($"Начали транзакцию: {transaction.GetName()}");
                         Plane plane = Plane.CreateByNormalAndOrigin(normal, origin);
                         Debug.WriteLine($"Создали плоскость: {plane}");
-                        IList<Curve> curves = CreateCurveArray(partEl, face, plane);
+                        IList<Curve> curves = CreateCurveArray(partEl, face, plane, brick: true);
                         Debug.WriteLine($"Создали список кривых: {curves}");
                         SketchPlane sketchPlane = SketchPlane.Create(document, plane);
                         Debug.WriteLine($"Создали плоскость эскиза: {sketchPlane}");
@@ -62,7 +62,7 @@ namespace DSKPrim.PanelTools_v2.Architecture
             }
         }
 
-        public static IList<Curve> CreateCurveArray(Element partEl, Face face, Plane plane)
+        public static IList<Curve> CreateCurveArray(Element partEl, Face face, Plane plane, bool brick=false)
         {
             BoundingBoxUV boxUV = plane.GetBoundingBoxUV();
 
@@ -73,38 +73,146 @@ namespace DSKPrim.PanelTools_v2.Architecture
             double conLenU = UnitUtils.ConvertFromInternalUnits(LenU, UnitTypeId.Millimeters);
             double conHeiV = UnitUtils.ConvertFromInternalUnits(HeiV, UnitTypeId.Millimeters);
 
-            double conStepV = 288;
-            double conStepH = 88;
-            double conGap = 12;
+            double conStepV;
+            double conStepH;
+            double conGap;
+            IList<Curve> curves;
 
-            IList<Curve> curves = CreateRectangle(boxUV, face, conLenU, conHeiV);
+            if (brick)
+            {
+                conStepV = 240;
+                conStepH = 70;
+                conGap = 10;
+                curves = CreateRectangle(boxUV, face, conStepV, conStepH, brick: true);
+            }
+            else
+            {
+                conStepV = 288;
+                conStepH = 88;
+                conGap = 12;
+                curves = CreateRectangle(boxUV, face, conLenU, conHeiV);
+            }
+            
+            
+
 
             //double offsetWidth = UnitUtils.ConvertToInternalUnits(300, UnitTypeId.Millimeters);
             //double offsetHeight = UnitUtils.ConvertToInternalUnits(100, UnitTypeId.Millimeters);
 
-
-            Curve Left = curves[2];
-            for (double i = 0; i < conLenU-300; i = i + conStepV + conGap)
+            if (brick)
             {
-                Curve curve1 = OffsetCurve(Left, curves[0], conStepV);
-                curves.Add(curve1);
-                Left = OffsetCurve(curve1, curves[0], conGap);
-                curves.Add(Left);
-            }
+                int counter = 1;
+                IList<Curve> lastBrick = curves;
+                //Смещение прямоугольника по горизонтали
+                for (double i = 0; i < conLenU - 300; i = i + conStepV + conGap)
+                {
+                    Curve curve1 = OffsetCurve(lastBrick[0], curves[0], conStepV + conGap);
+                    Curve curve2 = OffsetCurve(lastBrick[1], curves[0], conStepV + conGap);
+                    Curve curve3 = OffsetCurve(lastBrick[2], curves[0], conStepV + conGap);
+                    Curve curve4 = OffsetCurve(lastBrick[3], curves[0], conStepV + conGap);
 
-            Curve Top = curves[0];
-            for (double i = 0; i <= conHeiV - 100; i = i + conStepH + conGap)
-            {
-                Curve curve1 = OffsetCurve(Top, curves[2], conStepH);
-                curves.Add(curve1);
-                Top = OffsetCurve(curve1, curves[2], conGap);
-                curves.Add(Top);
+                    IList<Curve> newBrick = new List<Curve>() {
+                        curve1,
+                        curve2,
+                        curve3,
+                        curve4};
+
+                    curves.Add(curve1);
+                    curves.Add(curve2);
+                    curves.Add(curve3);
+                    curves.Add(curve4);
+
+                    lastBrick = newBrick;
+                }
+
+                IList<Curve> lastRow = new List<Curve>();
+                foreach (var item in curves)
+                {
+                    lastRow.Add(item);
+                }
+                int countH = 1;
+                for (double i = 0; i <= conHeiV - 100; i = i + conStepH + conGap)
+                {
+
+                    DateTime execStart = new DateTime();
+                    Debug.WriteLine($"------");
+                    Debug.WriteLine($"Начали делать ряд {i}");
+                    //foreach (Curve curve in lastRow)
+                    //{
+                    //    Curve offsetCurve = OffsetCurve(curve, curves[2], (conStepH + conGap)*countH);
+                    //    curves.Add(offsetCurve);                     
+                    //}
+
+                    for (int cv = 0; cv < lastRow.Count-12; cv++)
+                    {
+                        if (cv % 2 == 1)
+                        {
+                            Curve offsetCurve = OffsetCurve(lastRow[cv], curves[2], (conStepH + conGap)*countH);
+                            curves.Add(offsetCurve);
+                        }
+                        else
+                        {
+                            Curve offsetCurve = OffsetCurve(lastRow[cv], curves[2], (conStepH + conGap)*countH);
+                            Curve offsetCurveH = OffsetCurve(offsetCurve, curves[0], (conStepV + conGap) / 2);
+                            curves.Add(offsetCurveH);
+                        }
+
+                    }
+
+                    DateTime execFinish = new DateTime();
+                    Debug.WriteLine($"Закончили делать ряд {i}");
+                    Debug.WriteLine($"Время выполнения: {execFinish-execStart} с");
+                    Debug.WriteLine($"------");
+
+
+                    //for (int cv = 0; cv < lastRow.Count; cv++)
+                    //{
+                    //    if (cv % 2 == 1)
+                    //    {
+                    //        Curve offsetCurve = OffsetCurve(lastRow[cv], curves[2], conStepH + conGap);
+                    //        curves.Add(offsetCurve);
+                    //        newRow.Add(offsetCurve);
+                    //    }
+                    //    else
+                    //    {
+                    //        Curve offsetCurve = OffsetCurve(lastRow[cv], curves[2], conStepH + conGap);
+                    //        Curve offsetCurveH = OffsetCurve(offsetCurve, curves[0], (conStepV + conGap)/2);
+                    //        curves.Add(offsetCurveH);
+                    //        newRow.Add(offsetCurve);
+                    //    }
+
+                    //}
+                    countH++;
+                    counter++;
+
+                }
             }
+            else
+            {
+                Curve Left = curves[2];
+                for (double i = 0; i < conLenU - 300; i = i + conStepV + conGap)
+                {
+                    Curve curve1 = OffsetCurve(Left, curves[0], conStepV);
+                    curves.Add(curve1);
+                    Left = OffsetCurve(curve1, curves[0], conGap);
+                    curves.Add(Left);
+                }
+
+                Curve Top = curves[0];
+                for (double i = 0; i <= conHeiV - 100; i = i + conStepH + conGap)
+                {
+                    Curve curve1 = OffsetCurve(Top, curves[2], conStepH);
+                    curves.Add(curve1);
+                    Top = OffsetCurve(curve1, curves[2], conGap);
+                    curves.Add(Top);
+                }
+            }
+            
 
             return curves;
         }
 
-        private static List<Curve> CreateRectangle(BoundingBoxUV boxUV, Face face, double width, double heigth)
+        private static List<Curve> CreateRectangle(BoundingBoxUV boxUV, Face face, double width, double heigth, bool brick = false)
         {
             ;
 
@@ -150,13 +258,27 @@ namespace DSKPrim.PanelTools_v2.Architecture
             Curve curveTop = Line.CreateBound(pt1, pt2);
             Curve curveLeft = Line.CreateBound(pt1, pt3);
             Curve curveRight = Line.CreateBound(pt2, pt4);
+            Curve curveBot = Line.CreateBound(pt3, pt4);
 
-            List<Curve> curves = new List<Curve>() {
-            curveTop,
-            curveRight,
-
-            curveLeft
-            };
+            List<Curve> curves;
+            if (brick)
+            {
+                curves = new List<Curve>() {
+                    curveTop,
+                    curveRight,
+                    curveLeft,
+                    curveBot
+                    };
+            }
+            else
+            {
+                curves = new List<Curve>() {
+                    curveTop,
+                    curveRight,
+                    curveLeft
+                    };
+            }
+             
             
             return curves;
         }

@@ -52,6 +52,41 @@ namespace DSKPrim.PanelTools_v2.StructuralApps
                 
             }
         }
+
+        private SingleStructDoc(Document document, IList<Element> panels, bool exist = false)
+        {
+            Document = document;
+
+            List<Element> panelsList = (List<Element>)panels;
+
+            panelsList.Sort(CompareByLevel);
+            panelsList.Sort(CompareByName);
+            panelsList.Sort(CompareByXCoord);
+            panelsList.Sort(CompareByYCoord);
+
+            PanelMarks = new List<Panel.Panel>();
+
+            foreach (var item in panelsList)
+            {
+                SetPanelBehaviour(item);
+                if (Behaviour != null)
+                {
+                    if (exist)
+                    {
+                        Behaviour.ReadMarks();
+                    }
+                    else
+                    {
+                        Behaviour.CreateMarks();
+                    }
+
+                    PanelMarks.Add(Behaviour);
+                    Behaviour = null;
+                }
+
+            }
+        }
+
         public int CompareByName(Element x, Element y)
         {
             return String.Compare(x.Name, y.Name);
@@ -112,6 +147,15 @@ namespace DSKPrim.PanelTools_v2.StructuralApps
             return instance;
         }
 
+        public static SingleStructDoc getInstance(Document document,IList<Element> panels, bool exist = false)
+        {
+            if (instance == null)
+            {
+                instance = new SingleStructDoc(document, panels, exist);
+            }
+            return instance;
+        }
+
 
         public void Dispose()
         {
@@ -122,7 +166,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps
             frontPVL = null;
         }
 
-        protected void SetPanelBehaviour(Element element)
+        public void SetPanelBehaviour(Element element)
         {
             StructureType structureType = new StructureType(element);
             string type = structureType.GetPanelType(element);
