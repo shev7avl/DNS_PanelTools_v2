@@ -19,6 +19,8 @@ namespace DSKPrim.PanelTools_v2.Commands
         Document ActiveDocument;
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
+            Logger.Logger logger = Logger.Logger.getInstance();
+
             ActiveDocument = commandData.Application.ActiveUIDocument.Document;
             IEnumerable<Element> fecLinksARCH = new FilteredElementCollector(ActiveDocument).OfCategory(BuiltInCategory.OST_RvtLinks).WhereElementIsNotElementType().Where(doc => doc.Name.Contains("_АР"));
             IEnumerable<Element> fecLinksSTRUCT = new FilteredElementCollector(ActiveDocument).OfCategory(BuiltInCategory.OST_RvtLinks).WhereElementIsNotElementType().Where(doc => doc.Name.Contains("_КР"));
@@ -27,13 +29,13 @@ namespace DSKPrim.PanelTools_v2.Commands
             Document linkedDocARCH = fecLinksARCH.Cast<RevitLinkInstance>().ToList()[0].GetLinkDocument();
             Document linkedDocSTR = fecLinksSTRUCT.Cast<RevitLinkInstance>().ToList()[0].GetLinkDocument();
 
-            Debug.WriteLine(linkedDocARCH.PathName);
+            logger.DebugLog(linkedDocARCH.PathName);
 
             foreach (Element item in fecWalls)
             {
                 WallParts wallParts = new WallParts(ActiveDocument, linkedDocSTR, linkedDocARCH, item);
                 wallParts.CreateMarks();
-                Debug.WriteLine(item.Name);
+                logger.DebugLog(item.Name);
             }
 
 

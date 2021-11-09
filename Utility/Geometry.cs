@@ -63,16 +63,18 @@ namespace DSKPrim.PanelTools_v2.Utility
             }
 
             XYZ transform = revitLink.GetTransform().Origin;
-
-            foreach (var item in elems)
+            if (elems != null)
             {
-                LocationPoint locationPointBase = (LocationPoint)item.Location;
-                
-                XYZ newPoint = new XYZ(locationPointBase.Point.X + transform.X, locationPointBase.Point.Y + transform.Y, locationPointBase.Point.Z + transform.Z);
-
-                if (Geometry.InBox(panelBbox, newPoint) && LevelEq(element, item))
+                foreach (var item in elems)
                 {
-                    IntersectedElements.Add(item);
+                    LocationPoint locationPointBase = (LocationPoint)item.Location;
+
+                    XYZ newPoint = new XYZ(locationPointBase.Point.X + transform.X, locationPointBase.Point.Y + transform.Y, locationPointBase.Point.Z + transform.Z);
+
+                    if (Geometry.InBox(panelBbox, newPoint) && LevelEq(element, item))
+                    {
+                        IntersectedElements.Add(item);
+                    }
                 }
             }
             return IntersectedElements;

@@ -20,18 +20,26 @@ namespace DSKPrim.PanelTools_v2.Commands
 
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
-
+            Logger.Logger logger = Logger.Logger.getInstance();
+            
             SetRoutineBehaviour();
+            logger.WriteLog($"Выбрана задача {RoutineBehaviour}");
+            logger.WriteLog("Старт задачи");
+            //for working instance
+            //try
+            //{
+            //    RoutineBehaviour.ExecuteRoutine(commandData);
+            //    return Result.Succeeded;
+            //}
+            //catch (Exception e)
+            //{
+            //    logger.LogError(e);
+            //    return Result.Failed;
+            //}
 
-                RoutineBehaviour.ExecuteRoutine(commandData);
-                return Result.Succeeded;
-
-                //return Result.Cancelled;
-
-            
-
-            
-
+            //for debug
+            RoutineBehaviour.ExecuteRoutine(commandData);
+            return Result.Succeeded;
         }
 
         private void SetRoutineBehaviour()

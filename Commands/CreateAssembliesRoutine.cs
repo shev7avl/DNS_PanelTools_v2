@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
-using Autodesk.Revit.UI.Selection;
+
 using Autodesk.Revit.Attributes;
 using DSKPrim.PanelTools_v2.StructuralApps.Assemblies;
 using DSKPrim.PanelTools_v2.StructuralApps;
@@ -26,7 +26,9 @@ namespace DSKPrim.PanelTools_v2.Commands
 
         public override void ExecuteRoutine(ExternalCommandData commandData)
         {
-            Document = commandData.Application.ActiveUIDocument.Document;
+            Logger.Logger logger = Logger.Logger.getInstance();
+            Stopwatch stopWatch = new Stopwatch();
+            stopWatch.Start();
 
             Document = commandData.Application.ActiveUIDocument.Document;
 
@@ -41,9 +43,9 @@ namespace DSKPrim.PanelTools_v2.Commands
             int counter = 1;
             foreach (var item in structDoc.PanelMarks)
             {
-                Debug.WriteLine($"Итерация: {counter}//{structDoc.PanelMarks.Count}");
-                Debug.WriteLine($"Панель: {item.ShortMark}");
-                if (item is IAssembler)
+                logger.DebugLog($"Итерация: {counter}//{structDoc.PanelMarks.Count}");
+                logger.DebugLog($"Панель: {item.ShortMark}");
+                if (item is IAssembler assembler)
                 {
                     Outline outline = new Outline(item.ActiveElement.get_Geometry(new Options()).GetBoundingBox().Min, item.ActiveElement.get_Geometry(new Options()).GetBoundingBox().Max);
                     ElementFilter filter = new BoundingBoxIntersectsFilter(outline);
@@ -51,8 +53,6 @@ namespace DSKPrim.PanelTools_v2.Commands
 
                     List<Element> intersected = fecIntersect.ToList();
 
-
-                    IAssembler assembler = (IAssembler)item;
                     assembler.SetAssemblyElements();
                     if (item is NS_Panel || item is VS_Panel)
                     {
@@ -64,7 +64,6 @@ namespace DSKPrim.PanelTools_v2.Commands
                                 IAssembler assembler1 = (IAssembler)Behaviour;
                                 assembler.TransferFromPanel(assembler1);
                             }
-
                         }
                     }
 
@@ -98,7 +97,7 @@ namespace DSKPrim.PanelTools_v2.Commands
 
                     catch (Autodesk.Revit.Exceptions.ArgumentException)
                     {
-                        Debug.WriteLine($"Произошла ошибка в панели {item.ShortMark} на уровне {item.ActiveElement.LevelId}");
+                        logger.DebugLog($"Произошла ошибка в панели {item.ShortMark} на уровне {item.ActiveElement.LevelId}");
                         AssemblyInstance instance = AssemblyInstance.Create(Document, new List<ElementId>() { item.ActiveElement.Id }, item.ActiveElement.Category.Id);
                         transaction.Commit();
 
@@ -124,6 +123,9 @@ namespace DSKPrim.PanelTools_v2.Commands
             //assemblyBuilder.CreateAssemblies();
 
             structDoc.Dispose();
+
+            logger.LogSuccessTime(stopWatch);
+
         }
 
 

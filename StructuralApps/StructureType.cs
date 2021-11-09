@@ -17,9 +17,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps
             NS = 0x00000001, // 1
             VS = 0x00000002, //2
             PP = 0x00000003,//3
-//4
-            BP = 0x0000003D,//61
- //62      
+            BP = 0x0000003D,//61    
             PS = 0x00000007, //7
             None = 0x00000008
         }

@@ -120,7 +120,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
                 string w4 = Marks.AsDecimString(ActiveElement, "ПР2.ВысотаСмещение");
                 window2 = $"{w2}.{w3}.{w4}.{w1}";
             }
-            string windows = "";
+            string windows;
             if (Closure1 && Closure2)
             {
                 windows = $"{window1}_{window2}";
@@ -200,8 +200,6 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
         {
             Panel xPanel = (Panel)x;
             Panel yPanel = (Panel)y;
-
-            bool vSnSlvl = ((xPanel is NS_Panel && yPanel is VS_Panel) || (yPanel is NS_Panel && xPanel is VS_Panel)) && (xPanel.ActiveElement.LevelId == yPanel.ActiveElement.LevelId);
 
             int lvlX = int.Parse(ActiveDocument.GetElement(xPanel.ActiveElement.LevelId).Name.Substring(ActiveDocument.GetElement(xPanel.ActiveElement.LevelId).Name.Length - 2, 2));
             int lvlY = int.Parse(ActiveDocument.GetElement(yPanel.ActiveElement.LevelId).Name.Substring(ActiveDocument.GetElement(yPanel.ActiveElement.LevelId).Name.Length - 2, 2));

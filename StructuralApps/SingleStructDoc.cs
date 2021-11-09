@@ -18,40 +18,38 @@ namespace DSKPrim.PanelTools_v2.StructuralApps
 
         public List<Panel.Panel> PanelMarks { get; private set; }
 
-        private List<Element> frontPVL;
-
         private SingleStructDoc(Document document, bool exist = false)
         {
             Document = document;
 
             List<Element> panelsList = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_StructuralFraming).WhereElementIsNotElementType().ToElements().Cast<Element>().ToList();
+
+            Logger.Logger logger = Logger.Logger.getInstance();
+            
             panelsList.Sort(CompareByLevel);
+            logger.WriteLog("Панели отсортированы по уровню");
             panelsList.Sort(CompareByName);
+            logger.WriteLog("Панели отсортированы по имени");    
             panelsList.Sort(CompareByXCoord);
+            logger.WriteLog("Панели отсортированы по координате Х");
             panelsList.Sort(CompareByYCoord);
+            logger.WriteLog("Панели отсортированы по координате У");
 
             PanelMarks = new List<Panel.Panel>();
 
             foreach (var item in panelsList)
             {
                 SetPanelBehaviour(item);
+                PanelMarks.Add(Behaviour);
                 if (Behaviour != null)
                 {
-                    if (exist)
-                    {
-                        Behaviour.ReadMarks();
-                    }
-                    else
-                    {
-                        Behaviour.CreateMarks();
-                    }
-                    
+                    Behaviour.CreateMarks();
                     PanelMarks.Add(Behaviour);
                     Behaviour = null;
                 }
-                
             }
         }
+
 
         private SingleStructDoc(Document document, IList<Element> panels, bool exist = false)
         {
@@ -59,10 +57,16 @@ namespace DSKPrim.PanelTools_v2.StructuralApps
 
             List<Element> panelsList = (List<Element>)panels;
 
+            Logger.Logger logger = Logger.Logger.getInstance();
+
             panelsList.Sort(CompareByLevel);
+            logger.WriteLog("Панели отсортированы по уровню");
             panelsList.Sort(CompareByName);
+            logger.WriteLog("Панели отсортированы по имени");
             panelsList.Sort(CompareByXCoord);
+            logger.WriteLog("Панели отсортированы по координате Х");
             panelsList.Sort(CompareByYCoord);
+            logger.WriteLog("Панели отсортированы по координате У");
 
             PanelMarks = new List<Panel.Panel>();
 
@@ -84,6 +88,21 @@ namespace DSKPrim.PanelTools_v2.StructuralApps
                     Behaviour = null;
                 }
 
+            }
+        }
+
+        public void CreateMarks(bool exist = false)
+        {
+            foreach (Panel.Panel item in PanelMarks)
+            {
+                if (exist)
+                {
+                    item.ReadMarks();
+                }
+                else
+                {
+                    item.CreateMarks();
+                }
             }
         }
 
@@ -163,7 +182,6 @@ namespace DSKPrim.PanelTools_v2.StructuralApps
             instance = null;
             Behaviour = null;
             PanelMarks = null;
-            frontPVL = null;
         }
 
         public void SetPanelBehaviour(Element element)

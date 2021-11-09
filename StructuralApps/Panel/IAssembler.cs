@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
-using DSKPrim.PanelTools_v2.StructuralApps.AssemblyDefiningSubelements;
 
 namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 {

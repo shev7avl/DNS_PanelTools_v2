@@ -28,21 +28,13 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 
         public override List<XYZ> IntersectedWindows { get; set; }
 
-        private Document LinkedDocSTR;
+        private readonly Document LinkedDocSTR;
 
-        private Document LinkedDocARCH;
-
-        private Panel IntersectedPanel;
-
-        private List<Material> FacadeMaterials { get; set; }
-
-        private List<ElementId> FacadeParts { get; set; } 
 
         public WallParts(Document document, Document linkedDocSTR, Document linkedDocARCH, Element element)
         {
             ActiveDocument = document;
             LinkedDocSTR = linkedDocSTR;
-            LinkedDocARCH = linkedDocARCH;
             ActiveElement = element;
         }
 
@@ -106,6 +98,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 
         public override void CreateMarks()
         {
+            Logger.Logger logger = Logger.Logger.getInstance();
             Options options = new Options();
             LocationCurve curve = (LocationCurve)ActiveElement.Location;
             XYZ Start = curve.Curve.GetEndPoint(0);
@@ -122,7 +115,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 
                 if (Geometry.InBox(boundingBox, Start) && Geometry.InBox(boundingBox, End))
                 {
-                    Debug.WriteLine($"{ActiveElement.Name} пересекается с: {item.LongMark}");
+                    logger.DebugLog($"{ActiveElement.Name} пересекается с: {item.LongMark}");
                     Transaction transaction = new Transaction(ActiveDocument, $"Назначение марки: {item.LongMark}");
                     transaction.Start();
 
@@ -134,20 +127,18 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
             }
         }
 
-
-        
-
         public void SplitToParts()
         {
-            ICollection<ElementId> elementIdsToDivide = new List<ElementId>();
+            Logger.Logger logger = Logger.Logger.getInstance();
+            ICollection<ElementId> elementIdsToDivide;
 
             ICollection<ElementId> elementIds = new List<ElementId>()
             {
                 ActiveElement.Id
             };
-            Debug.WriteLine($"------------");
-            Debug.WriteLine($"@Начало транзакции");
-            Debug.WriteLine($"@");
+            logger.DebugLog($"------------");
+            logger.DebugLog($"@Начало транзакции");
+            logger.DebugLog($"@");
             if (PartUtils.AreElementsValidForCreateParts(ActiveDocument, elementIds))
             {
                 using (Transaction transaction = new Transaction(ActiveDocument, "Parts creation"))
@@ -160,17 +151,15 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
             ElementFilter filter = new ElementCategoryFilter(BuiltInCategory.OST_Parts);
             elementIdsToDivide = ActiveElement.GetDependentElements(filter);
 
-            Debug.WriteLine($"@Части для {ActiveElement.Name} Созданы успешно");
-            Debug.WriteLine($"@");
-            Debug.WriteLine($"@Конец транзакции");
-            Debug.WriteLine($"------------");
+            logger.DebugLog($"@Части для {ActiveElement.Name} Созданы успешно");
+            logger.DebugLog($"@");
+            logger.DebugLog($"@Конец транзакции");
+            logger.DebugLog($"------------");
 
             foreach (var item in elementIdsToDivide)
             {
                 SplitGeometry.CreatePartsSection(ActiveDocument, item);
             }
-            FacadeParts = new List<ElementId>();
-            FacadeParts = (List <ElementId>)ActiveElement.GetDependentElements(filter);
         }
 
         public void ExcludeStitches()

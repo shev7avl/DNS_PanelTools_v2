@@ -22,14 +22,27 @@ namespace DSKPrim.PanelTools_v2.StructuralApps
 
         private SingleArchDoc(Document document)
         {
-            Document = document;
+            Logger.Logger logger = Logger.Logger.getInstance();
+            logger.Separate();
+            logger.LogMethodCall("SingleArchDoc");
 
+            if (document is null)
+            {
+                logger.WriteLog("ПРЕДУПРЕЖДЕНИЕ: Связь не загружена");
+            }
+            else
+            {
+                logger.WriteLog($"Анализируем файл АР: {document.Title}");
 
-            IEnumerable<Element> windows = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_Windows).WhereElementIsNotElementType().ToElements().Where<Element>(o => o.Name.Contains("DNS_"));
-            IEnumerable<Element> doors = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_Doors).WhereElementIsNotElementType().ToElements().Where<Element>(o => !o.Name.Contains("стекл"));
+                Document = document;
 
-            Windows = windows.ToList();
-            Doors = doors.ToList();
+                    IEnumerable<Element> windows = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_Windows).WhereElementIsNotElementType().ToElements().Where<Element>(o => o.Name.Contains("DNS_"));
+                    IEnumerable<Element> doors = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_Doors).WhereElementIsNotElementType().ToElements().Where<Element>(o => !o.Name.Contains("стекл"));
+                    Windows = windows.ToList();
+                    Doors = doors.ToList();
+            }
+
+            
         }
 
         public static SingleArchDoc getInstance(Document document)

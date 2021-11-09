@@ -127,6 +127,7 @@ namespace DSKPrim.PanelTools_v2.GUI
                     Routine = new SheetsAndViewsCreationRoutine();
                     break;
                 case ("Создать проемы в фасаде"):
+                    Routine = new ARCH_PlaceWindow();
                     break;
                 case ("Скопировать марки"):
                     break;

@@ -23,6 +23,10 @@ namespace DSKPrim.PanelTools_v2.Commands
         public override void ExecuteRoutine(ExternalCommandData commandData)
         {
             Document = commandData.Application.ActiveUIDocument.Document;
+            Logger.Logger logger = Logger.Logger.getInstance();
+            Stopwatch stopWatch = new Stopwatch();
+            stopWatch.Start();
+
             SingleStructDoc structDoc = SingleStructDoc.getInstance(Document);
 
             TransactionGroup transactionGroup = new TransactionGroup(Document, "Присвоение длинной марки - ");
@@ -42,6 +46,9 @@ namespace DSKPrim.PanelTools_v2.Commands
             transactionGroup.Assimilate();
             transactionGroup.Dispose();
             structDoc.Dispose();
+
+            logger.LogSuccessTime(stopWatch);
+
         }
 
         

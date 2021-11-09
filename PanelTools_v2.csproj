@@ -57,7 +57,6 @@
     <Compile Include="App.cs" />
     <Compile Include="Architecture\SingleArchDoc.cs" />
     <Compile Include="Architecture\SplitGeometry.cs" />
-    <Compile Include="Architecture\SplitGeometry_bu.cs" />
     <Compile Include="Commands\SheetsAndViewsCreationRoutine.cs" />
     <Compile Include="Commands\UniqueAssemblies.cs" />
     <Compile Include="Commands\DisassembleAllRoutine.cs" />
@@ -76,17 +75,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="StructuralApps\Assemblies\CompleteAssemblyBuilder.cs" />
-    <Compile Include="StructuralApps\Assemblies\DemolishAssemblyBuilder.cs" />
-    <Compile Include="StructuralApps\Assemblies\FacadeAssemblyBuilder.cs" />
-    <Compile Include="StructuralApps\Assemblies\UniqueAssemblyBuilder.cs" />
-    <Compile Include="StructuralApps\AssemblyDefiningSubelements\AnchorDefining.cs" />
-    <Compile Include="StructuralApps\AssemblyDefiningSubelements\DefiningBase.cs" />
-    <Compile Include="StructuralApps\AssemblyDefiningSubelements\DefiningSubelement.cs" />
-    <Compile Include="StructuralApps\AssemblyDefiningSubelements\PShapedTransferable.cs" />
-    <Compile Include="StructuralApps\AssemblyDefiningSubelements\StraightTransferable.cs" />
-    <Compile Include="StructuralApps\AssemblyDefiningSubelements\FrontPVLTransferable.cs" />
-    <Compile Include="StructuralApps\AssemblyDefiningSubelements\ITransferable.cs" />
     <Compile Include="StructuralApps\Panel\IAssembler.cs" />
     <Compile Include="StructuralApps\Panel\IPerforated.cs" />
     <Compile Include="StructuralApps\Panel\WallParts.cs" />
@@ -169,7 +157,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /Y "$(SolutionDir)\bin\Debug" "C:\Users\shevyakov.a.PARTNER\AppData\Roaming\Autodesk\Revit\Addins\2022"</PostBuildEvent>
+    <PostBuildEvent>copy /Y "$(SolutionDir)\bin\Debug" "C:\Users\shevyakov.a.PARTNER\AppData\Roaming\Autodesk\Revit\Addins\2022"
+copy /Y "$(SolutionDir)\bin\Debug" "\\ir-autodesk\7_Отдел проектирования\BIM\07_Обмен информацией\Открытое тестирование DNS_PanelTools v2\Addin"</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>

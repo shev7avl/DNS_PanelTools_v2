@@ -15,9 +15,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
 
         public AssemblyInstance result;
 
-        private Dictionary<int, Panel.Panel> IndexMarkPairs;
-
-        private List<Panel.Panel> MarksList;
+        private readonly List<Panel.Panel> MarksList;
 
         private Document ActiveDoc { get; set; }
 
@@ -123,6 +121,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
 
         public void LeaveUniquePanels()
         {
+            Logger.Logger logger = Logger.Logger.getInstance();
             List<AssemblyInstance> assemblies = new FilteredElementCollector(ActiveDoc).OfCategory(BuiltInCategory.OST_Assemblies).WhereElementIsNotElementType().Cast<AssemblyInstance>().ToList();
             assemblies.Sort(CompareAssembliesByName);
 
@@ -162,20 +161,20 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
                         }
                         cnt--;
                     }
-                        Debug.WriteLine($"Число сборок: {disposables.Count} / {amount - assemblyTypes.Count}");
+                        logger.DebugLog($"Число сборок: {disposables.Count} / {amount - assemblyTypes.Count}");
                     }
     
         
-            Debug.WriteLine($"Уникальные сборки определены");
+            logger.DebugLog($"Уникальные сборки определены");
 
 
             using (Transaction transaction = new Transaction(ActiveDoc, "Разбираем сборки"))
             {
-                Debug.WriteLine("Начинаем разборку");
+                logger.DebugLog("Начинаем разборку");
                 int counter = 1;
                 foreach (AssemblyInstance assembly in disposables)
                 {
-                    Debug.WriteLine($"Прогресс {counter} / {disposables.Count}");
+                    logger.DebugLog($"Прогресс {counter} / {disposables.Count}");
                     transaction.Start();
                     FailureHandlingOptions opts = transaction.GetFailureHandlingOptions();
                     IFailuresPreprocessor preprocessor = new WarningSwallower();
@@ -189,18 +188,6 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Assemblies
                
             }
 
-        }
-
-        private static IEnumerable<AssemblyInstance> GetFamilyInstancesByType(AssemblyType familyName, AssemblyInstance typeName)
-        {
-
-            //return new FilteredElementCollector(ActiveDoc)
-            //  .OfClass(typeof(AssemblyInstance))
-            //  .Cast<AssemblyInstance>()
-            //  .Where(x => x.AssemblyTypeName.Equals(familyName.Name)
-            //  .Where(x => x.Symbol.Family.Name.Equals(familyName)) // family
-            //  .Where(x => x.Name.Equals(typeName)); // family type
-            return null;
         }
 
         public void DisassembleAll(Document document)

@@ -3,6 +3,7 @@ using Autodesk.Revit.UI;
 using DSKPrim.PanelTools_v2.StructuralApps.Assemblies;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,6 +19,10 @@ namespace DSKPrim.PanelTools_v2.Commands
         public override void ExecuteRoutine(ExternalCommandData commandData)
         {
             Document = commandData.Application.ActiveUIDocument.Document;
+
+            Logger.Logger logger = Logger.Logger.getInstance();
+            Stopwatch stopWatch = new Stopwatch();
+            stopWatch.Start();
 
             FilteredElementCollector assemblies = new FilteredElementCollector(Document).OfClass(typeof(AssemblyInstance)).WhereElementIsNotElementType();
 
@@ -36,7 +41,7 @@ namespace DSKPrim.PanelTools_v2.Commands
                 }
                 else if(item.Name.Contains("ПП"))
                 {
-
+                    CreatePP(item);
                 }
                 else if (item.Name.Contains("БП"))
                 {
@@ -46,15 +51,10 @@ namespace DSKPrim.PanelTools_v2.Commands
                 {
 
                 }
-                //создание видов
-                //View3D view = AssemblyViewUtils.Create3DOrthographic(ActiveDoc, assembly.Id);
-                //ViewSheet sheet1 = AssemblyViewUtils.CreateSheet(ActiveDoc, assembly.Id, ElementId.InvalidElementId);
-                //XYZ origin = new XYZ();
-                ////размещение видов
-                //Viewport.Create(ActiveDoc, sheet1.Id, view.Id, origin);
-
 
             }
+
+            logger.LogSuccessTime(stopWatch);
 
         }
         private void CreateNS(AssemblyInstance item)
@@ -399,12 +399,12 @@ namespace DSKPrim.PanelTools_v2.Commands
 
         private void CreateBP(AssemblyInstance item)
         {
-
+            // TODO: записать создание листов для БП
         }
 
         private void CreatePS(AssemblyInstance item)
         {
-
+            // TODO: записать создание листов для ПС
         }
     }
 }

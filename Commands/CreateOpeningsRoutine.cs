@@ -26,28 +26,39 @@ namespace DSKPrim.PanelTools_v2.Commands
         public override void ExecuteRoutine(ExternalCommandData commandData)
         {
             Document = commandData.Application.ActiveUIDocument.Document;
-            IEnumerable<Element> fecLinksARCH = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_RvtLinks).WhereElementIsNotElementType().Where(doc => doc.Name.Contains("_АР"));
+
+            Logger.Logger logger = Logger.Logger.getInstance();
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+
+            logger.WriteLog($"Активный документ: {Document.PathName}");
+            logger.Separate();
+            logger.WriteLog("Начали создание проемов в документе");
+            logger.Separate();
+
+            IEnumerable <Element> fecLinksARCH = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_RvtLinks).WhereElementIsNotElementType().Where(doc => doc.Name.Contains("_АР"));
+
+            logger.WriteLog($"Найдено связей, содержащих \"_АР\" в названии: {fecLinksARCH.Count()}");
 
             if (fecLinksARCH.Count() == 0)
             {
+                logger.WriteLog("ОШИБКА: Не загружены корректные связи АР");
                 throw new NullReferenceException("Не вижу связей");
             }
 
+            logger.WriteLog("Процедура начата");
+            logger.WriteLog("Создаём синглтон категории \"Каркас несущий\"");
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
             
             SingleStructDoc structDoc = SingleStructDoc.getInstance(Document);
 
-            stopWatch.Stop();
-            // Get the elapsed time as a TimeSpan value.
-            TimeSpan ts = stopWatch.Elapsed;
+            
 
-            // Format and display the TimeSpan value.
-            string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-                ts.Hours, ts.Minutes, ts.Seconds,
-                ts.Milliseconds / 10);
-            Debug.WriteLine(elapsedTime, "RunTime");
-            Debug.WriteLine($"{structDoc.PanelMarks.Count} panels analyzed");
+            logger.WriteLog($"Проанализировано панелей: {structDoc.PanelMarks.Count}");
+
+            logger.DebugLog($"{structDoc.PanelMarks.Count} panels analyzed");
 
             FilteredElementCollector fecStruct = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_StructuralFraming).WhereElementIsNotElementType();
             FilteredElementCollector fecWalls = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_Walls).WhereElementIsNotElementType();
@@ -97,6 +108,7 @@ namespace DSKPrim.PanelTools_v2.Commands
                 structDoc.Dispose();
             }
 
+            logger.LogSuccessTime(stopWatch);
         }
         
     }

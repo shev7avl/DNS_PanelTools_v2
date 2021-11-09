@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
-using DSKPrim.PanelTools_v2.StructuralApps.AssemblyDefiningSubelements;
+
 using DSKPrim.PanelTools_v2.Utility;
 
 namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
@@ -43,12 +43,15 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
         #region IPerforable
         void IPerforable.Perforate(List<Element> IntersectedWindows,RevitLinkInstance revitLink)
         {
-
+            Logger.Logger logger = Logger.Logger.getInstance();
+            logger.WriteLog("Вызов метода IPerforable.Perforate()");
             TransactionGroup transaction = new TransactionGroup(ActiveDocument, $"Создание проемов - {ActiveElement.Name}");
             transaction.Start();
 
+            logger.WriteLog("Вырезаем проем");
             if (IntersectedWindows.Count == 1)
             {
+                
                 Element window = IntersectedWindows[0];
                 Utility.Openings.SetOpeningParams(ActiveDocument, revitLink, ActiveElement, window);
             }
@@ -64,8 +67,10 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 
         void IPerforable.GetOpeningsFromLink(Document linkedArch, RevitLinkInstance revitLink, out List<Element> IntersectedWindows)
         {
+            Logger.Logger logger = Logger.Logger.getInstance();
+            logger.WriteLog($"Обрабатываем элемент ID:{ActiveElement.Id}");
             IntersectedWindows = Geometry.IntersectedOpenings(ActiveElement, revitLink, linkedArch, windows: true);
-
+            logger.WriteLog($"Найдено проемов:{IntersectedWindows.Count}");
         }
         #endregion
 
@@ -77,6 +82,8 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 
         public void TransferFromPanel(IAssembler panel)
         {
+            Logger.Logger logger = Logger.Logger.getInstance();
+            logger.WriteLog("Вызов метода NS_Panel.TransferFromPanel()");
             if (panel.AssemblyElements == null)
             {
                 panel.SetAssemblyElements();
@@ -94,6 +101,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 
         private bool ChangeClause(IAssembler x, IAssembler y)
         {
+
             Panel xPanel = (Panel)x;
             Panel yPanel = (Panel)y;
 
@@ -110,6 +118,8 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 
         public void InTransferHandler(object sender, EventArgs e)
         {
+            Logger.Logger logger = Logger.Logger.getInstance();
+            logger.WriteLog("Вызов метода NS_Panel.InTransferHandler()");
             IAssembler assembler = (IAssembler)sender;
             if (assembler is NS_Panel)
             {
@@ -124,7 +134,9 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
         public void ExTransferHandler(object sender, EventArgs e)
         {
             IAssembler assembler = (IAssembler)sender;
-            
+            Logger.Logger logger = Logger.Logger.getInstance();
+            logger.WriteLog("Вызов метода NS_Panel.ExTransferHandler()");
+
             if (assembler.OutList == null)
             {
                 assembler.SetAssemblyElements();
@@ -138,7 +150,6 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
                     {
                         this.AssemblyElements.Add(item);
                     }
-                    
                 }
             }
 
@@ -170,7 +181,10 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 
         public void SetAssemblyElements()
         {
-                AssemblyElements = new List<ElementId>();
+            Logger.Logger logger = Logger.Logger.getInstance();
+            logger.WriteLog("Вызов метода NS_Panel.SetAssemblyElements()");
+
+            AssemblyElements = new List<ElementId>();
 
             FamilyInstance family = (FamilyInstance)ActiveElement;
 
@@ -204,19 +218,32 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 
         public override void CreateMarks()
         {
-            LongMark = $"НС {GetPanelCode()}_{GetClosureCode()}";        
-
+            Logger.Logger logger = Logger.Logger.getInstance();
+            logger.WriteLog("Вызов метода NS_Panel.CreateMarks()");
+            logger.WriteLog("Создаём марку для виртуальной структуры данных");
+            LongMark = $"НС {GetPanelCode()}_{GetClosureCode()}";
+            logger.WriteLog($"Марка {LongMark} создана");
             Guid ADSK_panelNum = new Guid("a531f6df-1e58-48e0-8c14-77cf7c1809b8");
-            if (ActiveElement.get_Parameter(ADSK_panelNum).AsString() == "")
+            try
             {
-                Index = $"{ActiveElement.Id}-Id";
+                if (ActiveElement.get_Parameter(ADSK_panelNum).AsString() == "")
+                {
+                    Index = $"{ActiveElement.Id}-Id";
+                }
+                else
+                {
+                    Index = ActiveElement.get_Parameter(ADSK_panelNum).AsString();
+                }
+                ShortMark = $"НС {LongMark.Split('_')[1]} - {Index}";
             }
-            else
+            catch (NullReferenceException e)
             {
-                Index = ActiveElement.get_Parameter(ADSK_panelNum).AsString();
+                logger.WriteLog("Не найден нужный общий параметр: ADSK_Номер изделия, guid: a531f6df-1e58-48e0-8c14-77cf7c1809b8");
+                logger.WriteLog("Проверьте ФОП или шаблон");
+                logger.WriteLog("Завершение работы с ошибкой");
+                logger.LogError(e);
+                throw;
             }
-
-            ShortMark = $"НС {LongMark.Split('_')[1]} - {Index}";
 
         }
 
