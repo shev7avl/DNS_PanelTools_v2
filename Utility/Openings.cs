@@ -50,15 +50,12 @@ namespace DSKPrim.PanelTools_v2.Utility
                 throw;
             }
 
-
-
             logger.DebugLog($"-- Панель {element.Name}: {element.Id} --");
 
             logger.DebugLog($"ПР1.Отступ: {offsetLine} --");
             logger.DebugLog($"ПР1.Ширина: {appWidth} --");
             logger.DebugLog($"ПР1.Высота: {appHeight} --");
             logger.DebugLog($"ПР1.ВысотаСмещение: {offsetZ} --");
-
 
             logger.DebugLog($"-------------");
 
@@ -174,33 +171,53 @@ namespace DSKPrim.PanelTools_v2.Utility
         /// <param name="elementHost">Объект стены в который будет вставояться окно</param>
         public static void CreateFacadeOpening(Document activeDocument, Element elementHost)
         {
-            IEnumerable<Element> fecLinksARCH = new FilteredElementCollector(activeDocument).OfCategory(BuiltInCategory.OST_RvtLinks).WhereElementIsNotElementType().Where(doc => doc.Name.Contains("_АР"));
+            Element panel;
+            SortedList<string, List<double>> WindowsWithParameters;
+            CreateWindowsData(activeDocument, elementHost, out panel, out WindowsWithParameters);
+
+            if (WindowsWithParameters.Keys.Count > 0)
+            {
+                if (WindowsWithParameters.Keys.Contains("ПР1.ВКЛ: 1"))
+                {
+                    PlaceWindow(activeDocument, elementHost, panel, WindowsWithParameters);
+                }
+                if (WindowsWithParameters.Keys.Contains("ПР2.ВКЛ: 1"))
+                {
+                    PlaceWindow(activeDocument, elementHost, panel, WindowsWithParameters, win1: false);
+                }
+            }
+
+
+            // TODO: придумать как в нужном месте сделать вырез
+        }
+
+        private static void CreateWindowsData(Document activeDocument, Element elementHost, out Element panel, out SortedList<string, List<double>> WindowsWithParameters)
+        {
             IEnumerable<Element> fecLinksSTRUCT = new FilteredElementCollector(activeDocument).OfCategory(BuiltInCategory.OST_RvtLinks).WhereElementIsNotElementType().Where(doc => doc.Name.Contains("_КР"));
 
-            List<RevitLinkInstance> linkedDocARCH = fecLinksARCH.Cast<RevitLinkInstance>().ToList();
             List<RevitLinkInstance> linkedDocSTR = fecLinksSTRUCT.Cast<RevitLinkInstance>().ToList();
 
-            List<Document> LinkedArchs = new List<Document>();
             List<Document> LinkedStructs = new List<Document>();
 
-            foreach (var item in linkedDocARCH)
-            {
-                LinkedArchs.Add(item.GetLinkDocument());
-            }
             foreach (var item in linkedDocSTR)
             {
                 LinkedStructs.Add(item.GetLinkDocument());
             }
 
-            Element panel = default;
-            SortedList<string, List<double>> WindowsWithParameters;
+            panel = default;
+
             List<double> ParValues;
 
             ElementIntersectsElementFilter panelFilter = new ElementIntersectsElementFilter(elementHost);
+            
 
             foreach (var item in LinkedStructs)
             {
-                panel = new FilteredElementCollector(item).OfCategory(BuiltInCategory.OST_StructuralFraming).WhereElementIsNotElementType().WherePasses(panelFilter).FirstOrDefault();
+                List<FamilySymbol> nsFamSymbol = new FilteredElementCollector(item).OfCategory(BuiltInCategory.OST_StructuralFraming).OfClass(typeof(FamilySymbol)).Cast<FamilySymbol>().ToList();
+                ElementId nsFamId = nsFamSymbol.Where(o => o.FamilyName.Contains("NS_Empty")).FirstOrDefault().Id;
+
+                FamilyInstanceFilter typeFilter = new FamilyInstanceFilter(item, nsFamId);
+                panel = new FilteredElementCollector(item).OfCategory(BuiltInCategory.OST_StructuralFraming).WhereElementIsNotElementType().WherePasses(panelFilter).WherePasses(typeFilter).FirstOrDefault();
                 if (panel != null)
                 {
                     break;
@@ -208,144 +225,96 @@ namespace DSKPrim.PanelTools_v2.Utility
             }
 
             WindowsWithParameters = new SortedList<string, List<double>>();
-
-            ParValues = new List<double>
+            if (panel != null)
             {
-                Double.Parse(panel.LookupParameter("ПР1.Отступ").AsValueString()),
-                Double.Parse(panel.LookupParameter("ПР1.Ширина").AsValueString()),
-                Double.Parse(panel.LookupParameter("ПР1.Высота").AsValueString()),
-                Double.Parse(panel.LookupParameter("ПР1.ВысотаСмещение").AsValueString())
-            };
-            Debug.WriteLine($"{panel.Id}  --  ПР1.ВКЛ: {panel.LookupParameter("ПР1.ВКЛ").AsInteger()}");
+                ParValues = new List<double>
+                {
+                    Double.Parse(panel.LookupParameter("ПР1.Отступ").AsValueString()),
+                    Double.Parse(panel.LookupParameter("ПР1.Ширина").AsValueString()),
+                    Double.Parse(panel.LookupParameter("ПР1.Высота").AsValueString()),
+                    Double.Parse(panel.LookupParameter("ПР1.ВысотаСмещение").AsValueString())
+                };
+                Debug.WriteLine($"{panel.Id}  --  ПР1.ВКЛ: {panel.LookupParameter("ПР1.ВКЛ").AsInteger()}");
+
+                WindowsWithParameters.Add($"ПР1.ВКЛ: {panel.LookupParameter("ПР1.ВКЛ").AsInteger()}", ParValues);
+
+                ParValues = new List<double>
+                {
+                    Double.Parse(panel.LookupParameter("ПР2.Отступ").AsValueString()),
+                    Double.Parse(panel.LookupParameter("ПР2.Ширина").AsValueString()),
+                    Double.Parse(panel.LookupParameter("ПР2.Высота").AsValueString()),
+                    Double.Parse(panel.LookupParameter("ПР2.ВысотаСмещение").AsValueString())
+                };
+                Debug.WriteLine($"{panel.Id}  --  ПР2.ВКЛ: {panel.LookupParameter("ПР2.ВКЛ").AsInteger()}");
+                WindowsWithParameters.Add($"ПР2.ВКЛ: {panel.LookupParameter("ПР2.ВКЛ").AsInteger()}", ParValues);
+            }
             
-            WindowsWithParameters.Add($"ПР1.ВКЛ: {panel.LookupParameter("ПР1.ВКЛ").AsInteger()}", ParValues);
+        }
 
-            ParValues = new List<double>
-            {
-                Double.Parse(panel.LookupParameter("ПР2.Отступ").AsValueString()),
-                Double.Parse(panel.LookupParameter("ПР2.Ширина").AsValueString()),
-                Double.Parse(panel.LookupParameter("ПР2.Высота").AsValueString()),
-                Double.Parse(panel.LookupParameter("ПР2.ВысотаСмещение").AsValueString())
-            };
-            Debug.WriteLine($"{panel.Id}  --  ПР2.ВКЛ: {panel.LookupParameter("ПР2.ВКЛ").AsInteger()}");
-            WindowsWithParameters.Add($"ПР2.ВКЛ: {panel.LookupParameter("ПР2.ВКЛ").AsInteger()}", ParValues);
+        private static void PlaceWindow(Document activeDocument, Element elementHost, Element panel, SortedList<string, List<double>> WindowsWithParameters, bool win1 = true)
+        {
+            ElementIntersectsElementFilter filter = new ElementIntersectsElementFilter(elementHost);
+            List<ElementId> windows = new FilteredElementCollector(activeDocument).OfCategory(BuiltInCategory.OST_Windows).WhereElementIsElementType().WherePasses(filter).ToElementIds().ToList();
 
-            if (WindowsWithParameters.Keys.Count > 0)
+            if (windows.Count == 0)
             {
-                if (WindowsWithParameters.Keys.Contains("ПР1.ВКЛ: 1"))
+                List<double> tempValues = new List<double>();
+                if (win1)
                 {
-                    List<double> tempValues = WindowsWithParameters["ПР1.ВКЛ: 1"];
-
-                    GeometryElement geometryObject = elementHost.get_Geometry(new Options());
-                    Solid geomSolid = null;
-                    foreach (GeometryObject item in geometryObject)
-                    {
-                        if (item is Solid solid)
-                        {
-                            geomSolid = solid;
-                        }
-                    }
-                    FaceArray faceArray = geomSolid.Faces;
-
-                    Face face = faceArray.get_Item(0);
-                    for (int i = 1; i < 5; i++)
-                    {
-                        if (faceArray.get_Item(i).Area > face.Area)
-                        {
-                            face = faceArray.get_Item(i);
-                        }
-                    }
-
-                    LocationCurve wallCurve = (LocationCurve)elementHost.Location;
-                    XYZ startWall = wallCurve.Curve.GetEndPoint(0);
-
-                    XYZ newPoint = default;
-
-                    if (GetOrientation(panel) == 1)
-                    {
-                        double newX = startWall.X + UnitUtils.ConvertToInternalUnits(tempValues[0], UnitTypeId.Millimeters) + 0.5 * UnitUtils.ConvertToInternalUnits(tempValues[1], UnitTypeId.Millimeters);
-                        double newY = startWall.Y;
-                        double newZ = startWall.Z + UnitUtils.ConvertToInternalUnits(tempValues[3], UnitTypeId.Millimeters);
-
-                        newPoint = new XYZ(newX, newY, newZ);
-                    }
-                    else if (GetOrientation(panel) == -1)
-                    {
-                        double newY = startWall.Y + UnitUtils.ConvertToInternalUnits(tempValues[0], UnitTypeId.Millimeters) + 0.5 * UnitUtils.ConvertToInternalUnits(tempValues[1], UnitTypeId.Millimeters);
-                        double newX = startWall.X;
-                        double newZ = startWall.Z + UnitUtils.ConvertToInternalUnits(tempValues[3], UnitTypeId.Millimeters);
-
-                        newPoint = new XYZ(newX, newY, newZ);
-                    }
-
-                    XYZ pointOnFace = face.Project(newPoint).XYZPoint;
-
-                    FamilySymbol windowSymbol = new FilteredElementCollector(activeDocument).OfClass(typeof(FamilySymbol)).Cast<FamilySymbol>().Where(o => o.Name == "DNS_ПроемДляПлитки").First();
-
-                    using (Transaction t = new Transaction(activeDocument, "Create window"))
-                    {
-                        t.Start();
-
-                        if (!windowSymbol.IsActive)
-                        {
-                            // Ensure the family symbol is activated.
-                            windowSymbol.Activate();
-                            activeDocument.Regenerate();
-                        }
-
-                        // Create window
-                        // unliss you specified a host, Rebit will create the family instance as orphabt object.
-                        FamilyInstance window = activeDocument.Create.NewFamilyInstance(pointOnFace, windowSymbol, elementHost, StructuralType.NonStructural);
-                        t.Commit();
-                    }
-
+                    tempValues = WindowsWithParameters["ПР1.ВКЛ: 1"];
                 }
-                if (WindowsWithParameters.Keys.Contains("ПР2.ВКЛ: 1"))
+                else
                 {
-                    List<double> tempValues = WindowsWithParameters["ПР1.ВКЛ: 1"];
+                    tempValues = WindowsWithParameters["ПР2.ВКЛ: 1"];
+                }
 
-                    GeometryElement geometryObject = elementHost.get_Geometry(new Options());
-                    Solid geomSolid = null;
-                    foreach (GeometryObject item in geometryObject)
+
+                GeometryElement geometryObject = elementHost.get_Geometry(new Options());
+                Solid geomSolid = null;
+                foreach (GeometryObject item in geometryObject)
+                {
+                    if (item is Solid solid)
                     {
-                        if (item is Solid solid)
-                        {
-                            geomSolid = solid;
-                        }
+                        geomSolid = solid;
                     }
-                    FaceArray faceArray = geomSolid.Faces;
+                }
+                FaceArray faceArray = geomSolid.Faces;
 
-                    Face face = faceArray.get_Item(0);
-                    for (int i = 1; i < 5; i++)
+                Face face = faceArray.get_Item(0);
+                for (int i = 1; i < 5; i++)
+                {
+                    if (faceArray.get_Item(i).Area > face.Area)
                     {
-                        if (faceArray.get_Item(i).Area > face.Area)
-                        {
-                            face = faceArray.get_Item(i);
-                        }
+                        face = faceArray.get_Item(i);
                     }
+                }
 
-                    LocationCurve wallCurve = (LocationCurve)elementHost.Location;
-                    XYZ startWall = wallCurve.Curve.GetEndPoint(0);
+                LocationCurve wallCurve = (LocationCurve)elementHost.Location;
+                XYZ startWall = wallCurve.Curve.GetEndPoint(0);
 
-                    XYZ newPoint = default;
+                XYZ newPoint = default;
+                FamilyInstance panelFI = (FamilyInstance)panel;
+                if (Math.Abs(panelFI.HandOrientation.X) == 1)
+                {
+                    double deltaAxis = UnitUtils.ConvertToInternalUnits(tempValues[0], UnitTypeId.Millimeters) + 0.5 * UnitUtils.ConvertToInternalUnits(tempValues[1], UnitTypeId.Millimeters);
+                    double newX = startWall.X + deltaAxis * panelFI.HandOrientation.X;
+                    double newY = startWall.Y;
+                    double newZ = startWall.Z + UnitUtils.ConvertToInternalUnits(tempValues[3], UnitTypeId.Millimeters);
 
-                    if (GetOrientation(panel) == 1)
-                    {
-                        double newX = startWall.X + UnitUtils.ConvertToInternalUnits(tempValues[0], UnitTypeId.Millimeters) + 0.5 * UnitUtils.ConvertToInternalUnits(tempValues[1], UnitTypeId.Millimeters);
-                        double newY = startWall.Y;
-                        double newZ = startWall.Z + UnitUtils.ConvertToInternalUnits(tempValues[3], UnitTypeId.Millimeters);
+                    newPoint = new XYZ(newX, newY, newZ);
+                }
+                else if (Math.Abs(panelFI.HandOrientation.Y) == 1)
+                {
+                    double deltaAxis = UnitUtils.ConvertToInternalUnits(tempValues[0], UnitTypeId.Millimeters) + 0.5 * UnitUtils.ConvertToInternalUnits(tempValues[1], UnitTypeId.Millimeters);
+                    double newY = startWall.Y + deltaAxis * panelFI.HandOrientation.Y;
+                    double newX = startWall.X;
+                    double newZ = startWall.Z + UnitUtils.ConvertToInternalUnits(tempValues[3], UnitTypeId.Millimeters);
 
-                        newPoint = new XYZ(newX, newY, newZ);
-                    }
-                    else if (GetOrientation(panel) == -1)
-                    {
-                        double newY = startWall.Y + UnitUtils.ConvertToInternalUnits(tempValues[0], UnitTypeId.Millimeters) + 0.5 * UnitUtils.ConvertToInternalUnits(tempValues[1], UnitTypeId.Millimeters);
-                        double newX = startWall.X;
-                        double newZ = startWall.Z + UnitUtils.ConvertToInternalUnits(tempValues[3], UnitTypeId.Millimeters);
+                    newPoint = new XYZ(newX, newY, newZ);
+                }
 
-                        newPoint = new XYZ(newX, newY, newZ);
-                    }
-
+                try
+                {
                     XYZ pointOnFace = face.Project(newPoint).XYZPoint;
 
                     FamilySymbol windowSymbol = new FilteredElementCollector(activeDocument).OfClass(typeof(FamilySymbol)).Cast<FamilySymbol>().Where(o => o.Name == "DNS_ПроемДляПлитки").First();
@@ -365,12 +334,21 @@ namespace DSKPrim.PanelTools_v2.Utility
                         // unliss you specified a host, Rebit will create the family instance as orphabt object.
                         FamilyInstance window = activeDocument.Create.NewFamilyInstance(pointOnFace, windowSymbol, elementHost, StructuralType.NonStructural);
                         t.Commit();
+
+                        t.Start();
+                        activeDocument.Regenerate();
+                        window.get_Parameter(BuiltInParameter.DOOR_HEIGHT).SetValueString(tempValues[2].ToString());
+                        window.get_Parameter(BuiltInParameter.FURNITURE_WIDTH).SetValueString(tempValues[1].ToString());
+                        t.Commit();
                     }
+                }
+                catch (Exception)
+                {
+
                 }
             }
 
-
-            // TODO: придумать как в нужном месте сделать вырез
+            
         }
 
         private static int GetOrientation(Element element)
@@ -461,34 +439,7 @@ namespace DSKPrim.PanelTools_v2.Utility
             string prompt = "The element was created!";
         }
 
-        public static void GetWindows_Arch(Document activeARCH, Element facadeWall, out List<Element> IntersectedWindows)
-        {
-            SingleArchDoc archDoc = SingleArchDoc.getInstance(activeARCH);
-            List<Element> windows = archDoc.Windows;
-
-            IntersectedWindows = new List<Element>();
-
-            LocationCurve location = (LocationCurve)facadeWall.Location;
-            Curve curve = location.Curve;
-
-            XYZ Start = curve.GetEndPoint(0);
-            XYZ End = curve.GetEndPoint(1);
-
-            Options options = new Options();
-
-            foreach (Element window in windows)
-            {
-                FamilyInstance windowFamInst = window as FamilyInstance;
-                Element hostWall = windowFamInst.Host;
-                BoundingBoxXYZ boundingBoxHostWall = hostWall.get_Geometry(options).GetBoundingBox();
-                if (Geometry.InBox(boundingBoxHostWall, Start) || Geometry.InBox(boundingBoxHostWall, End))
-                {
-                    IntersectedWindows.Add(window);
-                }
-            }
-
-        }
-
+        
         #endregion
 
         #region Utility

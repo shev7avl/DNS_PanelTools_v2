@@ -33,7 +33,7 @@ namespace DSKPrim.PanelTools_v2.Commands
 
             foreach (Element item in fecWalls)
             {
-                WallParts wallParts = new WallParts(ActiveDocument, linkedDocSTR, linkedDocARCH, item);
+                WallParts wallParts = new WallParts(ActiveDocument, linkedDocSTR, item);
                 wallParts.CreateMarks();
                 logger.DebugLog(item.Name);
             }

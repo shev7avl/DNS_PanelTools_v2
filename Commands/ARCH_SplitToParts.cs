@@ -21,23 +21,25 @@ namespace DSKPrim.PanelTools_v2.Commands
         {
             Logger.Logger logger = Logger.Logger.getInstance();
             ActiveDocument = commandData.Application.ActiveUIDocument.Document;
-            IEnumerable<Element> fecLinksARCH = new FilteredElementCollector(ActiveDocument).OfCategory(BuiltInCategory.OST_RvtLinks).WhereElementIsNotElementType().Where(doc => doc.Name.Contains("_АР"));
-            IEnumerable<Element> fecLinksSTRUCT = new FilteredElementCollector(ActiveDocument).OfCategory(BuiltInCategory.OST_RvtLinks).WhereElementIsNotElementType().Where(doc => doc.Name.Contains("_КР"));
+
             FilteredElementCollector fecWalls = new FilteredElementCollector(ActiveDocument).OfCategory(BuiltInCategory.OST_Walls).WhereElementIsNotElementType();
 
-            Document linkedDocARCH = fecLinksARCH.Cast<RevitLinkInstance>().ToList()[0].GetLinkDocument();
-            Document linkedDocSTR = fecLinksSTRUCT.Cast<RevitLinkInstance>().ToList()[0].GetLinkDocument();
+            logger.DebugLog(ActiveDocument.PathName);
 
-            logger.DebugLog(linkedDocARCH.PathName);
-
-            foreach (Element item in fecWalls)
+            foreach (var item in fecWalls)
             {
-                WallParts wallParts = new WallParts(ActiveDocument, linkedDocSTR, linkedDocARCH, item);
-                wallParts.SplitToParts();
-                wallParts.ExcludeStitches();
-                logger.DebugLog(item.Name);
+                try
+                {
+                    Utility.Parts.SplitToParts(ActiveDocument, item);
+                    Utility.Parts.ExcludeStitches(ActiveDocument, item);
+                    logger.DebugLog(item.Name);
+                }
+                catch (Exception e)
+                {
+                    logger.DebugLog($"Ошибка{e.Message} : {item.Name} - {item.Id}");
+                }
             }
-           
+                         
             return Result.Succeeded;
         }
     }

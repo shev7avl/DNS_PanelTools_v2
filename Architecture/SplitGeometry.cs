@@ -45,6 +45,7 @@ namespace DSKPrim.PanelTools_v2.Architecture
                     {
 
                         transaction.Start();
+                        document.Regenerate();
                         logger.DebugLog($"Начали транзакцию: {transaction.GetName()}");
                         Plane plane = Plane.CreateByNormalAndOrigin(normal, origin);
                         logger.DebugLog($"Создали плоскость: {plane}");
@@ -54,7 +55,6 @@ namespace DSKPrim.PanelTools_v2.Architecture
                         logger.DebugLog($"Создали плоскость эскиза: {sketchPlane}");
                         logger.DebugLog($"Пытаемся разрезать части");
                         PartMaker maker = PartUtils.DivideParts(document, partsId, refiD, curves, sketchPlane.Id);
-
                         transaction.Commit();
                     }
                     break;
@@ -70,7 +70,6 @@ namespace DSKPrim.PanelTools_v2.Architecture
 
             BoundingBoxUV boxUV = plane.GetBoundingBoxUV();
 
-            
             double LenU = partEl.get_Parameter(BuiltInParameter.DPART_LENGTH_COMPUTED).AsDouble();
             double HeiV = partEl.get_Parameter(BuiltInParameter.DPART_HEIGHT_COMPUTED).AsDouble();
 
@@ -86,32 +85,32 @@ namespace DSKPrim.PanelTools_v2.Architecture
                 conStepH = 88;
                 conGap = 12;
                 curves = CreateRectangle(boxUV, face, conLenU, conHeiV);
-            
-                Curve Left = curves[2];
-                for (double i = 0; i < conLenU - 300; i = i + conStepV + conGap)
-                {
-                    Curve curve1 = OffsetCurve(Left, curves[0], conStepV);
-                    curves.Add(curve1);
-                    Left = OffsetCurve(curve1, curves[0], conGap);
-                    curves.Add(Left);
-                }
+            //TODO: тестируем новый алгоритм нарезки плитки
+            //TODO: попробовать "клинкерную" раскладку
+            Curve Left = curves[2];
 
-                Curve Top = curves[0];
-                for (double i = 0; i <= conHeiV - 100; i = i + conStepH + conGap)
-                {
-                    Curve curve1 = OffsetCurve(Top, curves[2], conStepH);
-                    curves.Add(curve1);
-                    Top = OffsetCurve(curve1, curves[2], conGap);
-                    curves.Add(Top);
-                }          
+            for (double i = 0; i < conLenU - 300; i = i + conStepV + conGap)
+            {
+                Curve curve1 = OffsetCurve(Left, curves[0], conStepV);
+                curves.Add(curve1);
+                Left = OffsetCurve(curve1, curves[0], conGap);
+                curves.Add(Left);
+            }
+
+            Curve Top = curves[0];
+            for (double i = 0; i <= conHeiV - 100; i = i + conStepH + conGap)
+            {
+                Curve curve1 = OffsetCurve(Top, curves[2], conStepH);
+                curves.Add(curve1);
+                Top = OffsetCurve(curve1, curves[2], conGap);
+                curves.Add(Top);
+            }
 
             return curves;
         }
 
         private static List<Curve> CreateRectangle(BoundingBoxUV boxUV, Face face, double width, double heigth)
         {
-            ;
-
             //Определения базисных векторов
             UV origin = boxUV.Min;
             UV VerticalBase = new UV(boxUV.Min.U, boxUV.Max.V);
@@ -119,8 +118,9 @@ namespace DSKPrim.PanelTools_v2.Architecture
             XYZ originXYZ = face.Evaluate(origin);
             XYZ verticalBase = face.Evaluate(VerticalBase);
             XYZ horizontalBase = face.Evaluate(HorizontalBase);
-            int horBasis = GetDirectionXYZ(originXYZ, horizontalBase);
-            int vertBasis = GetDirectionXYZ(originXYZ, verticalBase);
+            Line horBasis = Line.CreateBound(originXYZ, horizontalBase);
+            Line verBasis = Line.CreateBound(originXYZ, verticalBase);
+
 
             //Задание ширины и высоты
             double convWidth = UnitUtils.ConvertToInternalUnits(width, UnitTypeId.Millimeters);
@@ -133,20 +133,20 @@ namespace DSKPrim.PanelTools_v2.Architecture
             XYZ pt2 = new XYZ();
             XYZ pt3 = new XYZ();
 
-            if (horBasis == 0)
+            if (Math.Abs(horBasis.Direction.X) == 1)
             {
-                pt1 = new XYZ(originXYZ.X - offsetWidth, originXYZ.Y, originXYZ.Z+offsetHeigth);
-                pt2 = new XYZ(pt1.X + convWidth, pt1.Y, pt1.Z);
+                pt1 = new XYZ(originXYZ.X + offsetWidth* horBasis.Direction.X, originXYZ.Y, originXYZ.Z+offsetHeigth);
+                pt2 = new XYZ(pt1.X - convWidth* horBasis.Direction.X, pt1.Y, pt1.Z);
             }
-            else if (horBasis == 1)
+            else if (Math.Abs(horBasis.Direction.Y) == 1)
             {
-                pt1 = new XYZ(originXYZ.X , originXYZ.Y - offsetWidth, originXYZ.Z+offsetHeigth);
-                pt2 = new XYZ(pt1.X, pt1.Y + convWidth, pt1.Z);
+                pt1 = new XYZ(originXYZ.X , originXYZ.Y + offsetWidth*horBasis.Direction.Y, originXYZ.Z+offsetHeigth);
+                pt2 = new XYZ(pt1.X, pt1.Y - convWidth * horBasis.Direction.Y, pt1.Z);
             }
 
-            if (vertBasis == 2)
+            if (Math.Abs(verBasis.Direction.Z) == 1)
             {
-                pt3 = new XYZ(pt1.X, pt1.Y, pt1.Z - convHeigth);
+                pt3 = new XYZ(pt1.X, pt1.Y, pt1.Z - convHeigth* verBasis.Direction.Z);
             }
 
             XYZ pt4 = new XYZ(pt2.X, pt2.Y, pt3.Z);
@@ -165,36 +165,25 @@ namespace DSKPrim.PanelTools_v2.Architecture
             return curves;
         }
 
-        private static int GetDirectionXYZ(XYZ pointA, XYZ pointB)
-        {
-            double deltaX = Math.Abs(pointA.X - pointB.X);
-            double deltaY = Math.Abs(pointA.Y - pointB.Y);
-            double deltaZ = Math.Abs(pointA.Z - pointB.Z);
-
-            if (deltaX > deltaY && deltaX > deltaZ) return 0;
-            else if (deltaY > deltaX && deltaY > deltaZ) return 1;
-            else return 2;
-            
-        }
-
         public static Curve OffsetCurve(Curve curve, Curve direction, double offsetValue)
         {
             double offset = UnitUtils.ConvertToInternalUnits(offsetValue, UnitTypeId.Millimeters);
 
             Curve offsetCurve;
+            Line directionLine = (Line)direction;
             XYZ pt1;
             XYZ pt2;
-            if (GetDirectionXYZ(direction.GetEndPoint(0), direction.GetEndPoint(1))==0)
+            if (Math.Abs(directionLine.Direction.X) == 1)
             {
-                pt1 = new XYZ(curve.GetEndPoint(0).X+offset, curve.GetEndPoint(0).Y, curve.GetEndPoint(0).Z);
-                pt2 = new XYZ(curve.GetEndPoint(1).X+offset, curve.GetEndPoint(1).Y, curve.GetEndPoint(1).Z);
+                pt1 = new XYZ(curve.GetEndPoint(0).X+offset* directionLine.Direction.X, curve.GetEndPoint(0).Y, curve.GetEndPoint(0).Z);
+                pt2 = new XYZ(curve.GetEndPoint(1).X+offset* directionLine.Direction.X, curve.GetEndPoint(1).Y, curve.GetEndPoint(1).Z);
             }
-            else if (GetDirectionXYZ(direction.GetEndPoint(0), direction.GetEndPoint(1)) == 1)
+            else if (Math.Abs(directionLine.Direction.Y) == 1)
             {
-                pt1 = new XYZ(curve.GetEndPoint(0).X, curve.GetEndPoint(0).Y+offset, curve.GetEndPoint(0).Z);
-                pt2 = new XYZ(curve.GetEndPoint(1).X, curve.GetEndPoint(1).Y+offset, curve.GetEndPoint(1).Z);
+                pt1 = new XYZ(curve.GetEndPoint(0).Y, curve.GetEndPoint(0).Y+offset* directionLine.Direction.Y, curve.GetEndPoint(0).Z);
+                pt2 = new XYZ(curve.GetEndPoint(1).X, curve.GetEndPoint(1).Y+offset* directionLine.Direction.Y, curve.GetEndPoint(1).Z);
             }
-            else if (GetDirectionXYZ(direction.GetEndPoint(0), direction.GetEndPoint(1)) == 2)
+            else if (Math.Abs(directionLine.Direction.Z) == 1)
             {
                 pt1 = new XYZ(curve.GetEndPoint(0).X, curve.GetEndPoint(0).Y, curve.GetEndPoint(0).Z-offset);
                 pt2 = new XYZ(curve.GetEndPoint(1).X, curve.GetEndPoint(1).Y, curve.GetEndPoint(1).Z-offset);

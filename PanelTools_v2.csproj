@@ -40,6 +40,12 @@
       <HintPath>C:\Program Files\Autodesk\Revit 2022\RevitAPIUI.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="RevitTestFrameworkTypes, Version=1.19.23.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\RevitTestFramework.1.19.23\lib\net47\RevitTestFrameworkTypes.dll</HintPath>
+    </Reference>
+    <Reference Include="RTFRevit, Version=1.19.23.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\RevitTestFramework.1.19.23\lib\net47\RTFRevit.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -107,6 +113,7 @@
     <Compile Include="StructuralApps\StructureType.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
     <None Include="PanelTools_v2.addin" />
   </ItemGroup>
   <ItemGroup>
