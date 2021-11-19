@@ -4,6 +4,7 @@ using Autodesk.Revit.UI;
 using DSKPrim.PanelTools_v2.Architecture;
 using DSKPrim.PanelTools_v2.StructuralApps.Panel;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -14,32 +15,106 @@ namespace DSKPrim.PanelTools_v2.Commands
 {
     [Transaction(mode: TransactionMode.Manual)]
     [Regeneration(RegenerationOption.Manual)]
-    class ARCH_copyMarks : IExternalCommand
+    class ARCH_copyMarks : Routine
     {
-        Document ActiveDocument;
-        public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
+
+        public override StructuralApps.Panel.Panel Behaviour { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public override Document Document { get; set ; }
+
+        public override void ExecuteRoutine(ExternalCommandData commandData)
         {
             Logger.Logger logger = Logger.Logger.getInstance();
 
-            ActiveDocument = commandData.Application.ActiveUIDocument.Document;
-            IEnumerable<Element> fecLinksARCH = new FilteredElementCollector(ActiveDocument).OfCategory(BuiltInCategory.OST_RvtLinks).WhereElementIsNotElementType().Where(doc => doc.Name.Contains("_АР"));
-            IEnumerable<Element> fecLinksSTRUCT = new FilteredElementCollector(ActiveDocument).OfCategory(BuiltInCategory.OST_RvtLinks).WhereElementIsNotElementType().Where(doc => doc.Name.Contains("_КР"));
-            FilteredElementCollector fecWalls = new FilteredElementCollector(ActiveDocument).OfCategory(BuiltInCategory.OST_Walls).WhereElementIsNotElementType();
+            Document = commandData.Application.ActiveUIDocument.Document;
 
-            Document linkedDocARCH = fecLinksARCH.Cast<RevitLinkInstance>().ToList()[0].GetLinkDocument();
+            IEnumerable<Element> fecLinksSTRUCT = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_RvtLinks).WhereElementIsNotElementType().Where(doc => doc.Name.Contains("_КР"));
+            FilteredElementCollector fecWalls = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_Walls).WhereElementIsNotElementType();
+
             Document linkedDocSTR = fecLinksSTRUCT.Cast<RevitLinkInstance>().ToList()[0].GetLinkDocument();
 
-            logger.DebugLog(linkedDocARCH.PathName);
+            Dictionary<Element, List<string>> facadePanel;
+            Dictionary<Element, Dictionary<string, Element>> facadeParts;
+
+            
 
             foreach (Element item in fecWalls)
             {
-                WallParts wallParts = new WallParts(ActiveDocument, linkedDocSTR, item);
-                wallParts.CreateMarks();
-                logger.DebugLog(item.Name);
+                CreateFacadePanelPartsData(linkedDocSTR, out facadePanel, out facadeParts, item);
+
+                SetFacadePartsParameters(facadePanel, facadeParts, item);
+
             }
 
+        }
+        /// <summary>
+        /// Назначает параметры фасадной стене и фасадным частям
+        /// </summary>
+        /// <param name="facadePanel"></param>
+        /// <param name="facadeParts"></param>
+        /// <param name="item"></param>
+        private static void SetFacadePartsParameters(Dictionary<Element, List<string>> facadePanel, Dictionary<Element, Dictionary<string, Element>> facadeParts, Element item)
+        {
+            foreach (var facade in facadePanel.Keys)
+            {
+                facade.get_Parameter(new Guid()).SetValueString("");
+                facade.get_Parameter(new Guid()).SetValueString("");
+            }
+            foreach (var part in facadeParts.Keys)
+            {
+                string code = "";
 
-            return Result.Succeeded;
+                foreach (string materialCode in facadeParts.Values.First().Keys)
+                {
+                    code += materialCode;
+                    code += ".";
+                }
+                item.get_Parameter(new Guid()).SetValueString(code);
+
+                foreach (Element el in facadeParts.Values.First().Values)
+                {
+                    el.get_Parameter(new Guid()).SetValueString("");
+                    el.get_Parameter(new Guid()).SetValueString("");
+                    el.get_Parameter(new Guid()).SetValueString("");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Записывает данные о параметрах панели фасада, параметрах материала, наборе частей (плитки)
+        /// </summary>
+        /// <param name="linkedDocSTR"></param>
+        /// <param name="facadePanel"></param>
+        /// <param name="facadeParts"></param>
+        /// <param name="item"></param>
+        private void CreateFacadePanelPartsData(Document linkedDocSTR, out Dictionary<Element, List<string>> facadePanel, out Dictionary<Element, Dictionary<string, Element>> facadeParts, Element item)
+        {
+            ElementIntersectsElementFilter facadeIntersectionFilter = new ElementIntersectsElementFilter(item);
+            facadePanel = new Dictionary<Element, List<string>>();
+            facadeParts = new Dictionary<Element, Dictionary<string, Element>>();
+
+            Element panel = new FilteredElementCollector(linkedDocSTR).OfCategory(BuiltInCategory.OST_StructuralFraming).WhereElementIsNotElementType().WherePasses(facadeIntersectionFilter).ToElements().FirstOrDefault();
+            List<Element> parts = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_Parts).WhereElementIsNotElementType().WherePasses(facadeIntersectionFilter).ToElements().ToList();
+
+            facadePanel.Add(item, new List<string>()
+                {
+                    //TODO: Вписать нужные параметры
+                    panel.get_Parameter(new Guid()).AsValueString(),
+                    panel.get_Parameter(new Guid()).AsValueString()
+                });
+
+            Dictionary<string, Element> temp = new Dictionary<string, Element>();
+
+            foreach (var pt in parts)
+            {
+                Material material = (Material)Document.GetElement(pt.GetMaterialIds(returnPaintMaterials: false).FirstOrDefault());
+                string code = material.get_Parameter(new Guid()).AsValueString();
+                temp.Add(
+                    code,
+                    pt
+                    );
+            };
+
+            facadeParts.Add(item, temp);
         }
     }
 

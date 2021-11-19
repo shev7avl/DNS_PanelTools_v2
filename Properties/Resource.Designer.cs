@@ -79,11 +79,29 @@ namespace DSKPrim.PanelTools_v2.Properties {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на 567521b3-a26c-4c54-ae8d-a9a4e3c11d02.
+        /// </summary>
+        internal static string DNS_Марка_элемента {
+            get {
+                return ResourceManager.GetString("DNS_Марка элемента", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на 61078a81-82f3-41e2-bcfd-ae64f9430577.
         /// </summary>
         internal static string DNS_Полная_марка_изделия {
             get {
                 return ResourceManager.GetString("DNS_Полная марка изделия", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на 5c129b11-7c19-43b2-b680-55040fd29dd8.
+        /// </summary>
+        internal static string DNS_Тип_секции {
+            get {
+                return ResourceManager.GetString("DNS_Тип секции", resourceCulture);
             }
         }
         

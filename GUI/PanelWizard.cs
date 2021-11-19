@@ -130,6 +130,7 @@ namespace DSKPrim.PanelTools_v2.GUI
                     Routine = new ARCH_PlaceWindow();
                     break;
                 case ("Скопировать марки"):
+                    Routine = new ARCH_copyMarks();
                     break;
                 case ("Создать сборки фасада"):
                     break;

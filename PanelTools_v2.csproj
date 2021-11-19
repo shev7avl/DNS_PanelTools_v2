@@ -83,7 +83,6 @@
     </Compile>
     <Compile Include="StructuralApps\Panel\IAssembler.cs" />
     <Compile Include="StructuralApps\Panel\IPerforated.cs" />
-    <Compile Include="StructuralApps\Panel\WallParts.cs" />
     <Compile Include="Utility\Assemblies.cs" />
     <Compile Include="Utility\WarningDiscard.cs" />
     <Compile Include="Utility\Marks.cs" />

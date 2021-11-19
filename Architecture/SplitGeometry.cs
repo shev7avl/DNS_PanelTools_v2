@@ -29,7 +29,6 @@ namespace DSKPrim.PanelTools_v2.Architecture
                 }
             }
 
-
             FaceArray faceArray = geomSolid.Faces;
             foreach (PlanarFace face in faceArray)
             {
@@ -49,7 +48,10 @@ namespace DSKPrim.PanelTools_v2.Architecture
                         logger.DebugLog($"Начали транзакцию: {transaction.GetName()}");
                         Plane plane = Plane.CreateByNormalAndOrigin(normal, origin);
                         logger.DebugLog($"Создали плоскость: {plane}");
-                        IList<Curve> curves = CreateCurveArray(partEl, face, plane);
+
+                        //IList<Curve> curves = CreateTileOutlay(partEl, face, plane);
+                        IList<Curve> curves = CreateBrickOutlay(partEl, face, plane);
+
                         logger.DebugLog($"Создали список кривых: {curves}");
                         SketchPlane sketchPlane = SketchPlane.Create(document, plane);
                         logger.DebugLog($"Создали плоскость эскиза: {sketchPlane}");
@@ -59,11 +61,96 @@ namespace DSKPrim.PanelTools_v2.Architecture
                     }
                     break;
                 }
-                
             }
         }
 
-        public static IList<Curve> CreateCurveArray(Element partEl, Face face, Plane plane)
+        public static IList<Curve> CreateBrickOutlay(Element partEl, Face face, Plane plane)
+        {
+            double conLenU, conHeiV, conStepV, conStepH, conGap;
+            IList<Curve> curves;
+            PanelOutline(partEl, face, plane, out conLenU, out conHeiV, out curves);
+
+            //TODO: тестируем новый алгоритм нарезки плитки
+            //TODO: попробовать "клинкерную" раскладку
+
+            conStepV = 288;
+            conStepH = 88;
+            conGap = 12;
+
+            Curve Left = curves[2];
+            Curve Top = curves[0];
+
+            List<Curve> brickBaseLine = BrickLine((Line)Top, (Line)Left, conStepV, conStepH, conGap);
+            foreach (Curve item in brickBaseLine)
+            {
+                curves.Add(item);
+            }
+
+            for (double i = 0; i < conLenU - (conStepV + conGap); i = i + conStepV + conGap)
+            {
+                List<Curve> temp = new List<Curve>();
+                foreach (var item in brickBaseLine)
+                {
+                    temp.Add(OffsetCurve(item, Top, conStepV + conGap));
+                    curves.Add(OffsetCurve(item, Top, conStepV + conGap));
+                }
+                brickBaseLine.Clear();
+                foreach (var item in temp)
+                {
+                    brickBaseLine.Add(item);
+                }
+                temp.Clear();
+            }
+
+
+            for (double i = 0; i <= conHeiV - (conStepH + conGap); i = i + conStepH + conGap)
+            {
+                Curve curve1 = OffsetCurve(Top, Left, conStepH);
+                curves.Add(curve1);
+                Top = OffsetCurve(curve1, Left, conGap);
+                curves.Add(Top);
+            }
+
+            return curves;
+        }
+
+        public static IList<Curve> CreateTileOutlay(Element partEl, Face face, Plane plane)
+        {
+            double conLenU, conHeiV, conStepV, conStepH, conGap;
+            IList<Curve> curves;
+            PanelOutline(partEl, face, plane, out conLenU, out conHeiV, out curves);
+
+            //TODO: тестируем новый алгоритм нарезки плитки
+            //TODO: попробовать "клинкерную" раскладку
+
+            conStepV = 288;
+            conStepH = 88;
+            conGap = 12;
+
+            Curve Left = curves[2];
+            Curve Top = curves[0];
+
+            for (double i = 0; i < conLenU - (conStepV+conGap); i = i + conStepV + conGap)
+            {
+                Curve curve1 = OffsetCurve(Left, curves[0], conStepV);
+                curves.Add(curve1);
+                Left = OffsetCurve(curve1, curves[0], conGap);
+                curves.Add(Left);
+            }
+
+            
+            for (double i = 0; i <= conHeiV - (conStepH+conGap); i = i + conStepH + conGap)
+            {
+                Curve curve1 = OffsetCurve(Top, curves[2], conStepH);
+                curves.Add(curve1);
+                Top = OffsetCurve(curve1, curves[2], conGap);
+                curves.Add(Top);
+            }
+
+            return curves;
+        }
+
+        private static void PanelOutline(Element partEl, Face face, Plane plane, out double conLenU, out double conHeiV, out IList<Curve> curves)
         {
             Logger.Logger logger = Logger.Logger.getInstance();
             logger.LogMethodCall("CreateCurveArray");
@@ -73,40 +160,9 @@ namespace DSKPrim.PanelTools_v2.Architecture
             double LenU = partEl.get_Parameter(BuiltInParameter.DPART_LENGTH_COMPUTED).AsDouble();
             double HeiV = partEl.get_Parameter(BuiltInParameter.DPART_HEIGHT_COMPUTED).AsDouble();
 
-            double conLenU = UnitUtils.ConvertFromInternalUnits(LenU, UnitTypeId.Millimeters);
-            double conHeiV = UnitUtils.ConvertFromInternalUnits(HeiV, UnitTypeId.Millimeters);
-
-            double conStepV;
-            double conStepH;
-            double conGap;
-            IList<Curve> curves;
-
-                conStepV = 288;
-                conStepH = 88;
-                conGap = 12;
-                curves = CreateRectangle(boxUV, face, conLenU, conHeiV);
-            //TODO: тестируем новый алгоритм нарезки плитки
-            //TODO: попробовать "клинкерную" раскладку
-            Curve Left = curves[2];
-
-            for (double i = 0; i < conLenU - 300; i = i + conStepV + conGap)
-            {
-                Curve curve1 = OffsetCurve(Left, curves[0], conStepV);
-                curves.Add(curve1);
-                Left = OffsetCurve(curve1, curves[0], conGap);
-                curves.Add(Left);
-            }
-
-            Curve Top = curves[0];
-            for (double i = 0; i <= conHeiV - 100; i = i + conStepH + conGap)
-            {
-                Curve curve1 = OffsetCurve(Top, curves[2], conStepH);
-                curves.Add(curve1);
-                Top = OffsetCurve(curve1, curves[2], conGap);
-                curves.Add(Top);
-            }
-
-            return curves;
+            conLenU = UnitUtils.ConvertFromInternalUnits(LenU, UnitTypeId.Millimeters);
+            conHeiV = UnitUtils.ConvertFromInternalUnits(HeiV, UnitTypeId.Millimeters);
+            curves = CreateRectangle(boxUV, face, conLenU, conHeiV);
         }
 
         private static List<Curve> CreateRectangle(BoundingBoxUV boxUV, Face face, double width, double heigth)
@@ -165,6 +221,71 @@ namespace DSKPrim.PanelTools_v2.Architecture
             return curves;
         }
 
+        public static List<Curve> BrickLine(Line top, Line left, double width, double height, double stitchWidth)
+        {
+            List<Curve> brickLine = new List<Curve>();
+            double fullWidth = width + stitchWidth;
+            double fullHeight = height + stitchWidth;
+            XYZ startPoint = top.GetEndPoint(0);
+            do
+            {
+                XYZ pt1 = new XYZ(
+                top.GetEndPoint(0).X + UnitUtils.ConvertToInternalUnits(fullWidth / 2, UnitTypeId.Millimeters) * top.Direction.X,
+                top.GetEndPoint(0).Y + UnitUtils.ConvertToInternalUnits(fullWidth / 2, UnitTypeId.Millimeters) * top.Direction.Y,
+                startPoint.Z
+                );
+                XYZ pt2 = new XYZ(
+                    pt1.X,
+                    pt1.Y,
+                    pt1.Z - UnitUtils.ConvertToInternalUnits(fullHeight, UnitTypeId.Millimeters)
+                    );
+                XYZ pt3 = new XYZ(
+                    pt1.X - UnitUtils.ConvertToInternalUnits(stitchWidth, UnitTypeId.Millimeters) * top.Direction.X,
+                    pt1.Y - UnitUtils.ConvertToInternalUnits(stitchWidth, UnitTypeId.Millimeters) * top.Direction.Y,
+                    pt1.Z
+                    );
+                XYZ pt4 = new XYZ(
+                    pt3.X,
+                    pt3.Y,
+                    pt3.Z - UnitUtils.ConvertToInternalUnits(fullHeight, UnitTypeId.Millimeters)
+                    );
+
+                XYZ pt5 = new XYZ(
+                top.GetEndPoint(0).X + UnitUtils.ConvertToInternalUnits(fullWidth, UnitTypeId.Millimeters) * top.Direction.X,
+                top.GetEndPoint(0).Y + UnitUtils.ConvertToInternalUnits(fullWidth, UnitTypeId.Millimeters) * top.Direction.Y,
+                pt2.Z
+                );
+                XYZ pt6 = new XYZ(
+                    pt5.X,
+                    pt5.Y,
+                    pt5.Z - UnitUtils.ConvertToInternalUnits(fullHeight, UnitTypeId.Millimeters)
+                    );
+                XYZ pt7 = new XYZ(
+                    pt5.X - UnitUtils.ConvertToInternalUnits(stitchWidth, UnitTypeId.Millimeters) * top.Direction.X,
+                    pt5.Y - UnitUtils.ConvertToInternalUnits(stitchWidth, UnitTypeId.Millimeters) * top.Direction.Y,
+                    pt5.Z
+                    );
+                XYZ pt8 = new XYZ(
+                    pt7.X,
+                    pt7.Y,
+                    pt7.Z - UnitUtils.ConvertToInternalUnits(fullHeight, UnitTypeId.Millimeters)
+                    );
+
+                startPoint = new XYZ(
+                    top.GetEndPoint(0).X,
+                    top.GetEndPoint(0).Y,
+                    pt1.Z - UnitUtils.ConvertToInternalUnits(fullHeight*2, UnitTypeId.Millimeters)
+                    );
+                brickLine.Add(Line.CreateBound(pt1, pt2));
+                brickLine.Add(Line.CreateBound(pt3, pt4));
+                brickLine.Add(Line.CreateBound(pt5, pt6));
+                brickLine.Add(Line.CreateBound(pt7, pt8));
+
+            } while (startPoint.Z - UnitUtils.ConvertToInternalUnits(fullHeight*2, UnitTypeId.Millimeters) >= left.GetEndPoint(1).Z);
+
+            return brickLine;
+        }
+        //TODO: Переключить offsetCurve на метод API - Curve.CreateOffset
         public static Curve OffsetCurve(Curve curve, Curve direction, double offsetValue)
         {
             double offset = UnitUtils.ConvertToInternalUnits(offsetValue, UnitTypeId.Millimeters);

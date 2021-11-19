@@ -146,7 +146,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 
             try
             {
-                ActiveElement.get_Parameter(ADSK_panelMark1).Set(ShortMark);
+                ActiveElement.get_Parameter(new Guid(Properties.Resource.ADSK_Марка_изделия)).Set(ShortMark);
             }
             catch (Exception)
             {
@@ -158,10 +158,6 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
                 logger.PrintLog();
                 throw;
             }
-
-                
-
-
 
             transaction.Commit();
         }

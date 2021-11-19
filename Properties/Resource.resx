@@ -119,12 +119,19 @@
   </resheader>
   <data name="ADSK_Марка изделия" xml:space="preserve">
     <value>5d369dfb-17a2-4ae2-a1a1-bdfc33ba7405</value>
+    <comment>ADSK_Марка конструкции</comment>
   </data>
   <data name="ADSK_Номер изделия" xml:space="preserve">
     <value>a531f6df-1e58-48e0-8c14-77cf7c1809b8</value>
   </data>
+  <data name="DNS_Марка элемента" xml:space="preserve">
+    <value>567521b3-a26c-4c54-ae8d-a9a4e3c11d02</value>
+  </data>
   <data name="DNS_Полная марка изделия" xml:space="preserve">
     <value>61078a81-82f3-41e2-bcfd-ae64f9430577</value>
+  </data>
+  <data name="DNS_Тип секции" xml:space="preserve">
+    <value>5c129b11-7c19-43b2-b680-55040fd29dd8</value>
   </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="DSK_Prim" type="System.Resources.ResXFileRef, System.Windows.Forms">
