@@ -87,7 +87,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 
             try
             {
-                ShortMark = ActiveElement.get_Parameter(ADSK_panelMark1).ToString();
+                ShortMark = ActiveElement.get_Parameter(ADSK_panelMark1).AsString();
             }
             catch (Exception)
             {
@@ -100,7 +100,7 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 
             try
             {
-                Index = ActiveElement.get_Parameter(ADSK_panelNum).ToString();
+                Index = ActiveElement.get_Parameter(ADSK_panelNum).AsString();
             }
             catch (Exception)
             {
@@ -128,37 +128,46 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 
             transaction.Start($"Транзакция - {ActiveElement.Name}");
 
+            if (ActiveElement.get_Parameter(DNS_panelMark1).AsString().Length == 0)
+            {
+                try
+                {
 
-            try
-            {
-                ActiveElement.get_Parameter(DNS_panelMark1).Set(LongMark);
-            }
-            catch (NullReferenceException)
-            {
-                logger.WriteLog("ОШИБКА: У элемента не найден параметр DNS_Полная_марка_изделия");
-                logger.WriteLog($"Нужный GUID: {Properties.Resource.DNS_Полная_марка_изделия}");
-                logger.WriteLog($"Ошибка в элементе с ID {ActiveElement.Id}");
-                logger.WriteLog("Проверьте шаблон, ФОП и корректность элемента");
-                logger.WriteLog("Завершение процедуры с ошибкой");
-                logger.PrintLog();
-                throw;
-            }
+                    ActiveElement.get_Parameter(DNS_panelMark1).Set(LongMark);
 
-            try
-            {
-                ActiveElement.get_Parameter(new Guid(Properties.Resource.ADSK_Марка_изделия)).Set(ShortMark);
+                }
+                catch (NullReferenceException)
+                {
+                    logger.WriteLog("ОШИБКА: У элемента не найден параметр DNS_Полная_марка_изделия");
+                    logger.WriteLog($"Нужный GUID: {Properties.Resource.DNS_Полная_марка_изделия}");
+                    logger.WriteLog($"Ошибка в элементе с ID {ActiveElement.Id}");
+                    logger.WriteLog("Проверьте шаблон, ФОП и корректность элемента");
+                    logger.WriteLog("Завершение процедуры с ошибкой");
+                    logger.PrintLog();
+                    throw;
+                }
             }
-            catch (Exception)
+            if (ActiveElement.get_Parameter(new Guid(Properties.Resource.ADSK_Марка_изделия)).AsString().Length == 0)
             {
-                logger.WriteLog("ОШИБКА: У элемента не найден параметр ADSK_Марка_изделия");
-                logger.WriteLog($"Нужный GUID: {Properties.Resource.ADSK_Марка_изделия}");
-                logger.WriteLog($"Ошибка в элементе с ID {ActiveElement.Id}");
-                logger.WriteLog("Проверьте шаблон, ФОП и корректность элемента");
-                logger.WriteLog("Завершение процедуры с ошибкой");
-                logger.PrintLog();
-                throw;
-            }
+                try
+                {
 
+
+                    ActiveElement.get_Parameter(new Guid(Properties.Resource.ADSK_Марка_изделия)).Set(ShortMark);
+
+
+                }
+                catch (Exception)
+                {
+                    logger.WriteLog("ОШИБКА: У элемента не найден параметр ADSK_Марка_изделия");
+                    logger.WriteLog($"Нужный GUID: {Properties.Resource.ADSK_Марка_изделия}");
+                    logger.WriteLog($"Ошибка в элементе с ID {ActiveElement.Id}");
+                    logger.WriteLog("Проверьте шаблон, ФОП и корректность элемента");
+                    logger.WriteLog("Завершение процедуры с ошибкой");
+                    logger.PrintLog();
+                    throw;
+                }
+            }
             transaction.Commit();
         }
 

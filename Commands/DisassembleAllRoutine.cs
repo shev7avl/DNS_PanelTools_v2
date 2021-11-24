@@ -1,13 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using DSKPrim.PanelTools_v2.StructuralApps;
-using DSKPrim.PanelTools_v2.StructuralApps.Assemblies;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DSKPrim.PanelTools_v2.Commands
 {
@@ -22,9 +15,8 @@ namespace DSKPrim.PanelTools_v2.Commands
             Logger.Logger logger = Logger.Logger.getInstance();
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
-            AssemblyBuilder assemblyBuilder = new AssemblyBuilder();     
 
-            assemblyBuilder.DisassembleAll(Document);
+            Utility.Assemblies.DisassembleAll(Document);
 
             logger.LogSuccessTime(stopWatch);
         }

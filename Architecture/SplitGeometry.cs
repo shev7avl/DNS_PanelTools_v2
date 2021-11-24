@@ -155,13 +155,13 @@ namespace DSKPrim.PanelTools_v2.Architecture
             Logger.Logger logger = Logger.Logger.getInstance();
             logger.LogMethodCall("CreateCurveArray");
 
-            BoundingBoxUV boxUV = plane.GetBoundingBoxUV();
+            BoundingBoxUV boxUV = face.GetBoundingBox();
 
             double LenU = partEl.get_Parameter(BuiltInParameter.DPART_LENGTH_COMPUTED).AsDouble();
             double HeiV = partEl.get_Parameter(BuiltInParameter.DPART_HEIGHT_COMPUTED).AsDouble();
 
-            conLenU = UnitUtils.ConvertFromInternalUnits(LenU, UnitTypeId.Millimeters);
-            conHeiV = UnitUtils.ConvertFromInternalUnits(HeiV, UnitTypeId.Millimeters);
+            conLenU = UnitUtils.ConvertFromInternalUnits(LenU, DisplayUnitType.DUT_MILLIMETERS);
+            conHeiV = UnitUtils.ConvertFromInternalUnits(HeiV, DisplayUnitType.DUT_MILLIMETERS);
             curves = CreateRectangle(boxUV, face, conLenU, conHeiV);
         }
 
@@ -179,11 +179,11 @@ namespace DSKPrim.PanelTools_v2.Architecture
 
 
             //Задание ширины и высоты
-            double convWidth = UnitUtils.ConvertToInternalUnits(width, UnitTypeId.Millimeters);
-            double convHeigth = UnitUtils.ConvertToInternalUnits(heigth, UnitTypeId.Millimeters);
+            double convWidth = UnitUtils.ConvertToInternalUnits(width, DisplayUnitType.DUT_MILLIMETERS);
+            double convHeigth = UnitUtils.ConvertToInternalUnits(heigth, DisplayUnitType.DUT_MILLIMETERS);
             //Убираем начальное смещение
-            double offsetWidth = UnitUtils.ConvertToInternalUnits(301.625, UnitTypeId.Millimeters);
-            double offsetHeigth = UnitUtils.ConvertToInternalUnits(279.4, UnitTypeId.Millimeters);
+            double offsetWidth = UnitUtils.ConvertToInternalUnits(301.625, DisplayUnitType.DUT_MILLIMETERS);
+            double offsetHeigth = UnitUtils.ConvertToInternalUnits(279.4, DisplayUnitType.DUT_MILLIMETERS);
 
             XYZ pt1 = new XYZ();
             XYZ pt2 = new XYZ();
@@ -230,65 +230,65 @@ namespace DSKPrim.PanelTools_v2.Architecture
             do
             {
                 XYZ pt1 = new XYZ(
-                top.GetEndPoint(0).X + UnitUtils.ConvertToInternalUnits(fullWidth / 2, UnitTypeId.Millimeters) * top.Direction.X,
-                top.GetEndPoint(0).Y + UnitUtils.ConvertToInternalUnits(fullWidth / 2, UnitTypeId.Millimeters) * top.Direction.Y,
+                top.GetEndPoint(0).X + UnitUtils.ConvertToInternalUnits(fullWidth / 2, DisplayUnitType.DUT_MILLIMETERS) * top.Direction.X,
+                top.GetEndPoint(0).Y + UnitUtils.ConvertToInternalUnits(fullWidth / 2, DisplayUnitType.DUT_MILLIMETERS) * top.Direction.Y,
                 startPoint.Z
                 );
                 XYZ pt2 = new XYZ(
                     pt1.X,
                     pt1.Y,
-                    pt1.Z - UnitUtils.ConvertToInternalUnits(fullHeight, UnitTypeId.Millimeters)
+                    pt1.Z - UnitUtils.ConvertToInternalUnits(fullHeight, DisplayUnitType.DUT_MILLIMETERS)
                     );
                 XYZ pt3 = new XYZ(
-                    pt1.X - UnitUtils.ConvertToInternalUnits(stitchWidth, UnitTypeId.Millimeters) * top.Direction.X,
-                    pt1.Y - UnitUtils.ConvertToInternalUnits(stitchWidth, UnitTypeId.Millimeters) * top.Direction.Y,
+                    pt1.X - UnitUtils.ConvertToInternalUnits(stitchWidth, DisplayUnitType.DUT_MILLIMETERS) * top.Direction.X,
+                    pt1.Y - UnitUtils.ConvertToInternalUnits(stitchWidth, DisplayUnitType.DUT_MILLIMETERS) * top.Direction.Y,
                     pt1.Z
                     );
                 XYZ pt4 = new XYZ(
                     pt3.X,
                     pt3.Y,
-                    pt3.Z - UnitUtils.ConvertToInternalUnits(fullHeight, UnitTypeId.Millimeters)
+                    pt3.Z - UnitUtils.ConvertToInternalUnits(fullHeight, DisplayUnitType.DUT_MILLIMETERS)
                     );
 
                 XYZ pt5 = new XYZ(
-                top.GetEndPoint(0).X + UnitUtils.ConvertToInternalUnits(fullWidth, UnitTypeId.Millimeters) * top.Direction.X,
-                top.GetEndPoint(0).Y + UnitUtils.ConvertToInternalUnits(fullWidth, UnitTypeId.Millimeters) * top.Direction.Y,
+                top.GetEndPoint(0).X + UnitUtils.ConvertToInternalUnits(fullWidth, DisplayUnitType.DUT_MILLIMETERS) * top.Direction.X,
+                top.GetEndPoint(0).Y + UnitUtils.ConvertToInternalUnits(fullWidth, DisplayUnitType.DUT_MILLIMETERS) * top.Direction.Y,
                 pt2.Z
                 );
                 XYZ pt6 = new XYZ(
                     pt5.X,
                     pt5.Y,
-                    pt5.Z - UnitUtils.ConvertToInternalUnits(fullHeight, UnitTypeId.Millimeters)
+                    pt5.Z - UnitUtils.ConvertToInternalUnits(fullHeight, DisplayUnitType.DUT_MILLIMETERS)
                     );
                 XYZ pt7 = new XYZ(
-                    pt5.X - UnitUtils.ConvertToInternalUnits(stitchWidth, UnitTypeId.Millimeters) * top.Direction.X,
-                    pt5.Y - UnitUtils.ConvertToInternalUnits(stitchWidth, UnitTypeId.Millimeters) * top.Direction.Y,
+                    pt5.X - UnitUtils.ConvertToInternalUnits(stitchWidth, DisplayUnitType.DUT_MILLIMETERS) * top.Direction.X,
+                    pt5.Y - UnitUtils.ConvertToInternalUnits(stitchWidth, DisplayUnitType.DUT_MILLIMETERS) * top.Direction.Y,
                     pt5.Z
                     );
                 XYZ pt8 = new XYZ(
                     pt7.X,
                     pt7.Y,
-                    pt7.Z - UnitUtils.ConvertToInternalUnits(fullHeight, UnitTypeId.Millimeters)
+                    pt7.Z - UnitUtils.ConvertToInternalUnits(fullHeight, DisplayUnitType.DUT_MILLIMETERS)
                     );
 
                 startPoint = new XYZ(
                     top.GetEndPoint(0).X,
                     top.GetEndPoint(0).Y,
-                    pt1.Z - UnitUtils.ConvertToInternalUnits(fullHeight*2, UnitTypeId.Millimeters)
+                    pt1.Z - UnitUtils.ConvertToInternalUnits(fullHeight*2, DisplayUnitType.DUT_MILLIMETERS)
                     );
                 brickLine.Add(Line.CreateBound(pt1, pt2));
                 brickLine.Add(Line.CreateBound(pt3, pt4));
                 brickLine.Add(Line.CreateBound(pt5, pt6));
                 brickLine.Add(Line.CreateBound(pt7, pt8));
 
-            } while (startPoint.Z - UnitUtils.ConvertToInternalUnits(fullHeight*2, UnitTypeId.Millimeters) >= left.GetEndPoint(1).Z);
+            } while (startPoint.Z - UnitUtils.ConvertToInternalUnits(fullHeight*2, DisplayUnitType.DUT_MILLIMETERS) >= left.GetEndPoint(1).Z);
 
             return brickLine;
         }
         //TODO: Переключить offsetCurve на метод API - Curve.CreateOffset
         public static Curve OffsetCurve(Curve curve, Curve direction, double offsetValue)
         {
-            double offset = UnitUtils.ConvertToInternalUnits(offsetValue, UnitTypeId.Millimeters);
+            double offset = UnitUtils.ConvertToInternalUnits(offsetValue, DisplayUnitType.DUT_MILLIMETERS);
 
             Curve offsetCurve;
             Line directionLine = (Line)direction;

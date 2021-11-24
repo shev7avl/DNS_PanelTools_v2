@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>DSKPrim.PanelTools_v2</RootNamespace>
     <AssemblyName>PanelTools_v2</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
   </PropertyGroup>
@@ -17,7 +17,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>bin\Debug\v2019\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -33,11 +33,11 @@
   <ItemGroup>
     <Reference Include="PresentationCore" />
     <Reference Include="RevitAPI">
-      <HintPath>C:\Program Files\Autodesk\Revit 2022\RevitAPI.dll</HintPath>
+      <HintPath>C:\Program Files\Autodesk\Revit 2019\RevitAPI.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="RevitAPIUI">
-      <HintPath>C:\Program Files\Autodesk\Revit 2022\RevitAPIUI.dll</HintPath>
+      <HintPath>C:\Program Files\Autodesk\Revit 2019\RevitAPIUI.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="RevitTestFrameworkTypes, Version=1.19.23.0, Culture=neutral, processorArchitecture=MSIL">
@@ -45,6 +45,7 @@
     </Reference>
     <Reference Include="RTFRevit, Version=1.19.23.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\RevitTestFramework.1.19.23\lib\net47\RTFRevit.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -100,7 +101,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resource.resx</DependentUpon>
     </Compile>
-    <Compile Include="StructuralApps\Assemblies\AssemblyBuilder.cs" />
     <Compile Include="Utility\Geometry.cs" />
     <Compile Include="StructuralApps\SingleStructDoc.cs" />
     <Compile Include="StructuralApps\Panel\BP_Panel.cs" />
@@ -113,7 +113,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="PanelTools_v2.addin" />
+    <None Include="PanelTools_v2.addin">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="EnvDTE">
@@ -163,8 +165,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /Y "$(SolutionDir)\bin\Debug" "C:\Users\shevyakov.a.PARTNER\AppData\Roaming\Autodesk\Revit\Addins\2022"
-copy /Y "$(SolutionDir)\bin\Debug" "\\ir-autodesk\7_Отдел проектирования\BIM\07_Обмен информацией\Открытое тестирование DNS_PanelTools v2\Addin"</PostBuildEvent>
+    <PostBuildEvent>copy /Y "$(SolutionDir)\bin\Debug\v2019" "C:\Users\shevyakov.a.PARTNER\AppData\Roaming\Autodesk\Revit\Addins\2019"
+copy /Y "$(SolutionDir)\bin\Debug\v2019" "\\ir-autodesk\7_Отдел проектирования\BIM\07_Обмен информацией\Открытое тестирование DNS_PanelTools v2\Addin\v2019"</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>

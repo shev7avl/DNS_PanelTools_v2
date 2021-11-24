@@ -296,19 +296,19 @@ namespace DSKPrim.PanelTools_v2.Utility
                 FamilyInstance panelFI = (FamilyInstance)panel;
                 if (Math.Abs(panelFI.HandOrientation.X) == 1)
                 {
-                    double deltaAxis = UnitUtils.ConvertToInternalUnits(tempValues[0], UnitTypeId.Millimeters) + 0.5 * UnitUtils.ConvertToInternalUnits(tempValues[1], UnitTypeId.Millimeters);
+                    double deltaAxis = UnitUtils.ConvertToInternalUnits(tempValues[0], DisplayUnitType.DUT_MILLIMETERS) + 0.5 * UnitUtils.ConvertToInternalUnits(tempValues[1], DisplayUnitType.DUT_MILLIMETERS);
                     double newX = startWall.X + deltaAxis * panelFI.HandOrientation.X;
                     double newY = startWall.Y;
-                    double newZ = startWall.Z + UnitUtils.ConvertToInternalUnits(tempValues[3], UnitTypeId.Millimeters);
+                    double newZ = startWall.Z + UnitUtils.ConvertToInternalUnits(tempValues[3], DisplayUnitType.DUT_MILLIMETERS);
 
                     newPoint = new XYZ(newX, newY, newZ);
                 }
                 else if (Math.Abs(panelFI.HandOrientation.Y) == 1)
                 {
-                    double deltaAxis = UnitUtils.ConvertToInternalUnits(tempValues[0], UnitTypeId.Millimeters) + 0.5 * UnitUtils.ConvertToInternalUnits(tempValues[1], UnitTypeId.Millimeters);
+                    double deltaAxis = UnitUtils.ConvertToInternalUnits(tempValues[0], DisplayUnitType.DUT_MILLIMETERS) + 0.5 * UnitUtils.ConvertToInternalUnits(tempValues[1], DisplayUnitType.DUT_MILLIMETERS);
                     double newY = startWall.Y + deltaAxis * panelFI.HandOrientation.Y;
                     double newX = startWall.X;
-                    double newZ = startWall.Z + UnitUtils.ConvertToInternalUnits(tempValues[3], UnitTypeId.Millimeters);
+                    double newZ = startWall.Z + UnitUtils.ConvertToInternalUnits(tempValues[3], DisplayUnitType.DUT_MILLIMETERS);
 
                     newPoint = new XYZ(newX, newY, newZ);
                 }
@@ -416,7 +416,7 @@ namespace DSKPrim.PanelTools_v2.Utility
             XYZ windowXYZ = windowPoint.Point + linkOriginPoint;
             XYZ panelXYZ = panelPoint.Point;
 
-            double mmLen = Math.Abs(UnitUtils.ConvertFromInternalUnits(CalculateAxialLength(panelXYZ, windowXYZ), UnitTypeId.Millimeters));
+            double mmLen = Math.Abs(UnitUtils.ConvertFromInternalUnits(CalculateAxialLength(panelXYZ, windowXYZ), DisplayUnitType.DUT_MILLIMETERS));
 
             offset = RoundToOnes(mmLen - appHalfWidth);
             RoundToStep(offset, 300, out offset);

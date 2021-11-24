@@ -88,6 +88,15 @@ namespace DSKPrim.PanelTools_v2.Properties {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на 4eaccca7-fecb-492b-b743-c6743e535ab2.
+        /// </summary>
+        internal static string DNS_Номер_цвета_плитки {
+            get {
+                return ResourceManager.GetString("DNS_Номер цвета плитки", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на 61078a81-82f3-41e2-bcfd-ae64f9430577.
         /// </summary>
         internal static string DNS_Полная_марка_изделия {

@@ -34,7 +34,6 @@ namespace DSKPrim.PanelTools_v2.Commands
 
             Dictionary<Element, List<string>> facadePanel;
             Dictionary<Element, Dictionary<string, Element>> facadeParts;
-
             
 
             foreach (Element item in fecWalls)
@@ -42,9 +41,7 @@ namespace DSKPrim.PanelTools_v2.Commands
                 CreateFacadePanelPartsData(linkedDocSTR, out facadePanel, out facadeParts, item);
 
                 SetFacadePartsParameters(facadePanel, facadeParts, item);
-
             }
-
         }
         /// <summary>
         /// Назначает параметры фасадной стене и фасадным частям
@@ -56,6 +53,7 @@ namespace DSKPrim.PanelTools_v2.Commands
         {
             foreach (var facade in facadePanel.Keys)
             {
+                //TODO: Вписать нужные параметры трансфера Панель - Фасад
                 facade.get_Parameter(new Guid()).SetValueString("");
                 facade.get_Parameter(new Guid()).SetValueString("");
             }
@@ -68,10 +66,12 @@ namespace DSKPrim.PanelTools_v2.Commands
                     code += materialCode;
                     code += ".";
                 }
+                //TODO: Вписать нужные параметры для кода материала
                 item.get_Parameter(new Guid()).SetValueString(code);
 
                 foreach (Element el in facadeParts.Values.First().Values)
                 {
+                    //TODO: Вписать нужные параметры (параметры для частей фасада)
                     el.get_Parameter(new Guid()).SetValueString("");
                     el.get_Parameter(new Guid()).SetValueString("");
                     el.get_Parameter(new Guid()).SetValueString("");
@@ -97,7 +97,7 @@ namespace DSKPrim.PanelTools_v2.Commands
 
             facadePanel.Add(item, new List<string>()
                 {
-                    //TODO: Вписать нужные параметры
+                    //TODO: Вписать нужные параметры трансфера Панель - Фасад
                     panel.get_Parameter(new Guid()).AsValueString(),
                     panel.get_Parameter(new Guid()).AsValueString()
                 });

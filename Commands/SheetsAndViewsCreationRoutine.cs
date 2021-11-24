@@ -1,12 +1,10 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using DSKPrim.PanelTools_v2.StructuralApps.Assemblies;
+using DSKPrim.PanelTools_v2.Utility;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DSKPrim.PanelTools_v2.Commands
 {
@@ -61,7 +59,7 @@ namespace DSKPrim.PanelTools_v2.Commands
         {
             Transaction transaction = new Transaction(Document, $"Создание листов панели {item.Name}");
             FailureHandlingOptions opts = transaction.GetFailureHandlingOptions();
-            opts.SetFailuresPreprocessor(new WarningSwallower());
+            opts.SetFailuresPreprocessor(new WarningDiscard());
             transaction.SetFailureHandlingOptions(opts);
             //Получаем нужные элементы, шаблоны видов
 
@@ -234,7 +232,7 @@ namespace DSKPrim.PanelTools_v2.Commands
         {
             Transaction transaction = new Transaction(Document, $"Создание листов панели {item.Name}");
             FailureHandlingOptions opts = transaction.GetFailureHandlingOptions();
-            opts.SetFailuresPreprocessor(new WarningSwallower());
+            opts.SetFailuresPreprocessor(new WarningDiscard());
             transaction.SetFailureHandlingOptions(opts);
             //Получаем нужные элементы, шаблоны видов
 
@@ -346,7 +344,7 @@ namespace DSKPrim.PanelTools_v2.Commands
         {
             Transaction transaction = new Transaction(Document, $"Создание листов панели {item.Name}");
             FailureHandlingOptions opts = transaction.GetFailureHandlingOptions();
-            opts.SetFailuresPreprocessor(new WarningSwallower());
+            opts.SetFailuresPreprocessor(new WarningDiscard());
             transaction.SetFailureHandlingOptions(opts);
             //Получаем нужные элементы, шаблоны видов
 

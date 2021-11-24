@@ -34,7 +34,15 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 
         public override void CreateMarks()
         {
-            LongMark = $"ПП {GetPanelCode()}{GetClosureCode()}";
+            if (ActiveElement.get_Parameter(new Guid(Properties.Resource.DNS_Полная_марка_изделия)).AsString().Length == 0)
+            {
+                LongMark = $"ПП {GetPanelCode()}{GetClosureCode()}";
+            }
+            else
+            {
+                LongMark = ActiveElement.get_Parameter(new Guid(Properties.Resource.DNS_Полная_марка_изделия)).AsString();
+            }
+           
 
             Guid ADSK_panelNum = new Guid("a531f6df-1e58-48e0-8c14-77cf7c1809b8");
             if (ActiveElement.get_Parameter(ADSK_panelNum).AsString() == "")
@@ -46,7 +54,15 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
                 Index = ActiveElement.get_Parameter(ADSK_panelNum).AsString();
             }
 
-            ShortMark = $"{LongMark.Split('_')[0]} - {Index}";
+            if (ActiveElement.get_Parameter(new Guid(Properties.Resource.DNS_Полная_марка_изделия)).AsString().Length == 0)
+            {
+                ShortMark = $"{LongMark.Split('_')[0]} - {Index}";
+            }
+
+            else
+            {
+                ShortMark = ActiveElement.get_Parameter(new Guid(Properties.Resource.DNS_Полная_марка_изделия)).AsString();
+            }
 
             SetMarks();
         }
