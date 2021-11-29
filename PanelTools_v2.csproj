@@ -31,6 +31,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AdWindows">
+      <HintPath>C:\Program Files\Autodesk\Revit 2019\AdWindows.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="RevitAPI">
       <HintPath>C:\Program Files\Autodesk\Revit 2019\RevitAPI.dll</HintPath>
@@ -64,11 +68,16 @@
     <Compile Include="App.cs" />
     <Compile Include="Architecture\SingleArchDoc.cs" />
     <Compile Include="Architecture\SplitGeometry.cs" />
-    <Compile Include="Commands\SheetsAndViewsCreationRoutine.cs" />
+    <Compile Include="Commands\ARCH_CreateDrawings.cs" />
+    <Compile Include="Commands\ARCH_SplitToPartsStraightLayout.cs" />
+    <Compile Include="Commands\ARCH_WindowTestFork.cs" />
+    <Compile Include="Commands\STR_CreateDrawings.cs" />
     <Compile Include="Commands\UniqueAssemblies.cs" />
     <Compile Include="Commands\DisassembleAllRoutine.cs" />
     <Compile Include="Commands\Run.cs" />
     <Compile Include="Commands\Routine.cs" />
+    <Compile Include="Global\Variables.cs" />
+    <Compile Include="Global\ViewTemplates.cs" />
     <Compile Include="GUI\PanelWizard.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -77,6 +86,11 @@
     </Compile>
     <Compile Include="GUI\IRoutineSettable.cs" />
     <Compile Include="Logger\Logger.cs" />
+    <Compile Include="Properties\Resource.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resource.resx</DependentUpon>
+    </Compile>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -84,23 +98,19 @@
     </Compile>
     <Compile Include="StructuralApps\Panel\IAssembler.cs" />
     <Compile Include="StructuralApps\Panel\IPerforated.cs" />
+    <Compile Include="StructuralApps\Views\ViewsSingleton.cs" />
     <Compile Include="Utility\Assemblies.cs" />
+    <Compile Include="Utility\Sheets.cs" />
     <Compile Include="Utility\WarningDiscard.cs" />
     <Compile Include="Utility\Marks.cs" />
     <Compile Include="Utility\Openings.cs" />
     <Compile Include="Utility\Parts.cs" />
     <Compile Include="Commands\ARCH_SplitToParts.cs" />
-    <Compile Include="Commands\ARCH_PlaceWindow.cs" />
     <Compile Include="Commands\ARCH_copyMarks.cs" />
     <Compile Include="Commands\CreateAssembliesRoutine.cs" />
     <Compile Include="Commands\CreateOpeningsRoutine.cs" />
     <Compile Include="Commands\SetMarksRoutine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Properties\Resource.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resource.resx</DependentUpon>
-    </Compile>
     <Compile Include="Utility\Geometry.cs" />
     <Compile Include="StructuralApps\SingleStructDoc.cs" />
     <Compile Include="StructuralApps\Panel\BP_Panel.cs" />
@@ -112,6 +122,7 @@
     <Compile Include="StructuralApps\StructureType.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include=".editorconfig" />
     <None Include="packages.config" />
     <None Include="PanelTools_v2.addin">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -156,17 +167,37 @@
   <ItemGroup>
     <None Include="Resources\Test.ico" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <None Include="Resources\DSK_Prim.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\DSK_Prim1.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\wall.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\window %281%29.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\tile %281%29.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\construction-plan.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\element.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\settings.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\files.ico" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /Y "$(SolutionDir)\bin\Debug\v2019" "C:\Users\shevyakov.a.PARTNER\AppData\Roaming\Autodesk\Revit\Addins\2019"
-copy /Y "$(SolutionDir)\bin\Debug\v2019" "\\ir-autodesk\7_Отдел проектирования\BIM\07_Обмен информацией\Открытое тестирование DNS_PanelTools v2\Addin\v2019"</PostBuildEvent>
+    <PostBuildEvent>copy /Y "$(SolutionDir)bin\Debug\v2019" "C:\Users\shevyakov.a.PARTNER\AppData\Roaming\Autodesk\Revit\Addins\2019"
+copy /Y "$(SolutionDir)bin\Debug\v2019" "\\ir-autodesk\7_Отдел проектирования\BIM\07_Обмен информацией\Открытое тестирование DNS_PanelTools v2\Addin\v2019\"</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>

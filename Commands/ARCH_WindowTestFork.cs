@@ -2,14 +2,20 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
+using DSKPrim.PanelTools_v2.Architecture;
+using DSKPrim.PanelTools_v2.StructuralApps.Panel;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace DSKPrim.PanelTools_v2.Commands
 {
     [Transaction(mode: TransactionMode.Manual)]
     [Regeneration(RegenerationOption.Manual)]
-    class ARCH_SplitToParts : Autodesk.Revit.UI.IExternalCommand
+    class ARCH_WindowTestFork : Autodesk.Revit.UI.IExternalCommand
     {
         Document ActiveDocument;
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
@@ -26,15 +32,12 @@ namespace DSKPrim.PanelTools_v2.Commands
 
             logger.DebugLog(ActiveDocument.PathName);
 
-            
             foreach (var reference in list_Walls)
             {
                 Element item = ActiveDocument.GetElement(reference.ElementId);
                 try
                 {
-                    Utility.Parts.SplitToParts(ActiveDocument, item);
-                    Utility.Parts.ExcludeStitches(ActiveDocument, item);
-                    logger.DebugLog(item.Name);
+                    Utility.Openings.CreateFacadeOpening(ActiveDocument, item);
                 }
                 catch (Exception e)
                 {
@@ -43,25 +46,6 @@ namespace DSKPrim.PanelTools_v2.Commands
             }
                          
             return Result.Succeeded;
-        }
-    }
-
-    public class FacadeSelectionFilter : ISelectionFilter
-    {
-        public bool AllowElement(Element elem)
-        {
-
-            if (elem.GetType() == typeof(Wall) && elem.Name.Contains("DNS_Фасад"))
-            {
-                return true;
-            }
-
-            else return false;
-        }
-
-        public bool AllowReference(Reference reference, XYZ position)
-        {
-            throw new NotImplementedException();
         }
     }
 

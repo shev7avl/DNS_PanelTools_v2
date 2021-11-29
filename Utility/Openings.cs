@@ -193,7 +193,7 @@ namespace DSKPrim.PanelTools_v2.Utility
 
         private static void CreateWindowsData(Document activeDocument, Element elementHost, out Element panel, out SortedList<string, List<double>> WindowsWithParameters)
         {
-            IEnumerable<Element> fecLinksSTRUCT = new FilteredElementCollector(activeDocument).OfCategory(BuiltInCategory.OST_RvtLinks).WhereElementIsNotElementType().Where(doc => doc.Name.Contains("_КР"));
+            IEnumerable<Element> fecLinksSTRUCT = new FilteredElementCollector(activeDocument).OfCategory(BuiltInCategory.OST_RvtLinks).WhereElementIsNotElementType().Where(doc => doc.Name.Contains("_КР")|| doc.Name.Contains("_КЖ"));
 
             List<RevitLinkInstance> linkedDocSTR = fecLinksSTRUCT.Cast<RevitLinkInstance>().ToList();
 
@@ -232,7 +232,9 @@ namespace DSKPrim.PanelTools_v2.Utility
                     Double.Parse(panel.LookupParameter("ПР1.Отступ").AsValueString()),
                     Double.Parse(panel.LookupParameter("ПР1.Ширина").AsValueString()),
                     Double.Parse(panel.LookupParameter("ПР1.Высота").AsValueString()),
-                    Double.Parse(panel.LookupParameter("ПР1.ВысотаСмещение").AsValueString())
+                    Double.Parse(panel.LookupParameter("ПР1.ВысотаСмещение").AsValueString()),
+                    Double.Parse(panel.LookupParameter("Выступ_Старт").AsValueString()),
+                    Double.Parse(panel.LookupParameter("СН").AsValueString())
                 };
                 Debug.WriteLine($"{panel.Id}  --  ПР1.ВКЛ: {panel.LookupParameter("ПР1.ВКЛ").AsInteger()}");
 
@@ -243,7 +245,9 @@ namespace DSKPrim.PanelTools_v2.Utility
                     Double.Parse(panel.LookupParameter("ПР2.Отступ").AsValueString()),
                     Double.Parse(panel.LookupParameter("ПР2.Ширина").AsValueString()),
                     Double.Parse(panel.LookupParameter("ПР2.Высота").AsValueString()),
-                    Double.Parse(panel.LookupParameter("ПР2.ВысотаСмещение").AsValueString())
+                    Double.Parse(panel.LookupParameter("ПР2.ВысотаСмещение").AsValueString()),
+                    Double.Parse(panel.LookupParameter("Выступ_Старт").AsValueString()),
+                    Double.Parse(panel.LookupParameter("СН").AsValueString())
                 };
                 Debug.WriteLine($"{panel.Id}  --  ПР2.ВКЛ: {panel.LookupParameter("ПР2.ВКЛ").AsInteger()}");
                 WindowsWithParameters.Add($"ПР2.ВКЛ: {panel.LookupParameter("ПР2.ВКЛ").AsInteger()}", ParValues);
@@ -271,6 +275,8 @@ namespace DSKPrim.PanelTools_v2.Utility
 
                 GeometryElement geometryObject = elementHost.get_Geometry(new Options());
                 Solid geomSolid = null;
+                
+                //TODO: Везде по коду заменить вот этот цикл на коллекцию солидов
                 foreach (GeometryObject item in geometryObject)
                 {
                     if (item is Solid solid)
@@ -290,25 +296,27 @@ namespace DSKPrim.PanelTools_v2.Utility
                 }
 
                 LocationCurve wallCurve = (LocationCurve)elementHost.Location;
-                XYZ startWall = wallCurve.Curve.GetEndPoint(0);
+                XYZ startWall = wallCurve.Curve.GetEndPoint(1);
+
+                Line directionalBasis = (Line)wallCurve.Curve;
 
                 XYZ newPoint = default;
                 FamilyInstance panelFI = (FamilyInstance)panel;
                 if (Math.Abs(panelFI.HandOrientation.X) == 1)
                 {
-                    double deltaAxis = UnitUtils.ConvertToInternalUnits(tempValues[0], DisplayUnitType.DUT_MILLIMETERS) + 0.5 * UnitUtils.ConvertToInternalUnits(tempValues[1], DisplayUnitType.DUT_MILLIMETERS);
-                    double newX = startWall.X + deltaAxis * panelFI.HandOrientation.X;
+                    double deltaAxis = UnitUtils.ConvertToInternalUnits(tempValues[0]+tempValues[4]-tempValues[5]-6, DisplayUnitType.DUT_MILLIMETERS) + 0.5 * UnitUtils.ConvertToInternalUnits(tempValues[1], DisplayUnitType.DUT_MILLIMETERS);
+                    double newX = startWall.X - deltaAxis * directionalBasis.Direction.X;
                     double newY = startWall.Y;
-                    double newZ = startWall.Z + UnitUtils.ConvertToInternalUnits(tempValues[3], DisplayUnitType.DUT_MILLIMETERS);
+                    double newZ = startWall.Z + UnitUtils.ConvertToInternalUnits(tempValues[3]-80, DisplayUnitType.DUT_MILLIMETERS);
 
                     newPoint = new XYZ(newX, newY, newZ);
                 }
                 else if (Math.Abs(panelFI.HandOrientation.Y) == 1)
                 {
-                    double deltaAxis = UnitUtils.ConvertToInternalUnits(tempValues[0], DisplayUnitType.DUT_MILLIMETERS) + 0.5 * UnitUtils.ConvertToInternalUnits(tempValues[1], DisplayUnitType.DUT_MILLIMETERS);
-                    double newY = startWall.Y + deltaAxis * panelFI.HandOrientation.Y;
+                    double deltaAxis = UnitUtils.ConvertToInternalUnits(tempValues[0] + tempValues[4] - tempValues[5] - 6, DisplayUnitType.DUT_MILLIMETERS) + 0.5 * UnitUtils.ConvertToInternalUnits(tempValues[1], DisplayUnitType.DUT_MILLIMETERS);
+                    double newY = startWall.Y - deltaAxis * directionalBasis.Direction.Y;
                     double newX = startWall.X;
-                    double newZ = startWall.Z + UnitUtils.ConvertToInternalUnits(tempValues[3], DisplayUnitType.DUT_MILLIMETERS);
+                    double newZ = startWall.Z + UnitUtils.ConvertToInternalUnits(tempValues[3] - 80, DisplayUnitType.DUT_MILLIMETERS);
 
                     newPoint = new XYZ(newX, newY, newZ);
                 }
@@ -337,7 +345,8 @@ namespace DSKPrim.PanelTools_v2.Utility
 
                         t.Start();
                         activeDocument.Regenerate();
-                        window.get_Parameter(BuiltInParameter.DOOR_HEIGHT).SetValueString(tempValues[2].ToString());
+                        double height = tempValues[2] + 20;
+                        window.get_Parameter(BuiltInParameter.DOOR_HEIGHT).SetValueString(height.ToString());
                         window.get_Parameter(BuiltInParameter.FURNITURE_WIDTH).SetValueString(tempValues[1].ToString());
                         t.Commit();
                     }

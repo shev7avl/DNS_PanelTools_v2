@@ -5,18 +5,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
+using DSKPrim.PanelTools_v2.Utility;
 
 namespace DSKPrim.PanelTools_v2.Architecture
 {
     public static class SplitGeometry
     {
-        public static void CreatePartsSection(Document document, ElementId partId)
+        public static void CreatePartsSection(Document document, ElementId wallId, bool straight=false)
         {
             Logger.Logger logger = Logger.Logger.getInstance();
 
             Options options = new Options();
-            Element partEl = document.GetElement(partId);
-            ICollection<ElementId> partsId = new List<ElementId>() { partId };
+            Element partEl = document.GetElement(wallId);
+            ICollection<ElementId> partsId = new List<ElementId>() { wallId };
             ICollection<ElementId> refiD = new List<ElementId>();
 
             GeometryElement geometryObject = partEl.get_Geometry(options);
@@ -29,70 +30,158 @@ namespace DSKPrim.PanelTools_v2.Architecture
                 }
             }
 
+            Part part = (Part)partEl;
+            Element wall = document.GetElement(part.GetSourceElementIds().FirstOrDefault().HostElementId);
+
+            LocationCurve curve = (LocationCurve)wall.Location;
+            Line direction = (Line)curve.Curve;
+
+            XYZ directionBase = direction.Direction;
+            XYZ baseZ = XYZ.BasisZ;
+
             FaceArray faceArray = geomSolid.Faces;
+
+            PlanarFace faceSplit = null;
+
             foreach (PlanarFace face in faceArray)
             {
-                if (!face.FaceNormal.IsAlmostEqualTo(XYZ.BasisZ) && face.Area > 5)
+                bool FrontClause = geomSolid.SurfaceArea < 10 && face.Area > 1;
+                bool PanelClause = geomSolid.SurfaceArea > 10 && face.Area > 5;
+
+                if (!face.FaceNormal.IsAlmostEqualTo(XYZ.BasisZ) && (FrontClause || PanelClause) && face.MaterialElementId != null)
                 {
-                    logger.DebugLog("------------");
-                    logger.DebugLog("Нашли грань");
-                    XYZ origin = face.Origin;
-                    logger.DebugLog($"Нашли начальную точку: {origin}");
-                    XYZ normal = face.FaceNormal;
-                    logger.DebugLog($"Нашли нормаль к грани: {normal}");
-                    using (Transaction transaction = new Transaction(document, "Creating a SketchPlane"))
-                    {
-
-                        transaction.Start();
-                        document.Regenerate();
-                        logger.DebugLog($"Начали транзакцию: {transaction.GetName()}");
-                        Plane plane = Plane.CreateByNormalAndOrigin(normal, origin);
-                        logger.DebugLog($"Создали плоскость: {plane}");
-
-                        //IList<Curve> curves = CreateTileOutlay(partEl, face, plane);
-                        IList<Curve> curves = CreateBrickOutlay(partEl, face, plane);
-
-                        logger.DebugLog($"Создали список кривых: {curves}");
-                        SketchPlane sketchPlane = SketchPlane.Create(document, plane);
-                        logger.DebugLog($"Создали плоскость эскиза: {sketchPlane}");
-                        logger.DebugLog($"Пытаемся разрезать части");
-                        PartMaker maker = PartUtils.DivideParts(document, partsId, refiD, curves, sketchPlane.Id);
-                        transaction.Commit();
-                    }
-                    break;
+                    faceSplit = face;
                 }
+            }
+
+            logger.DebugLog("------------");
+            logger.DebugLog("Нашли грань");
+            XYZ origin = faceSplit.Origin;
+            logger.DebugLog($"Нашли начальную точку: {origin}");
+            XYZ normal = faceSplit.FaceNormal;
+            logger.DebugLog($"Нашли нормаль к грани: {normal}");
+
+            Transaction transaction = new Transaction(document, "Creating a SketchPlane");
+            IFailuresPreprocessor preprocessor = new WarningDiscard();
+            FailureHandlingOptions fho = transaction.GetFailureHandlingOptions();
+            fho.SetFailuresPreprocessor(preprocessor);
+            transaction.SetFailureHandlingOptions(fho);
+
+            using (transaction)
+            {
+                transaction.Start();
+
+                document.Regenerate();
+                logger.DebugLog($"Начали транзакцию: {transaction.GetName()}");
+                Plane plane = Plane.CreateByNormalAndOrigin(normal, origin);
+                logger.DebugLog($"Создали плоскость: {plane}");
+                IList<Curve> curves = default;
+                if (geomSolid.SurfaceArea >= 10)
+                {
+                    if (!straight)
+                    {
+                        curves = CreateBrickOutlay(partEl, faceSplit, plane, directionBase);
+                        logger.DebugLog($"Создали список кривых: {curves}");
+                    }
+                    else if (straight)
+                    {
+                        curves = CreateTileOutlay(partEl, faceSplit, plane);
+                        logger.DebugLog($"Создали список кривых: {curves}");
+                    }
+                }
+                else if (geomSolid.SurfaceArea < 10)
+                {
+                    curves = CreateFrontOutlay(partEl, faceSplit, plane);
+                }
+                
+               
+                
+
+                
+                SketchPlane sketchPlane = SketchPlane.Create(document, plane);
+                logger.DebugLog($"Создали плоскость эскиза: {sketchPlane}");
+                transaction.Commit();
+
+                logger.DebugLog($"Пытаемся разрезать части");
+
+                transaction.Start();
+                PartMaker maker = PartUtils.DivideParts(document, partsId, refiD, curves, sketchPlane.Id);
+                transaction.Commit();
+                transaction.Start();
+                maker.get_Parameter(BuiltInParameter.PARTMAKER_PARAM_DIVISION_GAP).SetValueString("12");
+                transaction.Commit();
             }
         }
 
-        public static IList<Curve> CreateBrickOutlay(Element partEl, Face face, Plane plane)
+        public static IList<Curve> CreateFrontOutlay(Element partEl, Face face, Plane plane)
         {
-            double conLenU, conHeiV, conStepV, conStepH, conGap;
+            double conLenU, conHeiV, conStepH, conGap;
             IList<Curve> curves;
-            PanelOutline(partEl, face, plane, out conLenU, out conHeiV, out curves);
+            PanelOutline(partEl, face, out conLenU, out conHeiV, out curves);
 
-            //TODO: тестируем новый алгоритм нарезки плитки
-            //TODO: попробовать "клинкерную" раскладку
 
-            conStepV = 288;
             conStepH = 88;
             conGap = 12;
 
             Curve Left = curves[2];
             Curve Top = curves[0];
+            Line leftLine = (Line)Left;
 
-            List<Curve> brickBaseLine = BrickLine((Line)Top, (Line)Left, conStepV, conStepH, conGap);
-            foreach (Curve item in brickBaseLine)
+            for (double i = 0; i <= conHeiV - (conStepH + conGap); i = i + conStepH + conGap)
             {
-                curves.Add(item);
+                Curve curve1 = OffsetCurve(Top, leftLine, conStepH + conGap);
+                curves.Add(curve1);
+                Top = curve1;
             }
 
-            for (double i = 0; i < conLenU - (conStepV + conGap); i = i + conStepV + conGap)
+            return curves;
+        }
+
+        public static IList<Curve> CreateBrickOutlay(Element partEl, Face face, Plane plane, XYZ directionBase)
+        {
+            double conLenU, conHeiV, conStepV, conStepH, conGap;
+            IList<Curve> curves;
+            PanelOutline(partEl, face, out conLenU, out conHeiV, out curves);
+
+            //TODO: тестируем новый алгоритм нарезки плитки
+            //TODO: попробовать "клинкерную" раскладку
+
+            double StepV = 288;
+            
+            double StepH = 88;
+            
+            double Gap = 12;
+            
+            BoundingBoxXYZ partBbox = partEl.get_Geometry(new Options()).GetBoundingBox();
+
+            Curve Left = curves[2];
+            Curve Bot = curves[0];
+
+            Curve directionCurve = Line.CreateBound(directionBase, XYZ.Zero);
+
+            List<Curve> brickBaseLine = BrickLine((Line)Bot, (Line)Left, StepV, StepH, Gap);
+            foreach (Curve item in brickBaseLine)
+            {
+                if (Geometry.InBox(partBbox, item.GetEndPoint(0)) && Geometry.InBox(partBbox, item.GetEndPoint(1)))
+                {
+                    curves.Add(item);
+                }
+                
+            }
+
+            for (double i = 0; i <= conLenU - (StepV + Gap); i = i + StepV + Gap)
             {
                 List<Curve> temp = new List<Curve>();
-                foreach (var item in brickBaseLine)
+                foreach (Curve item in brickBaseLine)
                 {
-                    temp.Add(OffsetCurve(item, Top, conStepV + conGap));
-                    curves.Add(OffsetCurve(item, Top, conStepV + conGap));
+                    //TODO: Проверить метод OffsetCurve. При смещении линии длиной 0.32 c направлением (0,0,1) вдоль вектора (0,-1,0) даёт линию длиной 48 с направлением (-1,0,0.006)
+                    Curve curve1 = OffsetCurve(item, directionCurve, StepV + Gap);
+                    temp.Add(curve1);
+
+                    if (Geometry.InBox(partBbox, curve1.GetEndPoint(0)) && Geometry.InBox(partBbox, curve1.GetEndPoint(1)))
+                    {
+                        curves.Add(curve1);
+                    }
                 }
                 brickBaseLine.Clear();
                 foreach (var item in temp)
@@ -103,12 +192,12 @@ namespace DSKPrim.PanelTools_v2.Architecture
             }
 
 
-            for (double i = 0; i <= conHeiV - (conStepH + conGap); i = i + conStepH + conGap)
+            for (double i = 0; i <= conHeiV; i = i + StepH + Gap)
             {
-                Curve curve1 = OffsetCurve(Top, Left, conStepH);
-                curves.Add(curve1);
-                Top = OffsetCurve(curve1, Left, conGap);
-                curves.Add(Top);
+                Curve curve2 = OffsetCurve(Bot, Left, StepH + Gap);
+                curves.Add(curve2);
+                Bot = curve2;
+
             }
 
             return curves;
@@ -118,10 +207,8 @@ namespace DSKPrim.PanelTools_v2.Architecture
         {
             double conLenU, conHeiV, conStepV, conStepH, conGap;
             IList<Curve> curves;
-            PanelOutline(partEl, face, plane, out conLenU, out conHeiV, out curves);
+            PanelOutline(partEl, face, out conLenU, out conHeiV, out curves);
 
-            //TODO: тестируем новый алгоритм нарезки плитки
-            //TODO: попробовать "клинкерную" раскладку
 
             conStepV = 288;
             conStepH = 88;
@@ -129,28 +216,28 @@ namespace DSKPrim.PanelTools_v2.Architecture
 
             Curve Left = curves[2];
             Curve Top = curves[0];
+            Line topLine = (Line)Top;
+            Line leftLine = (Line)Left;
 
             for (double i = 0; i < conLenU - (conStepV+conGap); i = i + conStepV + conGap)
             {
-                Curve curve1 = OffsetCurve(Left, curves[0], conStepV);
+                Curve curve1 = OffsetCurve(Left, topLine, conStepV + conGap);
                 curves.Add(curve1);
-                Left = OffsetCurve(curve1, curves[0], conGap);
-                curves.Add(Left);
+                Left = curve1;
             }
 
             
             for (double i = 0; i <= conHeiV - (conStepH+conGap); i = i + conStepH + conGap)
             {
-                Curve curve1 = OffsetCurve(Top, curves[2], conStepH);
+                Curve curve1 = OffsetCurve(Top, leftLine, conStepH + conGap);
                 curves.Add(curve1);
-                Top = OffsetCurve(curve1, curves[2], conGap);
-                curves.Add(Top);
+                Top = curve1;
             }
 
             return curves;
         }
 
-        private static void PanelOutline(Element partEl, Face face, Plane plane, out double conLenU, out double conHeiV, out IList<Curve> curves)
+        private static void PanelOutline(Element partEl, Face face, out double conLenU, out double conHeiV, out IList<Curve> curves)
         {
             Logger.Logger logger = Logger.Logger.getInstance();
             logger.LogMethodCall("CreateCurveArray");
@@ -168,6 +255,7 @@ namespace DSKPrim.PanelTools_v2.Architecture
         private static List<Curve> CreateRectangle(BoundingBoxUV boxUV, Face face, double width, double heigth)
         {
             //Определения базисных векторов
+
             UV origin = boxUV.Min;
             UV VerticalBase = new UV(boxUV.Min.U, boxUV.Max.V);
             UV HorizontalBase = new UV(boxUV.Max.U, boxUV.Min.V);
@@ -181,9 +269,6 @@ namespace DSKPrim.PanelTools_v2.Architecture
             //Задание ширины и высоты
             double convWidth = UnitUtils.ConvertToInternalUnits(width, DisplayUnitType.DUT_MILLIMETERS);
             double convHeigth = UnitUtils.ConvertToInternalUnits(heigth, DisplayUnitType.DUT_MILLIMETERS);
-            //Убираем начальное смещение
-            double offsetWidth = UnitUtils.ConvertToInternalUnits(301.625, DisplayUnitType.DUT_MILLIMETERS);
-            double offsetHeigth = UnitUtils.ConvertToInternalUnits(279.4, DisplayUnitType.DUT_MILLIMETERS);
 
             XYZ pt1 = new XYZ();
             XYZ pt2 = new XYZ();
@@ -191,29 +276,53 @@ namespace DSKPrim.PanelTools_v2.Architecture
 
             if (Math.Abs(horBasis.Direction.X) == 1)
             {
-                pt1 = new XYZ(originXYZ.X + offsetWidth* horBasis.Direction.X, originXYZ.Y, originXYZ.Z+offsetHeigth);
-                pt2 = new XYZ(pt1.X - convWidth* horBasis.Direction.X, pt1.Y, pt1.Z);
+                if (horBasis.Direction.X == 1)
+                {
+                    pt1 = new XYZ(originXYZ.X, originXYZ.Y, originXYZ.Z);
+                    pt2 = new XYZ(pt1.X + convWidth * horBasis.Direction.X, pt1.Y, pt1.Z);
+                }
+                else
+                {
+                    pt1 = new XYZ(originXYZ.X, originXYZ.Y, originXYZ.Z);
+                    pt2 = new XYZ(pt1.X + convWidth * horBasis.Direction.X, pt1.Y, pt1.Z);
+                }
+                
             }
             else if (Math.Abs(horBasis.Direction.Y) == 1)
             {
-                pt1 = new XYZ(originXYZ.X , originXYZ.Y + offsetWidth*horBasis.Direction.Y, originXYZ.Z+offsetHeigth);
-                pt2 = new XYZ(pt1.X, pt1.Y - convWidth * horBasis.Direction.Y, pt1.Z);
+                if (horBasis.Direction.Y == 1)
+                {
+                    pt1 = new XYZ(originXYZ.X, originXYZ.Y, originXYZ.Z);
+                    pt2 = new XYZ(pt1.X, pt1.Y + convWidth * horBasis.Direction.Y, pt1.Z);
+                }
+                else
+                {
+                    pt1 = new XYZ(originXYZ.X, originXYZ.Y, originXYZ.Z);
+                    pt2 = new XYZ(pt1.X, pt1.Y + convWidth * horBasis.Direction.Y, pt1.Z);
+                }
+               
             }
-
             if (Math.Abs(verBasis.Direction.Z) == 1)
             {
-                pt3 = new XYZ(pt1.X, pt1.Y, pt1.Z - convHeigth* verBasis.Direction.Z);
+                if (verBasis.Direction.Z == 1)
+                {
+                    pt3 = new XYZ(pt1.X, pt1.Y, pt1.Z + convHeigth * verBasis.Direction.Z);
+                }
+                else
+                {
+                    pt3 = new XYZ(pt1.X, pt1.Y, pt1.Z - convHeigth * verBasis.Direction.Z);
+                }
+                
             }
 
             XYZ pt4 = new XYZ(pt2.X, pt2.Y, pt3.Z);
 
-            Curve curveTop = Line.CreateBound(pt1, pt2);
+            Curve curveBot = Line.CreateBound(pt1, pt2);
             Curve curveLeft = Line.CreateBound(pt1, pt3);
             Curve curveRight = Line.CreateBound(pt2, pt4);
-            Curve curveBot = Line.CreateBound(pt3, pt4);
 
             List<Curve> curves = new List<Curve>() {
-                    curveTop,
+                    curveBot,
                     curveRight,
                     curveLeft
                     };
@@ -221,73 +330,62 @@ namespace DSKPrim.PanelTools_v2.Architecture
             return curves;
         }
 
-        public static List<Curve> BrickLine(Line top, Line left, double width, double height, double stitchWidth)
+        /// <summary>
+        /// Функция для создания первого вертикального ряда клинкерной нарезки плитки. Для создания требуются опорные линии эскиза - нижняя и левая.
+        /// </summary>
+        /// <param name="bot">Нижняя линяя эскиза разрезки на части. Нужны для определения направления смещения и для базовой точки эскиза (левой нижней)</param>
+        /// <param name="left">Левая линия эскиза разрезки на части. Нужна для определения высоты эскиза и организации цикла копирования по вертикали</param>
+        /// <param name="width">Ширина плитки</param>
+        /// <param name="height">Высота плитки</param>
+        /// <param name="stitchWidth">Толщина шва</param>
+        /// <returns>Возвращает список линии класса Curve, описывающие вертикальные линии кирпичной раскладки плитки (первый левый ряд, снизу вверх).</returns>
+        public static List<Curve> BrickLine(Line bot, Line left, double width, double height, double stitchWidth)
         {
             List<Curve> brickLine = new List<Curve>();
             double fullWidth = width + stitchWidth;
             double fullHeight = height + stitchWidth;
-            XYZ startPoint = top.GetEndPoint(0);
+            XYZ startPoint = bot.GetEndPoint(0);
             do
             {
                 XYZ pt1 = new XYZ(
-                top.GetEndPoint(0).X + UnitUtils.ConvertToInternalUnits(fullWidth / 2, DisplayUnitType.DUT_MILLIMETERS) * top.Direction.X,
-                top.GetEndPoint(0).Y + UnitUtils.ConvertToInternalUnits(fullWidth / 2, DisplayUnitType.DUT_MILLIMETERS) * top.Direction.Y,
+                bot.GetEndPoint(0).X + UnitUtils.ConvertToInternalUnits(fullWidth / 2, DisplayUnitType.DUT_MILLIMETERS) * bot.Direction.X,
+                bot.GetEndPoint(0).Y + UnitUtils.ConvertToInternalUnits(fullWidth / 2, DisplayUnitType.DUT_MILLIMETERS) * bot.Direction.Y,
                 startPoint.Z
                 );
                 XYZ pt2 = new XYZ(
                     pt1.X,
                     pt1.Y,
-                    pt1.Z - UnitUtils.ConvertToInternalUnits(fullHeight, DisplayUnitType.DUT_MILLIMETERS)
-                    );
-                XYZ pt3 = new XYZ(
-                    pt1.X - UnitUtils.ConvertToInternalUnits(stitchWidth, DisplayUnitType.DUT_MILLIMETERS) * top.Direction.X,
-                    pt1.Y - UnitUtils.ConvertToInternalUnits(stitchWidth, DisplayUnitType.DUT_MILLIMETERS) * top.Direction.Y,
-                    pt1.Z
-                    );
-                XYZ pt4 = new XYZ(
-                    pt3.X,
-                    pt3.Y,
-                    pt3.Z - UnitUtils.ConvertToInternalUnits(fullHeight, DisplayUnitType.DUT_MILLIMETERS)
+                    pt1.Z + UnitUtils.ConvertToInternalUnits(fullHeight, DisplayUnitType.DUT_MILLIMETERS)
                     );
 
+
                 XYZ pt5 = new XYZ(
-                top.GetEndPoint(0).X + UnitUtils.ConvertToInternalUnits(fullWidth, DisplayUnitType.DUT_MILLIMETERS) * top.Direction.X,
-                top.GetEndPoint(0).Y + UnitUtils.ConvertToInternalUnits(fullWidth, DisplayUnitType.DUT_MILLIMETERS) * top.Direction.Y,
+                bot.GetEndPoint(0).X + UnitUtils.ConvertToInternalUnits(fullWidth, DisplayUnitType.DUT_MILLIMETERS) * bot.Direction.X,
+                bot.GetEndPoint(0).Y + UnitUtils.ConvertToInternalUnits(fullWidth, DisplayUnitType.DUT_MILLIMETERS) * bot.Direction.Y,
                 pt2.Z
                 );
                 XYZ pt6 = new XYZ(
                     pt5.X,
                     pt5.Y,
-                    pt5.Z - UnitUtils.ConvertToInternalUnits(fullHeight, DisplayUnitType.DUT_MILLIMETERS)
-                    );
-                XYZ pt7 = new XYZ(
-                    pt5.X - UnitUtils.ConvertToInternalUnits(stitchWidth, DisplayUnitType.DUT_MILLIMETERS) * top.Direction.X,
-                    pt5.Y - UnitUtils.ConvertToInternalUnits(stitchWidth, DisplayUnitType.DUT_MILLIMETERS) * top.Direction.Y,
-                    pt5.Z
-                    );
-                XYZ pt8 = new XYZ(
-                    pt7.X,
-                    pt7.Y,
-                    pt7.Z - UnitUtils.ConvertToInternalUnits(fullHeight, DisplayUnitType.DUT_MILLIMETERS)
+                    pt5.Z + UnitUtils.ConvertToInternalUnits(fullHeight, DisplayUnitType.DUT_MILLIMETERS)
                     );
 
                 startPoint = new XYZ(
-                    top.GetEndPoint(0).X,
-                    top.GetEndPoint(0).Y,
-                    pt1.Z - UnitUtils.ConvertToInternalUnits(fullHeight*2, DisplayUnitType.DUT_MILLIMETERS)
+                    bot.GetEndPoint(0).X,
+                    bot.GetEndPoint(0).Y,
+                    pt1.Z + UnitUtils.ConvertToInternalUnits(fullHeight*2, DisplayUnitType.DUT_MILLIMETERS)
                     );
                 brickLine.Add(Line.CreateBound(pt1, pt2));
-                brickLine.Add(Line.CreateBound(pt3, pt4));
                 brickLine.Add(Line.CreateBound(pt5, pt6));
-                brickLine.Add(Line.CreateBound(pt7, pt8));
 
-            } while (startPoint.Z - UnitUtils.ConvertToInternalUnits(fullHeight*2, DisplayUnitType.DUT_MILLIMETERS) >= left.GetEndPoint(1).Z);
+            } while (startPoint.Z <= left.GetEndPoint(1).Z);
 
             return brickLine;
         }
-        //TODO: Переключить offsetCurve на метод API - Curve.CreateOffset
+
         public static Curve OffsetCurve(Curve curve, Curve direction, double offsetValue)
         {
+
             double offset = UnitUtils.ConvertToInternalUnits(offsetValue, DisplayUnitType.DUT_MILLIMETERS);
 
             Curve offsetCurve;
@@ -296,18 +394,18 @@ namespace DSKPrim.PanelTools_v2.Architecture
             XYZ pt2;
             if (Math.Abs(directionLine.Direction.X) == 1)
             {
-                pt1 = new XYZ(curve.GetEndPoint(0).X+offset* directionLine.Direction.X, curve.GetEndPoint(0).Y, curve.GetEndPoint(0).Z);
-                pt2 = new XYZ(curve.GetEndPoint(1).X+offset* directionLine.Direction.X, curve.GetEndPoint(1).Y, curve.GetEndPoint(1).Z);
+                pt1 = new XYZ(curve.GetEndPoint(0).X + offset * directionLine.Direction.X, curve.GetEndPoint(0).Y, curve.GetEndPoint(0).Z);
+                pt2 = new XYZ(curve.GetEndPoint(1).X + offset * directionLine.Direction.X, curve.GetEndPoint(1).Y, curve.GetEndPoint(1).Z);
             }
             else if (Math.Abs(directionLine.Direction.Y) == 1)
             {
-                pt1 = new XYZ(curve.GetEndPoint(0).Y, curve.GetEndPoint(0).Y+offset* directionLine.Direction.Y, curve.GetEndPoint(0).Z);
-                pt2 = new XYZ(curve.GetEndPoint(1).X, curve.GetEndPoint(1).Y+offset* directionLine.Direction.Y, curve.GetEndPoint(1).Z);
+                pt1 = new XYZ(curve.GetEndPoint(0).X, curve.GetEndPoint(0).Y + offset * directionLine.Direction.Y, curve.GetEndPoint(0).Z);
+                pt2 = new XYZ(curve.GetEndPoint(1).X, curve.GetEndPoint(1).Y + offset * directionLine.Direction.Y, curve.GetEndPoint(1).Z);
             }
             else if (Math.Abs(directionLine.Direction.Z) == 1)
             {
-                pt1 = new XYZ(curve.GetEndPoint(0).X, curve.GetEndPoint(0).Y, curve.GetEndPoint(0).Z-offset);
-                pt2 = new XYZ(curve.GetEndPoint(1).X, curve.GetEndPoint(1).Y, curve.GetEndPoint(1).Z-offset);
+                pt1 = new XYZ(curve.GetEndPoint(0).X, curve.GetEndPoint(0).Y, curve.GetEndPoint(0).Z + offset * directionLine.Direction.Z);
+                pt2 = new XYZ(curve.GetEndPoint(1).X, curve.GetEndPoint(1).Y, curve.GetEndPoint(1).Z + offset * directionLine.Direction.Z);
             }
             else
             {

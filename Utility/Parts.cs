@@ -15,14 +15,10 @@ namespace DSKPrim.PanelTools_v2.Utility
         /// </summary>
         /// <param name="document">Активный документ с АКР</param>
         /// <param name="element">Стена фасада</param>
-        public static void SplitToParts(Document document, Element element)
+        public static void SplitToParts(Document document, Element element, bool straight=false)
         {
             Logger.Logger logger = Logger.Logger.getInstance();
             ICollection<ElementId> elementIdsToDivide;
-
-            Wall familyInstance = (Wall)element;
-            
-            XYZ directionalBasis = familyInstance.Orientation;
 
             ICollection<ElementId> elementIds = new List<ElementId>()
             {
@@ -43,15 +39,13 @@ namespace DSKPrim.PanelTools_v2.Utility
             ElementFilter filter = new ElementCategoryFilter(BuiltInCategory.OST_Parts);
             elementIdsToDivide = element.GetDependentElements(filter);
 
+
+                SplitGeometry.CreatePartsSection(document, elementIdsToDivide.FirstOrDefault(), straight);
+
             logger.DebugLog($"@Части для {element.Name} Созданы успешно");
             logger.DebugLog($"@");
             logger.DebugLog($"@Конец транзакции");
             logger.DebugLog($"------------");
-
-            foreach (var item in elementIdsToDivide)
-            {
-                SplitGeometry.CreatePartsSection(document, item);
-            }
         }
 
         /// <summary>
@@ -63,24 +57,46 @@ namespace DSKPrim.PanelTools_v2.Utility
         {
             ElementFilter categoryFilter = new ElementCategoryFilter(BuiltInCategory.OST_Parts);
             List<ElementId> partsId = (List<ElementId>)element.GetDependentElements(categoryFilter);
+            List<Element> pts = new List<Element>();
+
+            foreach (var id in partsId)
+            {
+                Element item = document.GetElement(id);
+                pts.Add(item);
+            }
+
+            pts.Sort(CompareElementsByArea);
+            pts.Reverse();
+
+            
+
             using (Transaction t = new Transaction(document, "excludin stitches"))
             {
                 t.Start();
-                foreach (ElementId id in partsId)
-                {
-                    Element item = document.GetElement(id);
-                    if (item.get_Parameter(BuiltInParameter.DPART_AREA_COMPUTED).AsDouble() < 0.1)
-                    {
-                        Part part = (Part)item;
-                        part.Excluded = true;
-                    }
-                }
+                        Part part = (Part)pts.First();
+                        part.Excluded = true;   
                 document.Regenerate();
                 t.Commit();
 
             }
-
         }
 
+        private static int CompareElementsByArea (Element x, Element y)
+        {
+            double areaX = x.get_Parameter(BuiltInParameter.DPART_AREA_COMPUTED).AsDouble();
+            double areaY = y.get_Parameter(BuiltInParameter.DPART_AREA_COMPUTED).AsDouble();
+            if (areaX > areaY)
+            {
+                return 1;
+            }
+            else if (areaY > areaX)
+            {
+                return -1;
+            }
+            else
+            {
+                return 0;
+            }
+        }
     }
 }

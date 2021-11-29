@@ -109,28 +109,25 @@ namespace DSKPrim.PanelTools_v2.GUI
             switch (opName)
             {
                 case ("Создать проемы"):
-                    Routine = new CreateOpeningsRoutine();
+                    
                     break;
                 case ("Создать марки"):
-                    Routine = new SetMarksRoutine();
+                    
                     break;
                 case ("Создать сборки"):
-                    Routine = new CreateAssembliesRoutine();
+                   
                     break;
                 case ("Разобрать сборки"):
-                    Routine = new DisassembleAllRoutine();
+                    
                     break;
                 case ("Уникальные сборки"):
-                    Routine = new UniqueAssemblies();
+                    
                     break;
                 case ("Создать виды и листы"):
-                    Routine = new SheetsAndViewsCreationRoutine();
                     break;
                 case ("Создать проемы в фасаде"):
-                    Routine = new ARCH_PlaceWindow();
                     break;
                 case ("Скопировать марки"):
-                    Routine = new ARCH_copyMarks();
                     break;
                 case ("Создать сборки фасада"):
                     break;

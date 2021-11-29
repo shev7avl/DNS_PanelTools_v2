@@ -220,10 +220,19 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
         {
             Logger.Logger logger = Logger.Logger.getInstance();
             logger.WriteLog("Вызов метода NS_Panel.CreateMarks()");
-            logger.WriteLog("Создаём марку для виртуальной структуры данных");
-            LongMark = $"НС {GetPanelCode()}_{GetClosureCode()}";
-            logger.WriteLog($"Марка {LongMark} создана");
+
+            if (ActiveElement.get_Parameter(new Guid(Properties.Resource.DNS_Полная_марка_изделия)).AsString().Length == 0)
+            {
+                LongMark = $"НС {GetPanelCode()}_{GetClosureCode()}";
+            }
+            else
+            {
+                LongMark = ActiveElement.get_Parameter(new Guid(Properties.Resource.DNS_Полная_марка_изделия)).AsString();
+                
+            }
+            
             Guid ADSK_panelNum = new Guid("a531f6df-1e58-48e0-8c14-77cf7c1809b8");
+
             try
             {
                 if (ActiveElement.get_Parameter(ADSK_panelNum).AsString() == "")
@@ -234,7 +243,16 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
                 {
                     Index = ActiveElement.get_Parameter(ADSK_panelNum).AsString();
                 }
-                ShortMark = $"НС {LongMark.Split('_')[1]} - {Index}";
+                if (ActiveElement.get_Parameter(new Guid(Properties.Resource.ADSK_Марка_изделия)).AsString().Length == 0)
+                {
+                    ShortMark = $"НС {LongMark.Split('_')[1]} - {Index}";
+                }
+                else
+                {
+                    ShortMark = ActiveElement.get_Parameter(new Guid(Properties.Resource.ADSK_Марка_изделия)).AsString();
+
+                }
+                
             }
             catch (NullReferenceException e)
             {
