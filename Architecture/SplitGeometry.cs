@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
+using DSKPrim.PanelTools_v2.Utility;
 
 namespace DSKPrim.PanelTools_v2.Architecture
 {
@@ -40,8 +41,12 @@ namespace DSKPrim.PanelTools_v2.Architecture
                     logger.DebugLog($"Нашли начальную точку: {origin}");
                     XYZ normal = face.FaceNormal;
                     logger.DebugLog($"Нашли нормаль к грани: {normal}");
-                    using (Transaction transaction = new Transaction(document, "Creating a SketchPlane"))
-                    {
+
+                        Transaction transaction = new Transaction(document, "Creating a SketchPlane");
+                        IFailuresPreprocessor preprocessor = new WarningDiscard();
+                        FailureHandlingOptions fho = transaction.GetFailureHandlingOptions();
+                        fho.SetFailuresPreprocessor(preprocessor);
+                        transaction.SetFailureHandlingOptions(fho);
 
                         transaction.Start();
                         document.Regenerate();
@@ -58,7 +63,7 @@ namespace DSKPrim.PanelTools_v2.Architecture
                         logger.DebugLog($"Пытаемся разрезать части");
                         PartMaker maker = PartUtils.DivideParts(document, partsId, refiD, curves, sketchPlane.Id);
                         transaction.Commit();
-                    }
+
                     break;
                 }
             }
@@ -162,12 +167,13 @@ namespace DSKPrim.PanelTools_v2.Architecture
 
             conLenU = UnitUtils.ConvertFromInternalUnits(LenU, DisplayUnitType.DUT_MILLIMETERS);
             conHeiV = UnitUtils.ConvertFromInternalUnits(HeiV, DisplayUnitType.DUT_MILLIMETERS);
-            curves = CreateRectangle(boxUV, face, conLenU, conHeiV);
+            curves = CreateRectangle(partEl, boxUV, face, conLenU, conHeiV);
         }
 
-        private static List<Curve> CreateRectangle(BoundingBoxUV boxUV, Face face, double width, double heigth)
+        private static List<Curve> CreateRectangle(Element partEl, BoundingBoxUV boxUV, Face face, double width, double heigth)
         {
             //Определения базисных векторов
+
             UV origin = boxUV.Min;
             UV VerticalBase = new UV(boxUV.Min.U, boxUV.Max.V);
             UV HorizontalBase = new UV(boxUV.Max.U, boxUV.Min.V);
@@ -191,18 +197,44 @@ namespace DSKPrim.PanelTools_v2.Architecture
 
             if (Math.Abs(horBasis.Direction.X) == 1)
             {
-                pt1 = new XYZ(originXYZ.X + offsetWidth* horBasis.Direction.X, originXYZ.Y, originXYZ.Z+offsetHeigth);
-                pt2 = new XYZ(pt1.X - convWidth* horBasis.Direction.X, pt1.Y, pt1.Z);
+                if (horBasis.Direction.X == 1)
+                {
+                    pt1 = new XYZ(originXYZ.X, originXYZ.Y, originXYZ.Z);
+                    pt2 = new XYZ(pt1.X - convWidth * horBasis.Direction.X, pt1.Y, pt1.Z);
+                }
+                else
+                {
+                    pt1 = new XYZ(originXYZ.X, originXYZ.Y, originXYZ.Z);
+                    pt2 = new XYZ(pt1.X + convWidth * horBasis.Direction.X, pt1.Y, pt1.Z);
+                }
+                
             }
             else if (Math.Abs(horBasis.Direction.Y) == 1)
             {
-                pt1 = new XYZ(originXYZ.X , originXYZ.Y + offsetWidth*horBasis.Direction.Y, originXYZ.Z+offsetHeigth);
-                pt2 = new XYZ(pt1.X, pt1.Y - convWidth * horBasis.Direction.Y, pt1.Z);
+                if (horBasis.Direction.Y == 1)
+                {
+                    pt1 = new XYZ(originXYZ.X, originXYZ.Y, originXYZ.Z);
+                    pt2 = new XYZ(pt1.X, pt1.Y - convWidth * horBasis.Direction.Y, pt1.Z);
+                }
+                else
+                {
+                    pt1 = new XYZ(originXYZ.X, originXYZ.Y, originXYZ.Z);
+                    pt2 = new XYZ(pt1.X, pt1.Y + convWidth * horBasis.Direction.Y, pt1.Z);
+                }
+               
             }
 
             if (Math.Abs(verBasis.Direction.Z) == 1)
             {
-                pt3 = new XYZ(pt1.X, pt1.Y, pt1.Z - convHeigth* verBasis.Direction.Z);
+                if (verBasis.Direction.Z == 1)
+                {
+                    pt3 = new XYZ(pt1.X, pt1.Y, pt1.Z - convHeigth * verBasis.Direction.Z);
+                }
+                else
+                {
+                    pt3 = new XYZ(pt1.X, pt1.Y, pt1.Z + convHeigth * verBasis.Direction.Z);
+                }
+                
             }
 
             XYZ pt4 = new XYZ(pt2.X, pt2.Y, pt3.Z);

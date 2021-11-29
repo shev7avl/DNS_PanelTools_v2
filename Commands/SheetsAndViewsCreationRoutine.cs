@@ -139,7 +139,8 @@ namespace DSKPrim.PanelTools_v2.Commands
                     new XYZ(-0.80437545819787, 0.0908524885288077, 0));
 
                 //2 лист
-                ViewSection vsFront2 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.DetailSectionA, viewFront_Page2.First().Id, isAssigned: true);
+
+                ViewSection vsFront2 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.ElevationFront, viewFront_Page2.First().Id, isAssigned: true);
                 ViewSection vsUp2 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.ElevationTop, viewSection_Page2.First().Id, isAssigned: true);
                 ViewSection vsLeft2 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.ElevationLeft, viewSection_Page2.First().Id, isAssigned: true);
                 ViewSchedule matSched2 = AssemblyViewUtils.CreateSingleCategorySchedule(Document, item.Id, scheduleCategoryId: schedTypeElement.Category.Id, Sched1.First().Id, isAssigned: true);
@@ -153,7 +154,7 @@ namespace DSKPrim.PanelTools_v2.Commands
 
                 ScheduleSheetInstance.Create(Document, sheet2.Id, matSched2.Id, new XYZ(-1.27797628823942, 0.256357547731719, 0));
                 //3 лист
-                ViewSection vsFront3 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.DetailSectionA, viewFront_Page3.First().Id, isAssigned: true);
+                ViewSection vsFront3 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.ElevationFront, viewFront_Page3.First().Id, isAssigned: true);
                 ViewSchedule matSched3 = AssemblyViewUtils.CreateMaterialTakeoff(Document, item.Id, Sched2.First().Id, isAssigned: true);
                 ViewSchedule matSched31 = AssemblyViewUtils.CreateMaterialTakeoff(Document, item.Id, Sched3.First().Id, isAssigned: true);
 
@@ -165,7 +166,7 @@ namespace DSKPrim.PanelTools_v2.Commands
                 Viewport.Create(Document, sheet3.Id, leg4.First().Id, new XYZ(-0.375249977171706, 0.106285146351993, 0));
 
                 //4 лист
-                ViewSection vsFront4 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.DetailSectionA, viewFront_Page4.First().Id, isAssigned: true);
+                ViewSection vsFront4 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.ElevationFront, viewFront_Page4.First().Id, isAssigned: true);
                 ViewSection vsLeft4 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.ElevationLeft, viewSection_Page4.First().Id, isAssigned: true);
                 ViewSchedule matSched4 = AssemblyViewUtils.CreateSingleCategorySchedule(Document, item.Id, scheduleCategoryId: schedTypeElement.Category.Id, Sched4.First().Id, isAssigned: true);
 
@@ -177,7 +178,7 @@ namespace DSKPrim.PanelTools_v2.Commands
 
                 ScheduleSheetInstance.Create(Document, sheet4.Id, matSched.Id, new XYZ(-1.27797628823942, 0.256357547731719, 0));
                 //5 лист	
-                ViewSection vsFront5 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.DetailSectionA, viewFront_Page5.First().Id, isAssigned: true);
+                ViewSection vsFront5 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.ElevationFront, viewFront_Page5.First().Id, isAssigned: true);
                 ViewSection vsUp5 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.ElevationTop, viewSection_Page5.First().Id, isAssigned: true);
                 ViewSection vsLeft5 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.ElevationLeft, viewSection_Page5.First().Id, isAssigned: true);
 
@@ -189,7 +190,7 @@ namespace DSKPrim.PanelTools_v2.Commands
                 Viewport.Create(Document, sheet5.Id, leg7.First().Id, new XYZ(-0.375249977171706, 0.106285146351993, 0));
 
                 //6 лист
-                ViewSection vsFront6 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.DetailSectionA, viewFront_Page6.First().Id, isAssigned: true);
+                ViewSection vsFront6 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.ElevationFront, viewFront_Page6.First().Id, isAssigned: true);
                 ViewSection vsUp6 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.ElevationTop, viewSection_Page6.First().Id, isAssigned: true);
                 ViewSection vsLeft6 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.ElevationLeft, viewSection_Page6.First().Id, isAssigned: true);
 
@@ -209,7 +210,7 @@ namespace DSKPrim.PanelTools_v2.Commands
                 ScheduleSheetInstance.Create(Document, sheet7.Id, matSched71.Id, new XYZ(-0.822, 0.8413, 0));
                 ScheduleSheetInstance.Create(Document, sheet7.Id, matSched72.Id, new XYZ(-0.62811, 0.93059, 0));
                 //8 лист
-                ViewSection vsFront8 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.DetailSectionA, viewFront_Page8.First().Id, isAssigned: true);
+                ViewSection vsFront8 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.ElevationFront, viewFront_Page8.First().Id, isAssigned: true);
                 ViewSchedule matSched8 = AssemblyViewUtils.CreateSingleCategorySchedule(Document, item.Id, scheduleCategoryId: schedTypeElement.Category.Id, Sched8.First().Id, isAssigned: true);
 
                 Viewport.Create(Document, sheet8.Id, vsFront8.Id, new XYZ(-0.830265408004621, 0.814931612421939, -0.2404));
@@ -217,7 +218,7 @@ namespace DSKPrim.PanelTools_v2.Commands
                 ScheduleSheetInstance.Create(Document, sheet8.Id, matSched8.Id, new XYZ(-1.25102, 0.348649448818898, 0));
 
                 //9 лист
-                ViewSection vsFront9 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.DetailSectionA, viewFront_Page9.First().Id, isAssigned: true);
+                ViewSection vsFront9 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.ElevationFront, viewFront_Page9.First().Id, isAssigned: true);
                 ViewSchedule matSched9 = AssemblyViewUtils.CreateSingleCategorySchedule(Document, item.Id, scheduleCategoryId: schedTypeElement.Category.Id, Sched9.First().Id, isAssigned: true);
 
                 Viewport.Create(Document, sheet9.Id, vsFront9.Id, new XYZ(-0.830265408004621, 0.814931612421939, -0.2404));
@@ -293,7 +294,7 @@ namespace DSKPrim.PanelTools_v2.Commands
                     new XYZ(-0.80437545819787, 0.0908524885288077, 0));
 
                 //2 лист
-                ViewSection vsFront2 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.DetailSectionA, viewFront_Page2.First().Id, isAssigned: true);
+                ViewSection vsFront2 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.ElevationFront, viewFront_Page2.First().Id, isAssigned: true);
                 ViewSection vsUp2 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.ElevationTop, viewSection_Page2.First().Id, isAssigned: true);
                 ViewSection vsLeft2 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.ElevationLeft, viewSection_Page2.First().Id, isAssigned: true);
                 ViewSchedule matSched2 = AssemblyViewUtils.CreateSingleCategorySchedule(Document, item.Id, scheduleCategoryId: schedTypeElement.Category.Id, Sched1.First().Id, isAssigned: true);
@@ -307,7 +308,7 @@ namespace DSKPrim.PanelTools_v2.Commands
                 ScheduleSheetInstance.Create(Document, sheet2.Id, matSched2.Id, new XYZ(-1.27797628823942, 0.256357547731719, 0));
 
                 //3 лист	
-                ViewSection vsFront3 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.DetailSectionA, viewFront_Page3.First().Id, isAssigned: true);
+                ViewSection vsFront3 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.ElevationFront, viewFront_Page3.First().Id, isAssigned: true);
                 ViewSection vsUp3 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.ElevationTop, viewSection_Page3.First().Id, isAssigned: true);
                 ViewSection vsLeft3 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.ElevationLeft, viewSection_Page3.First().Id, isAssigned: true);
 
@@ -329,7 +330,7 @@ namespace DSKPrim.PanelTools_v2.Commands
                 ScheduleSheetInstance.Create(Document, sheet4.Id, matSched72.Id, new XYZ(-0.62811, 0.93059, 0));
 
                 //5 лист
-                ViewSection vsFront9 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.DetailSectionA, viewFront_Page5.First().Id, isAssigned: true);
+                ViewSection vsFront9 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.ElevationFront, viewFront_Page5.First().Id, isAssigned: true);
                 ViewSchedule matSched9 = AssemblyViewUtils.CreateSingleCategorySchedule(Document, item.Id, scheduleCategoryId: schedTypeElement.Category.Id, Sched8.First().Id, isAssigned: true);
 
                 Viewport.Create(Document, sheet5.Id, vsFront9.Id, new XYZ(-0.830265408004621, 0.814931612421939, -0.2404));
@@ -374,7 +375,7 @@ namespace DSKPrim.PanelTools_v2.Commands
             {
                 transaction.Start();
                 ViewSheet sheet1 = AssemblyViewUtils.CreateSheet(Document, item.Id, titleBlock_F4.First().Id);
-                ViewSection vsFront2 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.DetailSectionA, viewFront_Page2.First().Id, isAssigned: true);
+                ViewSection vsFront2 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.ElevationFront, viewFront_Page2.First().Id, isAssigned: true);
                 ViewSection vsUp2 = AssemblyViewUtils.CreateDetailSection(Document, item.Id, AssemblyDetailViewOrientation.ElevationTop, viewSection_Page2.First().Id, isAssigned: true);
 
 

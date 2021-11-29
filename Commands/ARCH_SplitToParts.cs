@@ -22,11 +22,11 @@ namespace DSKPrim.PanelTools_v2.Commands
             Logger.Logger logger = Logger.Logger.getInstance();
             ActiveDocument = commandData.Application.ActiveUIDocument.Document;
 
-            FilteredElementCollector fecWalls = new FilteredElementCollector(ActiveDocument).OfCategory(BuiltInCategory.OST_Walls).WhereElementIsNotElementType();
+            List<Element> list_Walls = new FilteredElementCollector(ActiveDocument).OfCategory(BuiltInCategory.OST_Walls).WhereElementIsNotElementType().Where(o => o.Name.Contains("DNS_")).ToList();
 
             logger.DebugLog(ActiveDocument.PathName);
 
-            foreach (var item in fecWalls)
+            foreach (var item in list_Walls)
             {
                 try
                 {

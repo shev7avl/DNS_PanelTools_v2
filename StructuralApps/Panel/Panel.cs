@@ -120,8 +120,6 @@ namespace DSKPrim.PanelTools_v2.StructuralApps.Panel
 
             Guid DNS_panelMark1 = new Guid(Properties.Resource.DNS_Полная_марка_изделия);
 
-            Guid ADSK_panelMark1 = new Guid(Properties.Resource.ADSK_Марка_изделия);
-
             Logger.Logger logger = Logger.Logger.getInstance();
 
             Transaction transaction = new Transaction(ActiveDocument);
