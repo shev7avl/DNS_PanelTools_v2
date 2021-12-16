@@ -249,10 +249,10 @@ namespace DSKPrim.PanelTools_v2.Architecture
 
             conLenU = UnitUtils.ConvertFromInternalUnits(LenU, DisplayUnitType.DUT_MILLIMETERS);
             conHeiV = UnitUtils.ConvertFromInternalUnits(HeiV, DisplayUnitType.DUT_MILLIMETERS);
-            curves = CreateRectangle(boxUV, face, conLenU, conHeiV);
+            curves = CreateRectangle(partEl, boxUV, face, conLenU, conHeiV);
         }
 
-        private static List<Curve> CreateRectangle(BoundingBoxUV boxUV, Face face, double width, double heigth)
+        private static List<Curve> CreateRectangle(Element partEl, BoundingBoxUV boxUV, Face face, double width, double heigth)
         {
             //Определения базисных векторов
 

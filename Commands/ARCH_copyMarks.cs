@@ -22,7 +22,7 @@ namespace DSKPrim.PanelTools_v2.Commands
 
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
-            Logger.Logger logger = Logger.Logger.getInstance();
+            Logger.Logger logger = Logger.Logger.getInstance();     
 
             Document = commandData.Application.ActiveUIDocument.Document;
 
