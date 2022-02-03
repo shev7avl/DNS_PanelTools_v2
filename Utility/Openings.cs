@@ -2,13 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
-using DSKPrim.PanelTools_v2.StructuralApps;
 
-namespace DSKPrim.PanelTools_v2.Utility
+namespace DSKPrim.PanelTools.Utility
 {
     public static class Openings
     {
@@ -19,20 +16,15 @@ namespace DSKPrim.PanelTools_v2.Utility
         #region Structural Utility
         public static void SetOpeningParams(Document document, RevitLinkInstance revitLink, Element element, Element window1)
         {
-            Logger.Logger logger = Logger.Logger.getInstance();
 
-            logger.Separate();
-            logger.WriteLog("Вызван статический метод Utility.Openings.SetOpeningParams()");
-            logger.WriteLog($"Назначаем параметры проема элементу {element.Id}");
+            Debug.WriteLine("Вызван статический метод Utility.Openings.SetOpeningParams()");
+            Debug.WriteLine($"Назначаем параметры проема элементу {element.Id}");
 
             GetOpeningParams(window1, out double appWidth, out double appHeight, out double offsetZ);
             CalculateOffset(revitLink, element, window1, out double offsetLine);
             Transaction transaction = new Transaction(document, "Test_opening");
+            TransactionSettings.SetFailuresPreprocessor(transaction);
             transaction.Start();
-
-            FailureHandlingOptions options = transaction.GetFailureHandlingOptions();
-            options.SetFailuresPreprocessor(new WarningDiscard());
-            transaction.SetFailureHandlingOptions(options);
 
             try
             {
@@ -41,23 +33,22 @@ namespace DSKPrim.PanelTools_v2.Utility
                 element.LookupParameter("ПР1.Ширина").SetValueString(appWidth.ToString());
                 element.LookupParameter("ПР1.Высота").SetValueString(appHeight.ToString());
                 element.LookupParameter("ПР1.ВысотаСмещение").SetValueString(offsetZ.ToString());
-                logger.WriteLog($"Успешно");
+                Debug.WriteLine($"Успешно");
             }
             catch (Exception e)
             {
-                logger.WriteLog($"В элементе ID: {element.Id} возникла ошибка {e.Message}");
-                logger.LogError(e);
+                Debug.WriteLine($"В элементе ID: {element.Id} возникла ошибка {e.Message}");
                 throw;
             }
 
-            logger.DebugLog($"-- Панель {element.Name}: {element.Id} --");
+            Debug.WriteLine($"-- Панель {element.Name}: {element.Id} --");
 
-            logger.DebugLog($"ПР1.Отступ: {offsetLine} --");
-            logger.DebugLog($"ПР1.Ширина: {appWidth} --");
-            logger.DebugLog($"ПР1.Высота: {appHeight} --");
-            logger.DebugLog($"ПР1.ВысотаСмещение: {offsetZ} --");
+            Debug.WriteLine($"ПР1.Отступ: {offsetLine} --");
+            Debug.WriteLine($"ПР1.Ширина: {appWidth} --");
+            Debug.WriteLine($"ПР1.Высота: {appHeight} --");
+            Debug.WriteLine($"ПР1.ВысотаСмещение: {offsetZ} --");
 
-            logger.DebugLog($"-------------");
+            Debug.WriteLine($"-------------");
 
             transaction.Commit();
 
@@ -65,10 +56,9 @@ namespace DSKPrim.PanelTools_v2.Utility
         
         public static void SetOpeningParams(Document document, RevitLinkInstance revitLink, Element element, Element window1, Element window2)
         {
-            Logger.Logger logger = Logger.Logger.getInstance();
-            logger.Separate();
-            logger.WriteLog("Вызван статический метод Utility.Openings.SetOpeningParams()");
-            logger.WriteLog($"Назначаем параметры проема элементу {element.Id}");
+
+            Debug.WriteLine("Вызван статический метод Utility.Openings.SetOpeningParams()");
+            Debug.WriteLine($"Назначаем параметры проема элементу {element.Id}");
 
 
             GetOpeningParams(window1, out double appWidth, out double appHeight, out double offsetZ);
@@ -78,11 +68,8 @@ namespace DSKPrim.PanelTools_v2.Utility
             CalculateOffset(revitLink, element, window2, out double offsetLine2);
 
             Transaction transaction = new Transaction(document, "Test_opening");
+            TransactionSettings.SetFailuresPreprocessor(transaction);
             transaction.Start();
-
-            FailureHandlingOptions options = transaction.GetFailureHandlingOptions();
-            options.SetFailuresPreprocessor(new WarningDiscard());
-            transaction.SetFailureHandlingOptions(options);
 
             if (offsetLine == offsetLine2)
             {
@@ -94,23 +81,22 @@ namespace DSKPrim.PanelTools_v2.Utility
                     element.LookupParameter("ПР1.Ширина").SetValueString(appWidth.ToString());
                     element.LookupParameter("ПР1.Высота").SetValueString(appHeight.ToString());
                     element.LookupParameter("ПР1.ВысотаСмещение").SetValueString(offsetZ.ToString());
-                    logger.WriteLog($"Успешно");
+                    Debug.WriteLine($"Успешно");
                 }
                 catch (Exception e)
                 {
-                    logger.WriteLog($"В элементе ID: {element.Id} возникла ошибка {e.Message}");
-                    logger.LogError(e);
+                    Debug.WriteLine($"В элементе ID: {element.Id} возникла ошибка {e.Message}");
                     throw;
                 }
 
-                logger.DebugLog($"-- Панель {element.Name}: {element.Id} --");
+                Debug.WriteLine($"-- Панель {element.Name}: {element.Id} --");
 
-                logger.DebugLog($"ПР1.Отступ: {offsetLine} --");
-                logger.DebugLog($"ПР1.Ширина: {appWidth} --");
-                logger.DebugLog($"ПР1.Высота: {appHeight} --");
-                logger.DebugLog($"ПР1.ВысотаСмещение: {offsetZ} --");
+                Debug.WriteLine($"ПР1.Отступ: {offsetLine} --");
+                Debug.WriteLine($"ПР1.Ширина: {appWidth} --");
+                Debug.WriteLine($"ПР1.Высота: {appHeight} --");
+                Debug.WriteLine($"ПР1.ВысотаСмещение: {offsetZ} --");
 
-                logger.DebugLog($"-------------");
+                Debug.WriteLine($"-------------");
                 
             }
 
@@ -129,29 +115,28 @@ namespace DSKPrim.PanelTools_v2.Utility
                     element.LookupParameter("ПР2.Ширина").SetValueString(appWidth2.ToString());
                     element.LookupParameter("ПР2.Высота").SetValueString(appHeight2.ToString());
                     element.LookupParameter("ПР2.ВысотаСмещение").SetValueString(offsetZ2.ToString());
-                    logger.WriteLog($"Успешно");
+                    Debug.WriteLine($"Успешно");
                 }
                 catch (Exception e)
                 {
-                    logger.WriteLog($"В элементе ID: {element.Id} возникла ошибка {e.Message}");
-                    logger.LogError(e);
+                    Debug.WriteLine($"В элементе ID: {element.Id} возникла ошибка {e.Message}");
                     throw;
                 }
 
 
-                logger.DebugLog($"--[2 окна] Панель {element.Name}: {element.Id} --");
+                Debug.WriteLine($"--[2 окна] Панель {element.Name}: {element.Id} --");
 
-                logger.DebugLog($"ПР1.Отступ: {offsetLine}");
-                logger.DebugLog($"ПР1.Ширина: {appWidth}");
-                logger.DebugLog($"ПР1.Высота: {appHeight}");
-                logger.DebugLog($"ПР1.ВысотаСмещение: {offsetZ}");
+                Debug.WriteLine($"ПР1.Отступ: {offsetLine}");
+                Debug.WriteLine($"ПР1.Ширина: {appWidth}");
+                Debug.WriteLine($"ПР1.Высота: {appHeight}");
+                Debug.WriteLine($"ПР1.ВысотаСмещение: {offsetZ}");
 
-                logger.DebugLog($"ПР2.Отступ: {offsetLine2}");
-                logger.DebugLog($"ПР2.Ширина: {appWidth2}");
-                logger.DebugLog($"ПР2.Высота: {appHeight2}");
-                logger.DebugLog($"ПР2.ВысотаСмещение: {offsetZ2}");
+                Debug.WriteLine($"ПР2.Отступ: {offsetLine2}");
+                Debug.WriteLine($"ПР2.Ширина: {appWidth2}");
+                Debug.WriteLine($"ПР2.Высота: {appHeight2}");
+                Debug.WriteLine($"ПР2.ВысотаСмещение: {offsetZ2}");
 
-                logger.DebugLog($"-------------");
+                Debug.WriteLine($"-------------");
 
 
             }
@@ -367,9 +352,9 @@ namespace DSKPrim.PanelTools_v2.Utility
         {
             FamilyInstance familyInstanceWin = window as FamilyInstance;
             FamilySymbol familySymbolWin = familyInstanceWin.Symbol;
-            Logger.Logger logger = Logger.Logger.getInstance();
 
-            logger.WriteLog("Вызван статический метод Utility.Openings.GetOpeningParams()");
+
+            Debug.WriteLine("Вызван статический метод Utility.Openings.GetOpeningParams()");
 
             try
             {
@@ -404,9 +389,9 @@ namespace DSKPrim.PanelTools_v2.Utility
         {
             FamilyInstance familyInstance = window as FamilyInstance;
             FamilySymbol familySymbol = familyInstance.Symbol;
-            Logger.Logger logger = Logger.Logger.getInstance();
 
-            logger.WriteLog("Вызван статический метод Utility.Openings.CalculateOffset()");
+
+            Debug.WriteLine("Вызван статический метод Utility.Openings.CalculateOffset()");
             double appHalfWidth;
             try
             {
@@ -483,14 +468,6 @@ namespace DSKPrim.PanelTools_v2.Utility
 
         }
         #endregion
-
-
-
-
-
-
-
-
 
     }
 }

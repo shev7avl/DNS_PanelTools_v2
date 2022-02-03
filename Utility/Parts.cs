@@ -1,12 +1,10 @@
 ﻿using Autodesk.Revit.DB;
-using DSKPrim.PanelTools_v2.Architecture;
-using System;
+using DSKPrim.PanelTools.Architecture;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace DSKPrim.PanelTools_v2.Utility
+namespace DSKPrim.PanelTools.Utility
 {
     public static class Parts
     {
@@ -17,16 +15,16 @@ namespace DSKPrim.PanelTools_v2.Utility
         /// <param name="element">Стена фасада</param>
         public static void SplitToParts(Document document, Element element, bool straight=false)
         {
-            Logger.Logger logger = Logger.Logger.getInstance();
+
             ICollection<ElementId> elementIdsToDivide;
 
             ICollection<ElementId> elementIds = new List<ElementId>()
             {
                 element.Id
             };
-            logger.DebugLog($"------------");
-            logger.DebugLog($"@Начало транзакции");
-            logger.DebugLog($"@");
+            Debug.WriteLine($"------------");
+            Debug.WriteLine($"@Начало транзакции");
+            Debug.WriteLine($"@");
             if (PartUtils.AreElementsValidForCreateParts(document, elementIds))
             {
                 using (Transaction transaction = new Transaction(document, "Parts creation"))
@@ -42,10 +40,10 @@ namespace DSKPrim.PanelTools_v2.Utility
 
                 SplitGeometry.CreatePartsSection(document, elementIdsToDivide.FirstOrDefault(), straight);
 
-            logger.DebugLog($"@Части для {element.Name} Созданы успешно");
-            logger.DebugLog($"@");
-            logger.DebugLog($"@Конец транзакции");
-            logger.DebugLog($"------------");
+            Debug.WriteLine($"@Части для {element.Name} Созданы успешно");
+            Debug.WriteLine($"@");
+            Debug.WriteLine($"@Конец транзакции");
+            Debug.WriteLine($"------------");
         }
 
         /// <summary>
