@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+	<AddIn Type="Application">
+		<Name>Application DNS Panel tools. Revit 2019 version</Name>
+		<Description>Export button</Description>
+		<Assembly>PanelTools.dll</Assembly>
+		<FullClassName>DSKPrim.PanelTools.App</FullClassName>
+		<ClientId>61b8a3fb-126c-4b49-8b1a-8310615f78ce</ClientId>
+		<VendorId>Shevyakov Anton</VendorId>
+		<VendorDescription>shevyakov.a@dnsgroup.ru</VendorDescription>
+	</AddIn>
+</RevitAddIns>

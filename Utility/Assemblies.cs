@@ -1,19 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Autodesk.Revit.DB;
-using System.Text;
-using System.Threading.Tasks;
-using DSKPrim.PanelTools_v2.Utility;
-using DSKPrim.PanelTools_v2.StructuralApps.Panel;
+using DSKPrim.PanelTools.Panel;
 
-namespace DSKPrim.PanelTools_v2.Utility
+namespace DSKPrim.PanelTools.Utility
 {
-    public static class Assemblies
+    internal static class Assemblies
     {
-        public static void CreateAssembly(Document document, Logger.Logger logger, StructuralApps.Panel.Panel item)
+        internal static void CreateAssembly(Document document, BasePanel item)
         {
-            if (item is IAssembler assembler)
+            if (item is IAssembler assembler && item.ActiveElement.AssemblyInstanceId.IntegerValue == -1)
             {
                 Outline outline = new Outline(item.ActiveElement.get_Geometry(new Options()).GetBoundingBox().Min, item.ActiveElement.get_Geometry(new Options()).GetBoundingBox().Max);
                 ElementFilter filter = new BoundingBoxIntersectsFilter(outline);
@@ -26,7 +24,7 @@ namespace DSKPrim.PanelTools_v2.Utility
                 {
                     foreach (var ints in intersected)
                     {
-                        Commands.Routine.GetPanelBehaviour(document, ints, out StructuralApps.Panel.Panel behaviour);
+                        PanelMaster.Routine.GetPanelBehaviour(document, ints, out BasePanel behaviour);
                         if (behaviour is NS_Panel || behaviour is VS_Panel)
                         {
                             IAssembler assembler1 = (IAssembler)behaviour;
@@ -35,31 +33,26 @@ namespace DSKPrim.PanelTools_v2.Utility
                     }
                 }
 
-                AssemblyCreationTransaction(document, logger, item, assembler);
+                AssemblyInstance instance;
+                AssemblyCreationTransaction(document, item, assembler, out instance);
+                item.AssemblyInstance = instance;
 
+            }
+            else if (item is IAssembler && item.ActiveElement.AssemblyInstanceId.IntegerValue != -1)
+            {
+                item.AssemblyInstance = (AssemblyInstance) document.GetElement(item.ActiveElement.AssemblyInstanceId);
             }
         }
 
-        public static void CreateFacadeAssembly(Document document, Wall wall)
-        { 
-        
-            
-
-
-        }
-
-        private static void AssemblyCreationTransaction(Document document, Logger.Logger logger, StructuralApps.Panel.Panel item, IAssembler assembler)
+        private static void AssemblyCreationTransaction(Document document, BasePanel item, IAssembler assembler, out AssemblyInstance instance)
         {
             Transaction transaction = new Transaction(document, "CreateAssembly");
-            FailureHandlingOptions opts = transaction.GetFailureHandlingOptions();
-            IFailuresPreprocessor preprocessor = new WarningDiscard();
-            opts.SetFailuresPreprocessor(preprocessor);
-            transaction.SetFailureHandlingOptions(opts);
+            TransactionSettings.SetFailuresPreprocessor(transaction);
 
             transaction.Start();
             try
             {
-                AssemblyInstance instance = AssemblyInstance.Create(document, assembler.AssemblyElements, item.ActiveElement.Category.Id);
+                instance = AssemblyInstance.Create(document, assembler.AssemblyElements, item.ActiveElement.Category.Id);
                 transaction.Commit();
 
                 transaction.Start();
@@ -79,8 +72,8 @@ namespace DSKPrim.PanelTools_v2.Utility
 
             catch (Autodesk.Revit.Exceptions.ArgumentException)
             {
-                logger.DebugLog($"Произошла ошибка в панели {item.ShortMark} на уровне {item.ActiveElement.LevelId}");
-                AssemblyInstance instance = AssemblyInstance.Create(document, new List<ElementId>() { item.ActiveElement.Id }, item.ActiveElement.Category.Id);
+                
+                instance = AssemblyInstance.Create(document, new List<ElementId>() { item.ActiveElement.Id }, item.ActiveElement.Category.Id);
                 transaction.Commit();
 
                 transaction.Start();
@@ -95,9 +88,13 @@ namespace DSKPrim.PanelTools_v2.Utility
 
                 transaction.Commit();
             }
+            if (transaction.GetStatus() != TransactionStatus.Committed)
+            {
+                transaction.Commit();
+            }
         }
 
-        public static int CompareElementIdsByZCoord(StructuralApps.Panel.Panel x, StructuralApps.Panel.Panel y)
+        internal static int CompareElementIdsByZCoord(BasePanel x, BasePanel y)
         {
             Element elX = x.ActiveElement;
             Element elY = y.ActiveElement;
@@ -120,10 +117,80 @@ namespace DSKPrim.PanelTools_v2.Utility
 
         }
 
-
-        public static void LeaveUniquePanels(Document document)
+        internal static List<AssemblyDetailViewOrientation> DefineViewOrientations(Document document, ElementId assemblyInstanceId)
         {
-            Logger.Logger logger = Logger.Logger.getInstance();
+            Element elAssembly = document.GetElement(assemblyInstanceId);
+            AssemblyInstance assembly = (AssemblyInstance)elAssembly;
+            ICollection<ElementId> ids = assembly.GetMemberIds();
+            List<Element> elements = ids.Select(o => document.GetElement(o)).ToList();
+            Element panel = elements.Where(o => o.Category.Name.Contains("Каркас несущий")).First();
+            FamilyInstance instance = (FamilyInstance)panel;
+            //instance.FacingOrientation;
+            List<AssemblyDetailViewOrientation> orientations = null;
+
+            XYZ f = new XYZ(0, 1, 0);
+            XYZ b = new XYZ(0, -1, 0);
+            XYZ l = new XYZ(1, 0, 0);
+            XYZ r = new XYZ(-1, 0, 0);
+
+            if (instance.FacingOrientation.IsAlmostEqualTo(b))
+            {
+                orientations = new List<AssemblyDetailViewOrientation>()
+                    {
+                        AssemblyDetailViewOrientation.ElevationFront,
+                        AssemblyDetailViewOrientation.DetailSectionA,
+                        AssemblyDetailViewOrientation.DetailSectionB,
+                        AssemblyDetailViewOrientation.HorizontalDetail
+                    };
+            }
+            else if (instance.FacingOrientation.IsAlmostEqualTo( f))
+            {
+                orientations = new List<AssemblyDetailViewOrientation>()
+                    {
+                        AssemblyDetailViewOrientation.ElevationBack,
+                        AssemblyDetailViewOrientation.DetailSectionA,
+                        AssemblyDetailViewOrientation.DetailSectionB,
+                        AssemblyDetailViewOrientation.HorizontalDetail
+                    };
+            }
+            else if(instance.FacingOrientation.IsAlmostEqualTo( r))
+            {
+                orientations = new List<AssemblyDetailViewOrientation>()
+                    {
+                        AssemblyDetailViewOrientation.ElevationLeft,
+                        AssemblyDetailViewOrientation.DetailSectionB,
+                        AssemblyDetailViewOrientation.DetailSectionA,
+                        AssemblyDetailViewOrientation.HorizontalDetail
+                    };
+            }
+            else if(instance.FacingOrientation.IsAlmostEqualTo( l))
+            {
+                orientations = new List<AssemblyDetailViewOrientation>()
+                    {
+                        AssemblyDetailViewOrientation.ElevationRight,
+                        AssemblyDetailViewOrientation.DetailSectionB,
+                        AssemblyDetailViewOrientation.DetailSectionA,
+                        AssemblyDetailViewOrientation.HorizontalDetail
+                    };
+            }
+            else
+            {
+                orientations = new List<AssemblyDetailViewOrientation>()
+                    {
+                        AssemblyDetailViewOrientation.ElevationFront,
+                        AssemblyDetailViewOrientation.DetailSectionA,
+                        AssemblyDetailViewOrientation.DetailSectionB,
+                        AssemblyDetailViewOrientation.HorizontalDetail
+                    };
+            }
+            return orientations;
+        }
+
+
+
+        internal static void LeaveUniquePanels(Document document)
+        {
+
             List<AssemblyInstance> assemblies = new FilteredElementCollector(document).OfCategory(BuiltInCategory.OST_Assemblies).WhereElementIsNotElementType().Cast<AssemblyInstance>().ToList();
             assemblies.Sort(CompareAssembliesByName);
 
@@ -134,11 +201,12 @@ namespace DSKPrim.PanelTools_v2.Utility
             foreach (var assemblyType in assemblyTypes)
             {
                 List<AssemblyInstance> inst = new List<AssemblyInstance>();
-                foreach (var assembly in assemblies)
+                for (int i = 1; i < assemblies.Count; i++)
                 {
-                    if (assembly.Name == assemblyType.Name)
+                    
+                    if (!(AssemblyInstance.CompareAssemblyInstances(assemblies[i-1], assemblies[i]) is AssemblyDifferenceNone))
                     {
-                        inst.Add(assembly);
+                        inst.Add(assemblies[i]);
                     }
                 }
                 instances.Add(inst);
@@ -147,7 +215,6 @@ namespace DSKPrim.PanelTools_v2.Utility
             List<AssemblyInstance> disposables = new List<AssemblyInstance>();
 
             IEqualityComparer<AssemblyInstance> comparer = new AssemblyComparer();
-
 
             int amount = assemblies.Count;
 
@@ -163,33 +230,34 @@ namespace DSKPrim.PanelTools_v2.Utility
                     }
                     cnt--;
                 }
-                logger.DebugLog($"Число сборок: {disposables.Count} / {amount - assemblyTypes.Count}");
+                Debug.WriteLine($"Число сборок: {disposables.Count} / {amount - assemblyTypes.Count}");
             }
 
-
-            logger.DebugLog($"Уникальные сборки определены");
-
+            Debug.WriteLine($"Уникальные сборки определены");
 
             using (Transaction transaction = new Transaction(document, "Разбираем сборки"))
             {
-                logger.DebugLog("Начинаем разборку");
+                IFailuresPreprocessor preprocessor = new TransactionSettings.WarningDiscard();
+                FailureHandlingOptions fho = transaction.GetFailureHandlingOptions();
+                fho.SetFailuresPreprocessor(preprocessor);
+                transaction.SetFailureHandlingOptions(fho);
+
+                Debug.WriteLine("Начинаем разборку");
                 int counter = 1;
                 foreach (AssemblyInstance assembly in disposables)
                 {
-                    logger.DebugLog($"Прогресс {counter} / {disposables.Count}");
+                    Debug.WriteLine($"Прогресс {counter} / {disposables.Count}");
                     transaction.Start();
-                    FailureHandlingOptions opts = transaction.GetFailureHandlingOptions();
-                    IFailuresPreprocessor preprocessor = new WarningDiscard();
-                    opts.SetFailuresPreprocessor(preprocessor);
-                    transaction.SetFailureHandlingOptions(opts);
                     //assembly.Disassemble();
-                    document.Delete(assembly.Id);
+                    if (assembly.IsValidObject)
+                    {
+                        document.Delete(assembly.Id);
+                    }
+
                     transaction.Commit();
                     counter++;
                 }
-
             }
-
         }
 
         private static int CompareAssembliesByName(AssemblyInstance x, AssemblyInstance y)
@@ -207,6 +275,11 @@ namespace DSKPrim.PanelTools_v2.Utility
             LocationPoint locoPocoX = (LocationPoint)x.Location;
             LocationPoint locoPocoY = (LocationPoint)y.Location;
 
+            int i = 0;
+            int j = 1;
+
+            int[,] vs = new int[i, j];
+
             XYZ X = locoPocoX.Point;
             XYZ Y = locoPocoY.Point;
 
@@ -223,35 +296,40 @@ namespace DSKPrim.PanelTools_v2.Utility
                 return -1;
             }
 
+
+         
         }
 
-        public static void DisassembleAll(Document document)
+        internal static void DisassembleAll(Document document)
         {
             List<AssemblyInstance> assemblies = new FilteredElementCollector(document).OfCategory(BuiltInCategory.OST_Assemblies).WhereElementIsNotElementType().Cast<AssemblyInstance>().ToList();
 
-            using (Transaction transaction = new Transaction(document, "Разбираем сборки"))
-            {
-
-
+                
+            Transaction transaction = new Transaction(document, "Разбираем сборки");
+                TransactionSettings.SetFailuresPreprocessor(transaction);
+                string index;
                 foreach (AssemblyInstance assembly in assemblies)
                 {
+                    index = "";
                     if (Eligible(assembly))
                     {
                         transaction.Start();
 
-                        FailureHandlingOptions failOpt
-          = transaction.GetFailureHandlingOptions();
+                    FailureResolution fr = DeleteElements.Create(document, assembly.Id);
 
-                        failOpt.SetFailuresPreprocessor(
-                          new WarningDiscard());
-
-                        transaction.SetFailureHandlingOptions(failOpt);
-
+                        index = assembly.get_Parameter(new Guid(Properties.Resource.ADSK_Номер_изделия)).AsString();
+                        if (index != "")
+                        {
+                            ICollection<ElementId> ids = assembly.GetMemberIds();
+                            List<Element> elements = ids.Select(o => document.GetElement(o)).ToList();
+                            Element panel = elements.Where(o => o.Category.Name.Contains("Каркас несущий")).First();
+                            panel.get_Parameter(new Guid(Properties.Resource.ADSK_Номер_изделия)).Set(index);
+                        }
                         assembly.Disassemble();
                         transaction.Commit();
                     }
                 }
-            }
+         
         }
 
         private static bool Eligible(AssemblyInstance assembly)

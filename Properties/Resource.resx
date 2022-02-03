@@ -128,6 +128,9 @@
   <data name="construction_plan" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\construction-plan.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="demolition" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\demolition.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="DNS_Марка элемента" xml:space="preserve">
     <value>567521b3-a26c-4c54-ae8d-a9a4e3c11d02</value>
   </data>
@@ -143,11 +146,26 @@
   <data name="DSK_Prim" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\DSK_Prim.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="element" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\element.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="files" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\files.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="id_card" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\id-card.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="open_door" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\open-door.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="product" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\product.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="settings" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\settings.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="technical_drawing" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\technical-drawing.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Test" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Test.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>

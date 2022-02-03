@@ -1,19 +1,16 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Autodesk.Revit.DB;
-using DSKPrim.PanelTools_v2.Utility;
+using DSKPrim.PanelTools.Utility;
 
-namespace DSKPrim.PanelTools_v2.Architecture
+namespace DSKPrim.PanelTools.Architecture
 {
     public static class SplitGeometry
     {
         public static void CreatePartsSection(Document document, ElementId wallId, bool straight=false)
         {
-            Logger.Logger logger = Logger.Logger.getInstance();
 
             Options options = new Options();
             Element partEl = document.GetElement(wallId);
@@ -37,7 +34,6 @@ namespace DSKPrim.PanelTools_v2.Architecture
             Line direction = (Line)curve.Curve;
 
             XYZ directionBase = direction.Direction;
-            XYZ baseZ = XYZ.BasisZ;
 
             FaceArray faceArray = geomSolid.Faces;
 
@@ -54,39 +50,36 @@ namespace DSKPrim.PanelTools_v2.Architecture
                 }
             }
 
-            logger.DebugLog("------------");
-            logger.DebugLog("Нашли грань");
+            Debug.WriteLine("------------");
+            Debug.WriteLine("Нашли грань");
             XYZ origin = faceSplit.Origin;
-            logger.DebugLog($"Нашли начальную точку: {origin}");
+            Debug.WriteLine($"Нашли начальную точку: {origin}");
             XYZ normal = faceSplit.FaceNormal;
-            logger.DebugLog($"Нашли нормаль к грани: {normal}");
+            Debug.WriteLine($"Нашли нормаль к грани: {normal}");
 
             Transaction transaction = new Transaction(document, "Creating a SketchPlane");
-            IFailuresPreprocessor preprocessor = new WarningDiscard();
-            FailureHandlingOptions fho = transaction.GetFailureHandlingOptions();
-            fho.SetFailuresPreprocessor(preprocessor);
-            transaction.SetFailureHandlingOptions(fho);
+            TransactionSettings.SetFailuresPreprocessor(transaction);
 
             using (transaction)
             {
                 transaction.Start();
 
                 document.Regenerate();
-                logger.DebugLog($"Начали транзакцию: {transaction.GetName()}");
+                Debug.WriteLine($"Начали транзакцию: {transaction.GetName()}");
                 Plane plane = Plane.CreateByNormalAndOrigin(normal, origin);
-                logger.DebugLog($"Создали плоскость: {plane}");
+                Debug.WriteLine($"Создали плоскость: {plane}");
                 IList<Curve> curves = default;
                 if (geomSolid.SurfaceArea >= 10)
                 {
                     if (!straight)
                     {
                         curves = CreateBrickOutlay(partEl, faceSplit, plane, directionBase);
-                        logger.DebugLog($"Создали список кривых: {curves}");
+                        Debug.WriteLine($"Создали список кривых: {curves}");
                     }
                     else if (straight)
                     {
                         curves = CreateTileOutlay(partEl, faceSplit, plane);
-                        logger.DebugLog($"Создали список кривых: {curves}");
+                        Debug.WriteLine($"Создали список кривых: {curves}");
                     }
                 }
                 else if (geomSolid.SurfaceArea < 10)
@@ -99,10 +92,10 @@ namespace DSKPrim.PanelTools_v2.Architecture
 
                 
                 SketchPlane sketchPlane = SketchPlane.Create(document, plane);
-                logger.DebugLog($"Создали плоскость эскиза: {sketchPlane}");
+                Debug.WriteLine($"Создали плоскость эскиза: {sketchPlane}");
                 transaction.Commit();
 
-                logger.DebugLog($"Пытаемся разрезать части");
+                Debug.WriteLine($"Пытаемся разрезать части");
 
                 transaction.Start();
                 PartMaker maker = PartUtils.DivideParts(document, partsId, refiD, curves, sketchPlane.Id);
@@ -115,9 +108,8 @@ namespace DSKPrim.PanelTools_v2.Architecture
 
         public static IList<Curve> CreateFrontOutlay(Element partEl, Face face, Plane plane)
         {
-            double conLenU, conHeiV, conStepH, conGap;
-            IList<Curve> curves;
-            PanelOutline(partEl, face, out conLenU, out conHeiV, out curves);
+            double conStepH, conGap;
+            PanelOutline(partEl, face, out double conLenU, out double conHeiV, out IList<Curve> curves);
 
 
             conStepH = 88;
@@ -139,9 +131,8 @@ namespace DSKPrim.PanelTools_v2.Architecture
 
         public static IList<Curve> CreateBrickOutlay(Element partEl, Face face, Plane plane, XYZ directionBase)
         {
-            double conLenU, conHeiV, conStepV, conStepH, conGap;
-            IList<Curve> curves;
-            PanelOutline(partEl, face, out conLenU, out conHeiV, out curves);
+            double conStepV, conStepH, conGap;
+            PanelOutline(partEl, face, out double conLenU, out double conHeiV, out IList<Curve> curves);
 
             //TODO: тестируем новый алгоритм нарезки плитки
             //TODO: попробовать "клинкерную" раскладку
@@ -205,9 +196,8 @@ namespace DSKPrim.PanelTools_v2.Architecture
 
         public static IList<Curve> CreateTileOutlay(Element partEl, Face face, Plane plane)
         {
-            double conLenU, conHeiV, conStepV, conStepH, conGap;
-            IList<Curve> curves;
-            PanelOutline(partEl, face, out conLenU, out conHeiV, out curves);
+            double conStepV, conStepH, conGap;
+            PanelOutline(partEl, face, out double conLenU, out double conHeiV, out IList<Curve> curves);
 
 
             conStepV = 288;
@@ -239,8 +229,6 @@ namespace DSKPrim.PanelTools_v2.Architecture
 
         private static void PanelOutline(Element partEl, Face face, out double conLenU, out double conHeiV, out IList<Curve> curves)
         {
-            Logger.Logger logger = Logger.Logger.getInstance();
-            logger.LogMethodCall("CreateCurveArray");
 
             BoundingBoxUV boxUV = face.GetBoundingBox();
 
