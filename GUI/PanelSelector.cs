@@ -23,7 +23,7 @@ namespace DSKPrim.PanelTools.GUI
         }
 
         private void SetListElements()
-        { 
+    {
         
         }
     }

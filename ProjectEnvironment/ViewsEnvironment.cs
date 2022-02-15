@@ -45,7 +45,7 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
                 return temp.Id;
             }
         }
-        
+
         private Element CheckIfTemplateExists(ViewTemplateName viewTemplateName)
         {
             ViewTemplateNamesEnumMapping.TryGetValue(viewTemplateName, out string tempNameString);
@@ -58,8 +58,8 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
                 }
                 else
                 {
-                    return new FilteredElementCollector(Document).OfClass(viewType).FirstOrDefault(o => o.Name.Contains(tempNameString));
-                }
+                return new FilteredElementCollector(Document).OfClass(viewType).FirstOrDefault(o => o.Name.Contains(tempNameString));
+            }
             }
             else
             {

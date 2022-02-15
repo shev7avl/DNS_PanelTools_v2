@@ -13,7 +13,8 @@ namespace DSKPrim.PanelTools.Utility
             if (viewReference.GetCreatedViewsWithCoords() != null)
             {
                 foreach (var item in viewReference.GetCreatedViewsWithCoords().Keys)
-                {
+            {
+                
                     if (viewReference.ViewTemplate.ToString().Contains("SCHEDULE"))
                     {
                         ScheduleSheetInstance.Create(document, sheet.SheetLink.Id, item.Id, viewReference.GetCreatedViewsWithCoords()[item]);
@@ -22,11 +23,11 @@ namespace DSKPrim.PanelTools.Utility
                     {
                         if (Viewport.CanAddViewToSheet(document, sheet.SheetLink.Id, item.Id))
                         {
-                            Viewport.Create(document, sheet.SheetLink.Id, item.Id, viewReference.GetCreatedViewsWithCoords()[item]);
-                        }                     
+                        Viewport.Create(document, sheet.SheetLink.Id, item.Id, viewReference.GetCreatedViewsWithCoords()[item]);
                     }
                 }
             }
+        }
         }
 
         public static List<Sheet> CreateSheetList(Document document, ElementId id, int quantity)

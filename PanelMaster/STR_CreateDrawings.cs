@@ -18,6 +18,8 @@ namespace DSKPrim.PanelTools.PanelMaster
     {
         
         public Document Document { get ; set; }
+        //ИДЕЯ
+        // Что если парсить json на предмет листов, видов и шаблонов?
 
 
         class PanelSelectionFilter : ISelectionFilter
@@ -41,6 +43,7 @@ namespace DSKPrim.PanelTools.PanelMaster
             }
         }
 
+        //Реализация через Panel
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
             Document = commandData.Application.ActiveUIDocument.Document;

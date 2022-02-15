@@ -43,10 +43,7 @@ namespace DSKPrim.PanelTools.Panel
 
             TransactionGroup transaction = new TransactionGroup(ActiveDocument, $"Создание проемов - {ActiveElement.Name}");
             transaction.Start();
-            if (ActiveElement.Id.IntegerValue == 10772927)
-            {
-                Debug.WriteLine("!!!!!Cмотрим внимательно!!!!!");
-            }
+
             Debug.WriteLine("Вырезаем проем");
             if (IntersectedWindows.Count == 1)
             {   

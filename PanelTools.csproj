@@ -78,31 +78,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App.cs" />
-    <Compile Include="Builders\ButtonBuilderGUI\TestBuilder.cs" />
-    <Compile Include="Builders\CommandBuilder\SelectionType.cs" />
-    <Compile Include="Builders\DrawingBuilder\DrawingSchema.cs" />
-    <Compile Include="GUI\PanelSelector.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="GUI\PanelSelector.Designer.cs">
-      <DependentUpon>PanelSelector.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Builders\CommandBuilder\CommandBuilder.cs" />
-    <Compile Include="PanelMaster\ARCH_CreateDrawings - Копировать.cs" />
-    <Compile Include="PanelMaster\TestCommand.cs" />
-    <Compile Include="Panel\Facade_Panel.cs" />
-    <Compile Include="Precast\BasePrecast.cs" />
-    <Compile Include="Precast\Mark.cs" />
-    <Compile Include="Precast\PrecastType.cs" />
-    <Compile Include="ProjectEnvironment\IResettable.cs" />
-    <Compile Include="ProjectEnvironment\Settings.cs" />
-    <Compile Include="ProjectEnvironment\SettingsGUI.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ProjectEnvironment\SettingsGUI.Designer.cs">
-      <DependentUpon>SettingsGUI.cs</DependentUpon>
-    </Compile>
-    <Compile Include="ProjectEnvironment\SingleArchDoc.cs" />
+    <Compile Include="Architecture\SingleArchDoc.cs" />
     <Compile Include="Architecture\SplitGeometry.cs" />
     <Compile Include="Builders\DrawingBuilder\DrawingBuilder.cs" />
     <Compile Include="Builders\DrawingBuilder\TemplateFactory.cs" />
