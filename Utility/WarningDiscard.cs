@@ -12,7 +12,7 @@ namespace DSKPrim.PanelTools.Utility
     public static class TransactionSettings
     {
 
-        internal static bool AllWorksetsAreAvailable(Document document)
+        internal static bool WorksetsUnavailable(Document document)
         {
             if (document.IsWorkshared)
             {
@@ -22,10 +22,10 @@ namespace DSKPrim.PanelTools.Utility
 
                 if (checkedWorksets.Count() != worksets.Count())
                 {
-                    return false;
+                    return true;
                 }
             }
-            return true;
+            return false;
         }
 
         internal static void SetFailuresPreprocessor(Transaction transaction)

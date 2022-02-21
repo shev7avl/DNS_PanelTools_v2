@@ -32,9 +32,6 @@ namespace DSKPrim.PanelTools.Utility
                         }
                     }
                 }
-                AssemblyInstance instance;
-                AssemblyCreationTransaction(document, item, assembler, out instance);
-                item.AssemblyInstance = instance;
 
                 AssemblyInstance instance;
                 AssemblyCreationTransaction(document, item, assembler, out instance);

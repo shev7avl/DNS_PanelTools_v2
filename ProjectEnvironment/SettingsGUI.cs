@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.UI;
+using DSKPrim.PanelTools.Facade;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,25 +14,39 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
 {
     public partial class SettingsGUI : Form
     {
-        private static Settings Settings = Settings.GetSettings();
-        private SelectionType temp_SelectionType = Settings.GetSelectionType();
-        private int temp_TileWidth = Settings.GetTileModule().ModuleWidth;
-        private int temp_TileHeight = Settings.GetTileModule().ModuleHeight;
-        private int temp_TileGap = Settings.GetTileModule().ModuleGap;
+        private static AddinSettings Settings;
+        private SelectionType temp_SelectionType;
+        private TileSectionType temp_TileSectionType;
+        private int temp_TileWidth;
+        private int temp_TileHeight;
+        private int temp_TileGap;
 
         internal Result settingsResult;
 
         public SettingsGUI()
         {
             InitializeComponent();
-        }
 
-        internal void SetSettings()
-        {
-            if (settingsResult != Result.Succeeded )
+            Settings = AddinSettings.GetSettings();
+            temp_SelectionType = Settings.GetSelectionType();
+            temp_TileWidth = Settings.GetTileModule().ModuleWidth;
+            temp_TileHeight = Settings.GetTileModule().ModuleHeight;
+            temp_TileGap = Settings.GetTileModule().ModuleGap;
+            temp_TileSectionType = Settings.GetTileSectionType();
+
+            WidthValueTB.Text = Settings.GetTileModule().ModuleWidth.ToString();
+            HeigthValueTB.Text = Settings.GetTileModule().ModuleHeight.ToString();
+            GapValueTB.Text = Settings.GetTileModule().ModuleGap.ToString();
+            if (temp_TileSectionType == TileSectionType.TILE_LAYOUT_BRICK)
             {
-
+                brickLayoutBtn.BackColor = Color.FromKnownColor(KnownColor.ControlDark);
             }
+            if (temp_TileSectionType == TileSectionType.TILE_LAYOUT_STRAIGHT)
+            {
+                straightLayoutBtn.BackColor = Color.FromKnownColor(KnownColor.ControlDark);
+            }
+
+            this.ShowDialog();
         }
 
         private void SelectAllButton_CheckedChanged(object sender, EventArgs e)
@@ -132,7 +147,10 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
         {
             Settings.SetSelectionType(temp_SelectionType);
             Settings.SetTileModule(temp_TileWidth, temp_TileHeight, temp_TileGap);
+            Settings.SetTileSectionType(temp_TileSectionType);
             settingsResult = Result.Succeeded;
+            this.DialogResult = DialogResult.OK;
+            this.Close();
         }
 
         private void CancelButton_Click(object sender, EventArgs e)
@@ -141,7 +159,140 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
             temp_TileHeight = Settings.GetTileModule().ModuleHeight;
             temp_TileGap = Settings.GetTileModule().ModuleGap;
             temp_SelectionType = Settings.GetSelectionType();
+            temp_TileSectionType = Settings.GetTileSectionType();
             settingsResult = Result.Cancelled;
+            this.DialogResult = DialogResult.OK;
+            this.Close();
         }
+
+        private void WidthValueTB_MouseClick(object sender, MouseEventArgs e)
+        {
+            WidthValueTB.Text = "";
+            if (HeigthValueTB.Text == "")
+            {
+                HeigthValueTB.Text = Settings.GetTileModule().ModuleHeight.ToString();
+                HeigthValueTB.ForeColor = Color.FromKnownColor(KnownColor.InactiveCaption);
+            }
+            if (GapValueTB.Text == "")
+            {
+                GapValueTB.Text = Settings.GetTileModule().ModuleGap.ToString();
+                GapValueTB.ForeColor = Color.FromKnownColor(KnownColor.InactiveCaption);
+            }
+        }
+
+        private void HeigthValueTB_MouseClick(object sender, MouseEventArgs e)
+        {
+            HeigthValueTB.Text = "";
+            if (WidthValueTB.Text == "")
+            {
+                WidthValueTB.Text = Settings.GetTileModule().ModuleWidth.ToString();
+                WidthValueTB.ForeColor = Color.FromKnownColor(KnownColor.InactiveCaption);
+            }
+            if (GapValueTB.Text == "")
+            {
+                GapValueTB.Text = Settings.GetTileModule().ModuleGap.ToString();
+                GapValueTB.ForeColor = Color.FromKnownColor(KnownColor.InactiveCaption);
+            }
+        }
+
+        private void GapValueTB_MouseClick(object sender, MouseEventArgs e)
+        {
+            GapValueTB.Text = "";
+            if (HeigthValueTB.Text == "")
+            {
+                HeigthValueTB.Text = Settings.GetTileModule().ModuleHeight.ToString();
+                HeigthValueTB.ForeColor = Color.FromKnownColor(KnownColor.InactiveCaption);
+            }
+            if (WidthValueTB.Text == "")
+            {
+                WidthValueTB.Text = Settings.GetTileModule().ModuleWidth.ToString();
+                WidthValueTB.ForeColor = Color.FromKnownColor(KnownColor.InactiveCaption);
+            }
+        }
+
+        private void panel2_Click(object sender, EventArgs e)
+        {
+            if (HeigthValueTB.Text == "")
+            {
+                HeigthValueTB.Text = Settings.GetTileModule().ModuleHeight.ToString();
+                HeigthValueTB.ForeColor = Color.FromKnownColor(KnownColor.InactiveCaption);
+            }
+            if (WidthValueTB.Text == "")
+            {
+                WidthValueTB.Text = Settings.GetTileModule().ModuleWidth.ToString();
+                WidthValueTB.ForeColor = Color.FromKnownColor(KnownColor.InactiveCaption);
+            }
+            if (GapValueTB.Text == "")
+            {
+                GapValueTB.Text = Settings.GetTileModule().ModuleGap.ToString();
+                GapValueTB.ForeColor = Color.FromKnownColor(KnownColor.InactiveCaption);
+            }
+        }
+
+        private void SettingsGUI_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (HeigthValueTB.Text == "")
+            {
+                HeigthValueTB.Text = Settings.GetTileModule().ModuleHeight.ToString();
+                HeigthValueTB.ForeColor = Color.FromKnownColor(KnownColor.InactiveCaption);
+            }
+            if (WidthValueTB.Text == "")
+            {
+                WidthValueTB.Text = Settings.GetTileModule().ModuleWidth.ToString();
+                WidthValueTB.ForeColor = Color.FromKnownColor(KnownColor.InactiveCaption);
+            }
+            if (GapValueTB.Text == "")
+            {
+                GapValueTB.Text = Settings.GetTileModule().ModuleGap.ToString();
+                GapValueTB.ForeColor = Color.FromKnownColor(KnownColor.InactiveCaption);
+            }
+        }
+
+        private void brickLayoutBtn_MouseEnter(object sender, EventArgs e)
+        {
+            brickLayoutBtn.BackColor = Color.FromKnownColor(KnownColor.MenuHighlight);
+        }
+
+        private void brickLayoutBtn_MouseLeave(object sender, EventArgs e)
+        {
+            if (temp_TileSectionType == TileSectionType.TILE_LAYOUT_BRICK)
+            {
+                brickLayoutBtn.BackColor = Color.FromKnownColor(KnownColor.ControlDark);
+            }
+            else
+            {
+                brickLayoutBtn.BackColor = Color.FromKnownColor(KnownColor.Control);
+            }
+        }
+
+        private void straightLayoutBtn_MouseEnter(object sender, EventArgs e)
+        {
+            straightLayoutBtn.BackColor = Color.FromKnownColor(KnownColor.MenuHighlight);
+        }
+
+        private void straightLayoutBtn_MouseLeave(object sender, EventArgs e)
+        {
+            if (temp_TileSectionType == TileSectionType.TILE_LAYOUT_STRAIGHT)
+            {
+                straightLayoutBtn.BackColor = Color.FromKnownColor(KnownColor.ControlDark);
+            }
+            else
+            {
+                straightLayoutBtn.BackColor = Color.FromKnownColor(KnownColor.Control);
+            }
+        }
+
+        private void brickLayoutBtn_Click(object sender, EventArgs e)
+        {
+            temp_TileSectionType = TileSectionType.TILE_LAYOUT_BRICK;
+            straightLayoutBtn.BackColor = Color.FromKnownColor(KnownColor.Control);
+        }
+
+        private void straightLayoutBtn_Click(object sender, EventArgs e)
+        {
+            temp_TileSectionType = TileSectionType.TILE_LAYOUT_STRAIGHT;
+            brickLayoutBtn.BackColor = Color.FromKnownColor(KnownColor.Control);
+        }
+
     }
 }

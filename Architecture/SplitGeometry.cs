@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Autodesk.Revit.DB;
+using DSKPrim.PanelTools.Facade;
+using DSKPrim.PanelTools.ProjectEnvironment;
 using DSKPrim.PanelTools.Utility;
 
 namespace DSKPrim.PanelTools.Architecture
@@ -11,12 +13,13 @@ namespace DSKPrim.PanelTools.Architecture
     {
         public static void CreatePartsSection(Document document, ElementId wallId, bool straight=false)
         {
+            AddinSettings settings = AddinSettings.GetSettings();
 
-            Options options = new Options();
+
             Element partEl = document.GetElement(wallId);
             ICollection<ElementId> partsId = new List<ElementId>() { wallId };
-            ICollection<ElementId> refiD = new List<ElementId>();
 
+            Options options = new Options();
             GeometryElement geometryObject = partEl.get_Geometry(options);
             Solid geomSolid = null;
             foreach (GeometryObject item in geometryObject)
@@ -60,60 +63,65 @@ namespace DSKPrim.PanelTools.Architecture
             Transaction transaction = new Transaction(document, "Creating a SketchPlane");
             TransactionSettings.SetFailuresPreprocessor(transaction);
 
-            using (transaction)
+
+            transaction.Start();
+
+            document.Regenerate();
+            Debug.WriteLine($"Начали транзакцию: {transaction.GetName()}");
+            Plane plane = Plane.CreateByNormalAndOrigin(normal, origin);
+            Debug.WriteLine($"Создали плоскость: {plane}");
+
+            IList<Curve> curves = SetCurvesList(straight, partEl, geomSolid, directionBase, faceSplit, plane);
+
+            SketchPlane sketchPlane = SketchPlane.Create(document, plane);
+            Debug.WriteLine($"Создали плоскость эскиза: {sketchPlane}");
+            transaction.Commit();
+
+            Debug.WriteLine($"Пытаемся разрезать части");
+
+            transaction.Start();
+            ICollection<ElementId> refiD = new List<ElementId>();
+            PartMaker maker = PartUtils.DivideParts(document, partsId, refiD, curves, sketchPlane.Id);
+            transaction.Commit();
+            //Gap setting
+            transaction.Start();
+            maker.get_Parameter(BuiltInParameter.PARTMAKER_PARAM_DIVISION_GAP).SetValueString($"{settings.GetTileModule().ModuleGap}");
+            transaction.Commit();
+
+        }
+
+        private static IList<Curve> SetCurvesList(bool straight, Element partEl, Solid geomSolid, XYZ directionBase, PlanarFace faceSplit, Plane plane)
+        {
+            IList<Curve> curves = default;
+            if (geomSolid.SurfaceArea >= 10)
             {
-                transaction.Start();
-
-                document.Regenerate();
-                Debug.WriteLine($"Начали транзакцию: {transaction.GetName()}");
-                Plane plane = Plane.CreateByNormalAndOrigin(normal, origin);
-                Debug.WriteLine($"Создали плоскость: {plane}");
-                IList<Curve> curves = default;
-                if (geomSolid.SurfaceArea >= 10)
+                if (!straight)
                 {
-                    if (!straight)
-                    {
-                        curves = CreateBrickOutlay(partEl, faceSplit, plane, directionBase);
-                        Debug.WriteLine($"Создали список кривых: {curves}");
-                    }
-                    else if (straight)
-                    {
-                        curves = CreateTileOutlay(partEl, faceSplit, plane);
-                        Debug.WriteLine($"Создали список кривых: {curves}");
-                    }
+                    curves = CreateBrickOutlay(partEl, faceSplit, plane, directionBase);
+                    Debug.WriteLine($"Создали список кривых: {curves}");
                 }
-                else if (geomSolid.SurfaceArea < 10)
+                else if (straight)
                 {
-                    curves = CreateFrontOutlay(partEl, faceSplit, plane);
+                    curves = CreateTileOutlay(partEl, faceSplit, plane);
+                    Debug.WriteLine($"Создали список кривых: {curves}");
                 }
-                
-               
-                
-
-                
-                SketchPlane sketchPlane = SketchPlane.Create(document, plane);
-                Debug.WriteLine($"Создали плоскость эскиза: {sketchPlane}");
-                transaction.Commit();
-
-                Debug.WriteLine($"Пытаемся разрезать части");
-
-                transaction.Start();
-                PartMaker maker = PartUtils.DivideParts(document, partsId, refiD, curves, sketchPlane.Id);
-                transaction.Commit();
-                transaction.Start();
-                maker.get_Parameter(BuiltInParameter.PARTMAKER_PARAM_DIVISION_GAP).SetValueString("12");
-                transaction.Commit();
             }
+            else if (geomSolid.SurfaceArea < 10)
+            {
+                curves = CreateFrontOutlay(partEl, faceSplit, plane);
+            }
+
+            return curves;
         }
 
         public static IList<Curve> CreateFrontOutlay(Element partEl, Face face, Plane plane)
         {
             double conStepH, conGap;
             PanelOutline(partEl, face, out double conLenU, out double conHeiV, out IList<Curve> curves);
+            AddinSettings settings = AddinSettings.GetSettings();
 
-
-            conStepH = 88;
-            conGap = 12;
+            conStepH = settings.GetTileModule().ModuleHeight;
+            conGap = settings.GetTileModule().ModuleGap;
 
             Curve Left = curves[2];
             Curve Top = curves[0];
@@ -131,17 +139,16 @@ namespace DSKPrim.PanelTools.Architecture
 
         public static IList<Curve> CreateBrickOutlay(Element partEl, Face face, Plane plane, XYZ directionBase)
         {
-            double conStepV, conStepH, conGap;
+
+            AddinSettings settings = AddinSettings.GetSettings();
             PanelOutline(partEl, face, out double conLenU, out double conHeiV, out IList<Curve> curves);
 
             //TODO: тестируем новый алгоритм нарезки плитки
             //TODO: попробовать "клинкерную" раскладку
 
-            double StepV = 288;
-            
-            double StepH = 88;
-            
-            double Gap = 12;
+            double StepV = settings.GetTileModule().ModuleWidth;
+            double StepH = settings.GetTileModule().ModuleHeight;        
+            double Gap = settings.GetTileModule().ModuleGap;
             
             BoundingBoxXYZ partBbox = partEl.get_Geometry(new Options()).GetBoundingBox();
 
@@ -150,7 +157,7 @@ namespace DSKPrim.PanelTools.Architecture
 
             Curve directionCurve = Line.CreateBound(directionBase, XYZ.Zero);
 
-            List<Curve> brickBaseLine = BrickLine((Line)Bot, (Line)Left, StepV, StepH, Gap);
+            List<Curve> brickBaseLine = BrickLine((Line)Bot, (Line)Left, settings.GetTileModule());
             foreach (Curve item in brickBaseLine)
             {
                 if (Geometry.InBox(partBbox, item.GetEndPoint(0)) && Geometry.InBox(partBbox, item.GetEndPoint(1)))
@@ -160,7 +167,7 @@ namespace DSKPrim.PanelTools.Architecture
                 
             }
 
-            for (double i = 0; i <= conLenU - (StepV + Gap); i = i + StepV + Gap)
+            for (double i = 0; i <= conLenU - (StepV+Gap); i = i + (StepV+Gap))
             {
                 List<Curve> temp = new List<Curve>();
                 foreach (Curve item in brickBaseLine)
@@ -194,30 +201,128 @@ namespace DSKPrim.PanelTools.Architecture
             return curves;
         }
 
-        public static IList<Curve> CreateTileOutlay(Element partEl, Face face, Plane plane)
+        internal static IList<Curve> CreateBrickOutlay(FacadeDescription facadeDescription)
+        {
+
+            AddinSettings settings = AddinSettings.GetSettings();
+
+            PanelOutline((Part)facadeDescription.WallPart, facadeDescription.PlanarFace, out double conLenU, out double conHeiV, out IList<Curve> curves);
+
+            //TODO: тестируем новый алгоритм нарезки плитки
+            //TODO: попробовать "клинкерную" раскладку
+
+            double StepV = settings.GetTileModule().ModuleWidth;
+            double StepH = settings.GetTileModule().ModuleHeight;
+            double Gap = settings.GetTileModule().ModuleGap;
+
+            BoundingBoxXYZ partBbox = facadeDescription.WallPart.get_Geometry(new Options()).GetBoundingBox();
+
+            Curve Left = curves[2];
+            Curve Bot = curves[0];
+
+            Curve directionCurve = Line.CreateBound(facadeDescription.DirectionalBasis, XYZ.Zero);
+
+            List<Curve> brickBaseLine = BrickLine((Line)Bot, (Line)Left, settings.GetTileModule());
+            foreach (Curve item in brickBaseLine)
+            {
+                if (Geometry.InBox(partBbox, item.GetEndPoint(0)) && Geometry.InBox(partBbox, item.GetEndPoint(1)))
+                {
+                    curves.Add(item);
+                }
+
+            }
+
+            for (double i = 0; i <= conLenU - (StepV + Gap); i = i + (StepV + Gap))
+            {
+                List<Curve> temp = new List<Curve>();
+                foreach (Curve item in brickBaseLine)
+                {
+                    //TODO: Проверить метод OffsetCurve. При смещении линии длиной 0.32 c направлением (0,0,1) вдоль вектора (0,-1,0) даёт линию длиной 48 с направлением (-1,0,0.006)
+                    Curve curve1 = OffsetCurve(item, directionCurve, StepV + Gap);
+                    temp.Add(curve1);
+
+                    if (Geometry.InBox(partBbox, curve1.GetEndPoint(0)) && Geometry.InBox(partBbox, curve1.GetEndPoint(1)))
+                    {
+                        curves.Add(curve1);
+                    }
+                }
+                brickBaseLine.Clear();
+                foreach (var item in temp)
+                {
+                    brickBaseLine.Add(item);
+                }
+                temp.Clear();
+            }
+
+
+            for (double i = 0; i <= conHeiV; i = i + StepH + Gap)
+            {
+                Curve curve2 = OffsetCurve(Bot, Left, StepH + Gap);
+                curves.Add(curve2);
+                Bot = curve2;
+
+            }
+
+            return curves;
+        }
+
+
+        internal static IList<Curve> CreateTileOutlay(FacadeDescription facadeDescription)
         {
             double conStepV, conStepH, conGap;
-            PanelOutline(partEl, face, out double conLenU, out double conHeiV, out IList<Curve> curves);
+            
+            PanelOutline((Part)facadeDescription.WallPart, facadeDescription.PlanarFace, out double conLenU, out double conHeiV, out IList<Curve> curves);
 
-
-            conStepV = 288;
-            conStepH = 88;
-            conGap = 12;
+            AddinSettings settings = AddinSettings.GetSettings();
+            conStepV = settings.GetTileModule().ModuleWidth; //было 288 стало 300
+            conStepH = settings.GetTileModule().ModuleHeight; //было 88 стало 100
+            conGap = settings.GetTileModule().ModuleGap; //было 12 осталось 12
 
             Curve Left = curves[2];
             Curve Top = curves[0];
             Line topLine = (Line)Top;
             Line leftLine = (Line)Left;
 
-            for (double i = 0; i < conLenU - (conStepV+conGap); i = i + conStepV + conGap)
+            for (double i = 0; i < conLenU - conStepV - conGap; i = i + conStepV + conGap)
             {
                 Curve curve1 = OffsetCurve(Left, topLine, conStepV + conGap);
                 curves.Add(curve1);
                 Left = curve1;
             }
 
+            for (double i = 0; i < conHeiV - (conStepH + conGap); i = i + conStepH + conGap)
+            {
+                Curve curve1 = OffsetCurve(Top, leftLine, conStepH + conGap);
+                curves.Add(curve1);
+                Top = curve1;
+            }
+
+            return curves;
+        }
+
+        public static IList<Curve> CreateTileOutlay(Element partEl, Face face, Plane plane)
+        {
+            double conStepV, conStepH, conGap;
+            PanelOutline(partEl, face, out double conLenU, out double conHeiV, out IList<Curve> curves);
+
+            AddinSettings settings = AddinSettings.GetSettings();
+            conStepV = settings.GetTileModule().ModuleWidth; //было 288 стало 300
+            conStepH = settings.GetTileModule().ModuleHeight; //было 88 стало 100
+            conGap = settings.GetTileModule().ModuleGap; //было 12 осталось 12
+
+            Curve Left = curves[2];
+            Curve Top = curves[0];
+            Line topLine = (Line)Top;
+            Line leftLine = (Line)Left;
+
+            for (double i = 0; i < conLenU - conStepV - conGap ; i = i + conStepV + conGap)
+            {
+                Curve curve1 = OffsetCurve(Left, topLine, conStepV + conGap);
+                curves.Add(curve1);
+                Left = curve1;
+            }
             
-            for (double i = 0; i <= conHeiV - (conStepH+conGap); i = i + conStepH + conGap)
+            for (double i = 0; i < conHeiV - (conStepH + conGap); i = i + conStepH + conGap)
             {
                 Curve curve1 = OffsetCurve(Top, leftLine, conStepH + conGap);
                 curves.Add(curve1);
@@ -327,11 +432,11 @@ namespace DSKPrim.PanelTools.Architecture
         /// <param name="height">Высота плитки</param>
         /// <param name="stitchWidth">Толщина шва</param>
         /// <returns>Возвращает список линии класса Curve, описывающие вертикальные линии кирпичной раскладки плитки (первый левый ряд, снизу вверх).</returns>
-        public static List<Curve> BrickLine(Line bot, Line left, double width, double height, double stitchWidth)
+        internal static List<Curve> BrickLine(Line bot, Line left, TileModule tileModule)
         {
             List<Curve> brickLine = new List<Curve>();
-            double fullWidth = width + stitchWidth;
-            double fullHeight = height + stitchWidth;
+            double fullWidth = tileModule.ModuleWidth + tileModule.ModuleGap;
+            double fullHeight = tileModule.ModuleHeight + tileModule.ModuleGap;
             XYZ startPoint = bot.GetEndPoint(0);
             do
             {

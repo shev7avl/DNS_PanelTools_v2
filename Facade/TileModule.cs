@@ -1,4 +1,4 @@
-﻿namespace DSKPrim.PanelTools.ProjectEnvironment
+﻿namespace DSKPrim.PanelTools.Facade
 {
     internal class TileModule
     {

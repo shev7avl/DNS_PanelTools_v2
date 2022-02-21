@@ -13,6 +13,32 @@ namespace DSKPrim.PanelTools.Utility
         /// </summary>
         /// <param name="document">Активный документ с АКР</param>
         /// <param name="element">Стена фасада</param>
+        /// 
+        public static ICollection<ElementId> WallToParts(Document document, ElementId WallId)
+        {
+            ICollection<ElementId> elementIdsToDivide;
+
+            ICollection<ElementId> elementIds = new List<ElementId>()
+            {
+                WallId
+            };
+
+            if (PartUtils.AreElementsValidForCreateParts(document, elementIds))
+            {
+                using (Transaction transaction = new Transaction(document, "Parts creation"))
+                {
+                    transaction.Start();
+                    PartUtils.CreateParts(document, elementIds);
+                    transaction.Commit();
+                }
+            }
+
+            ElementFilter filter = new ElementCategoryFilter(BuiltInCategory.OST_Parts);
+            Element element = document.GetElement(WallId);
+            elementIdsToDivide = element.GetDependentElements(filter);
+
+            return elementIdsToDivide;
+        }
         public static void SplitToParts(Document document, Element element, bool straight=false)
         {
 

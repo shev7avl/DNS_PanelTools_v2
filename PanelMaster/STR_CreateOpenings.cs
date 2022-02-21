@@ -27,7 +27,7 @@ namespace DSKPrim.PanelTools.PanelMaster
         {
             Document = commandData.Application.ActiveUIDocument.Document;
 
-            if (TransactionSettings.AllWorksetsAreAvailable(Document))
+            if (TransactionSettings.WorksetsUnavailable(Document))
             {
                 message = "Рабочие наборы недоступны. Освободите ВСЕ рабочие наборы";
                 return Result.Failed;

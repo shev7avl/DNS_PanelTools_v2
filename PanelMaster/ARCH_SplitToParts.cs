@@ -2,6 +2,8 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
+using DSKPrim.PanelTools.Facade;
+using DSKPrim.PanelTools.ProjectEnvironment;
 using DSKPrim.PanelTools.Utility;
 using System;
 using System.Collections.Generic;
@@ -11,7 +13,7 @@ namespace DSKPrim.PanelTools.PanelMaster
 {
     [Transaction(mode: TransactionMode.Manual)]
     [Regeneration(RegenerationOption.Manual)]
-    class ARCH_SplitToParts : Autodesk.Revit.UI.IExternalCommand
+    class ARCH_SplitToParts : IExternalCommand
     {
         Document Document;
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
@@ -19,7 +21,7 @@ namespace DSKPrim.PanelTools.PanelMaster
 
             Document = commandData.Application.ActiveUIDocument.Document;
 
-            if (TransactionSettings.AllWorksetsAreAvailable(Document))
+            if (TransactionSettings.WorksetsUnavailable(Document))
             {
                 message = "Рабочие наборы недоступны. Освободите ВСЕ рабочие наборы";
                 return Result.Failed;
@@ -30,16 +32,27 @@ namespace DSKPrim.PanelTools.PanelMaster
 
             IList<Reference> list_Walls = selection.PickObjects(ObjectType.Element, new FacadeSelectionFilter(), "Выберите стены DNS_Фасад или DNS_Фасад2");
 
+            AddinSettings settings = AddinSettings.GetSettings();
 
             Debug.WriteLine(Document.PathName);
 
-            
             foreach (var reference in list_Walls)
             {
                 Element item = Document.GetElement(reference.ElementId);
                 try
                 {
-                    Utility.Parts.SplitToParts(Document, item);
+                    TileAlgorythm tileAlgorythm;
+                    if (settings.GetTileSectionType() == TileSectionType.TILE_LAYOUT_STRAIGHT)
+                    {
+                        tileAlgorythm = new StraightAlgorythm(Document, reference.ElementId);
+                    }
+                    else
+                    {
+                         tileAlgorythm = new BrickAlgorytm(Document, reference.ElementId);
+                    }
+                    
+                    tileAlgorythm.Execute(Document);
+
                     Utility.Parts.ExcludeStitches(Document, item);
                     Debug.WriteLine(item.Name);
                 }
@@ -53,7 +66,7 @@ namespace DSKPrim.PanelTools.PanelMaster
         }
     }
 
-    public class FacadeSelectionFilter : ISelectionFilter
+    internal class FacadeSelectionFilter : ISelectionFilter
     {
         public bool AllowElement(Element elem)
         {
@@ -71,5 +84,4 @@ namespace DSKPrim.PanelTools.PanelMaster
             throw new NotImplementedException();
         }
     }
-
 }

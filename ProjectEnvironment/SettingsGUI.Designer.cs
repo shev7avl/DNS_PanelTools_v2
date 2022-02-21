@@ -45,8 +45,16 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
             this.label2 = new System.Windows.Forms.Label();
             this.SaveSettingsButton = new System.Windows.Forms.Button();
             this.CancelButton = new System.Windows.Forms.Button();
+            this.label6 = new System.Windows.Forms.Label();
+            this.Раскладка = new System.Windows.Forms.Label();
+            this.panel3 = new System.Windows.Forms.Panel();
+            this.straightLayoutBtn = new System.Windows.Forms.PictureBox();
+            this.brickLayoutBtn = new System.Windows.Forms.PictureBox();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
+            this.panel3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.straightLayoutBtn)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.brickLayoutBtn)).BeginInit();
             this.SuspendLayout();
             // 
             // panel1
@@ -116,13 +124,14 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
             this.panel2.Controls.Add(this.WidthValueTB);
             this.panel2.Location = new System.Drawing.Point(208, 66);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(214, 100);
+            this.panel2.Size = new System.Drawing.Size(214, 52);
             this.panel2.TabIndex = 1;
+            this.panel2.Click += new System.EventHandler(this.panel2_Click);
             // 
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(151, 15);
+            this.label5.Location = new System.Drawing.Point(151, 4);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(49, 13);
             this.label5.TabIndex = 7;
@@ -131,7 +140,7 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(76, 15);
+            this.label4.Location = new System.Drawing.Point(76, 4);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(67, 13);
             this.label4.TabIndex = 6;
@@ -140,7 +149,7 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(1, 15);
+            this.label3.Location = new System.Drawing.Point(1, 4);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(68, 13);
             this.label3.TabIndex = 4;
@@ -149,34 +158,37 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
             // GapValueTB
             // 
             this.GapValueTB.ForeColor = System.Drawing.SystemColors.InactiveCaption;
-            this.GapValueTB.Location = new System.Drawing.Point(154, 35);
+            this.GapValueTB.Location = new System.Drawing.Point(154, 24);
             this.GapValueTB.Name = "GapValueTB";
             this.GapValueTB.Size = new System.Drawing.Size(57, 20);
             this.GapValueTB.TabIndex = 3;
             this.GapValueTB.Text = "12";
             this.GapValueTB.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.GapValueTB.MouseClick += new System.Windows.Forms.MouseEventHandler(this.GapValueTB_MouseClick);
             this.GapValueTB.TextChanged += new System.EventHandler(this.GapValueTB_TextChanged);
             // 
             // HeigthValueTB
             // 
             this.HeigthValueTB.ForeColor = System.Drawing.SystemColors.InactiveCaption;
-            this.HeigthValueTB.Location = new System.Drawing.Point(80, 35);
+            this.HeigthValueTB.Location = new System.Drawing.Point(80, 24);
             this.HeigthValueTB.Name = "HeigthValueTB";
             this.HeigthValueTB.Size = new System.Drawing.Size(57, 20);
             this.HeigthValueTB.TabIndex = 2;
             this.HeigthValueTB.Text = "100";
             this.HeigthValueTB.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.HeigthValueTB.MouseClick += new System.Windows.Forms.MouseEventHandler(this.HeigthValueTB_MouseClick);
             this.HeigthValueTB.TextChanged += new System.EventHandler(this.HeigthValueTB_TextChanged);
             // 
             // WidthValueTB
             // 
             this.WidthValueTB.ForeColor = System.Drawing.SystemColors.InactiveCaption;
-            this.WidthValueTB.Location = new System.Drawing.Point(3, 35);
+            this.WidthValueTB.Location = new System.Drawing.Point(3, 24);
             this.WidthValueTB.Name = "WidthValueTB";
             this.WidthValueTB.Size = new System.Drawing.Size(57, 20);
             this.WidthValueTB.TabIndex = 0;
             this.WidthValueTB.Text = "300";
             this.WidthValueTB.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.WidthValueTB.MouseClick += new System.Windows.Forms.MouseEventHandler(this.WidthValueTB_MouseClick);
             this.WidthValueTB.TextChanged += new System.EventHandler(this.WidthValueTB_TextChanged);
             // 
             // label1
@@ -202,7 +214,7 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
             // SaveSettingsButton
             // 
             this.SaveSettingsButton.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.SaveSettingsButton.Location = new System.Drawing.Point(321, 174);
+            this.SaveSettingsButton.Location = new System.Drawing.Point(324, 219);
             this.SaveSettingsButton.Name = "SaveSettingsButton";
             this.SaveSettingsButton.Size = new System.Drawing.Size(98, 32);
             this.SaveSettingsButton.TabIndex = 6;
@@ -215,7 +227,7 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
             // CancelButton
             // 
             this.CancelButton.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.CancelButton.Location = new System.Drawing.Point(205, 174);
+            this.CancelButton.Location = new System.Drawing.Point(208, 219);
             this.CancelButton.Name = "CancelButton";
             this.CancelButton.Size = new System.Drawing.Size(98, 32);
             this.CancelButton.TabIndex = 7;
@@ -225,11 +237,73 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
             this.CancelButton.MouseEnter += new System.EventHandler(this.CancelButton_MouseEnter);
             this.CancelButton.MouseLeave += new System.EventHandler(this.CancelButton_MouseLeave);
             // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.ForeColor = System.Drawing.Color.Red;
+            this.label6.Location = new System.Drawing.Point(15, 51);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(106, 13);
+            this.label6.TabIndex = 8;
+            this.label6.Text = "Пока не работает :(";
+            // 
+            // Раскладка
+            // 
+            this.Раскладка.AutoSize = true;
+            this.Раскладка.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.Раскладка.Location = new System.Drawing.Point(204, 121);
+            this.Раскладка.Name = "Раскладка";
+            this.Раскладка.Size = new System.Drawing.Size(149, 20);
+            this.Раскладка.TabIndex = 9;
+            this.Раскладка.Text = "Способ раскладки";
+            // 
+            // panel3
+            // 
+            this.panel3.Controls.Add(this.brickLayoutBtn);
+            this.panel3.Controls.Add(this.straightLayoutBtn);
+            this.panel3.Location = new System.Drawing.Point(208, 148);
+            this.panel3.Name = "panel3";
+            this.panel3.Size = new System.Drawing.Size(214, 66);
+            this.panel3.TabIndex = 10;
+            // 
+            // straightLayoutBtn
+            // 
+            this.straightLayoutBtn.BackColor = System.Drawing.SystemColors.Control;
+            this.straightLayoutBtn.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.straightLayoutBtn.Image = global::DSKPrim.PanelTools.Properties.Resources.tile__1_;
+            this.straightLayoutBtn.Location = new System.Drawing.Point(32, 0);
+            this.straightLayoutBtn.Name = "straightLayoutBtn";
+            this.straightLayoutBtn.Size = new System.Drawing.Size(66, 62);
+            this.straightLayoutBtn.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
+            this.straightLayoutBtn.TabIndex = 11;
+            this.straightLayoutBtn.TabStop = false;
+            this.straightLayoutBtn.Click += new System.EventHandler(this.straightLayoutBtn_Click);
+            this.straightLayoutBtn.MouseEnter += new System.EventHandler(this.straightLayoutBtn_MouseEnter);
+            this.straightLayoutBtn.MouseLeave += new System.EventHandler(this.straightLayoutBtn_MouseLeave);
+            // 
+            // brickLayoutBtn
+            // 
+            this.brickLayoutBtn.BackColor = System.Drawing.SystemColors.MenuBar;
+            this.brickLayoutBtn.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.brickLayoutBtn.Image = global::DSKPrim.PanelTools.Properties.Resources.wall;
+            this.brickLayoutBtn.Location = new System.Drawing.Point(116, 0);
+            this.brickLayoutBtn.Name = "brickLayoutBtn";
+            this.brickLayoutBtn.Size = new System.Drawing.Size(66, 62);
+            this.brickLayoutBtn.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
+            this.brickLayoutBtn.TabIndex = 12;
+            this.brickLayoutBtn.TabStop = false;
+            this.brickLayoutBtn.Click += new System.EventHandler(this.brickLayoutBtn_Click);
+            this.brickLayoutBtn.MouseEnter += new System.EventHandler(this.brickLayoutBtn_MouseEnter);
+            this.brickLayoutBtn.MouseLeave += new System.EventHandler(this.brickLayoutBtn_MouseLeave);
+            // 
             // SettingsGUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(434, 218);
+            this.ClientSize = new System.Drawing.Size(434, 260);
+            this.Controls.Add(this.panel3);
+            this.Controls.Add(this.Раскладка);
+            this.Controls.Add(this.label6);
             this.Controls.Add(this.CancelButton);
             this.Controls.Add(this.SaveSettingsButton);
             this.Controls.Add(this.label2);
@@ -238,10 +312,14 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
             this.Controls.Add(this.panel1);
             this.Name = "SettingsGUI";
             this.Text = "Настройки";
+            this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.SettingsGUI_MouseClick);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
+            this.panel3.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.straightLayoutBtn)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.brickLayoutBtn)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -265,5 +343,10 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
         private System.Windows.Forms.Button SaveSettingsButton;
         private System.Windows.Forms.Button CancelButton;
         private System.Windows.Forms.TextBox GapValueTB;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Label Раскладка;
+        private System.Windows.Forms.Panel panel3;
+        private System.Windows.Forms.PictureBox brickLayoutBtn;
+        private System.Windows.Forms.PictureBox straightLayoutBtn;
     }
 }

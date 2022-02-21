@@ -25,6 +25,10 @@ namespace DSKPrim.PanelTools
             archButtons.BuildRibbon();
             archButtons.BuildButtons();
 
+            ButtonBuilder settingsButtons = new SettingsBuilder(application);
+            settingsButtons.BuildRibbon();
+            settingsButtons.BuildButtons();
+
             ButtonBuilder testButtons = new TestBuilder(application);
             testButtons.BuildRibbon();
             testButtons.BuildButtons();

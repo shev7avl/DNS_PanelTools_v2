@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace DSKPrim.PanelTools.GUI
 {
-    class PrecastLod400Builder : ButtonBuilder
+    internal class PrecastLod400Builder : ButtonBuilder
     {
         public SubPanel SubPanelResult;
         private UIControlledApplication ControlledApplication;
