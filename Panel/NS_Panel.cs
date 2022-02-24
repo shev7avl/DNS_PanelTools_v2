@@ -5,6 +5,7 @@ using Autodesk.Revit.DB;
 
 using DSKPrim.PanelTools.Utility;
 
+
 namespace DSKPrim.PanelTools.Panel
 {
     class NS_Panel : BasePanel, IPerforable, IAssembler

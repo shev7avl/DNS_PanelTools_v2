@@ -43,10 +43,27 @@
       <HintPath>packages\NLog.4.7.13\lib\net45\NLog.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="nunit.engine, Version=3.15.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>packages\NUnit.Engine.3.15.0\lib\net20\nunit.engine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="nunit.engine.api, Version=3.0.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>packages\NUnit.Engine.3.15.0\lib\net20\nunit.engine.api.dll</HintPath>
+      <Private>True</Private>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="nunit.engine.core, Version=3.15.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>packages\NUnit.Engine.3.15.0\lib\net20\nunit.engine.core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="nunit.framework, Version=3.13.2.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
       <HintPath>packages\NUnit.3.13.2\lib\net45\nunit.framework.dll</HintPath>
       <Private>False</Private>
       <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="nunitlite, Version=3.13.2.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>packages\NUnitLite.3.13.2\lib\net45\nunitlite.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -83,6 +100,11 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="testcentric.engine.metadata, Version=1.7.1.0, Culture=neutral, PublicKeyToken=6fe0a02d2036aa1d, processorArchitecture=MSIL">
+      <HintPath>packages\NUnit.Engine.3.15.0\lib\net20\testcentric.engine.metadata.dll</HintPath>
+      <Private>True</Private>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
@@ -144,6 +166,7 @@
     <Compile Include="Precast\BasePrecast.cs" />
     <Compile Include="Precast\Mark.cs" />
     <Compile Include="Precast\PrecastType.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="ProjectEnvironment\CommonProjectEnvironment.cs" />
     <Compile Include="ProjectEnvironment\IResettable.cs" />
     <Compile Include="ProjectEnvironment\AddinSettings.cs" />
@@ -193,6 +216,9 @@
   <ItemGroup>
     <None Include=".editorconfig" />
     <None Include="packages.config" />
+    <None Include="packages\RevitTestFramework.1.19.23\.signature.p7s" />
+    <None Include="packages\RevitTestFramework.1.19.23\RevitTestFramework.1.19.23.nupkg" />
+    <None Include="packages\RevitTestFramework.1.19.23\tools\empty.rfa" />
     <None Include="PanelTools.addin">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -296,7 +322,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Logger\" />
-    <Folder Include="packages\" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="GUI\UserControl1.xaml">
@@ -312,6 +337,17 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\wall.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="packages\RevitTestFramework.1.19.23\lib\net47\RevitTestFrameworkTypes.dll" />
+    <Content Include="packages\RevitTestFramework.1.19.23\lib\net47\RTFRevit.dll" />
+    <Content Include="packages\RevitTestFramework.1.19.23\tools\licenses.txt" />
+    <Content Include="packages\RevitTestFramework.1.19.23\tools\RevitAddInUtility.dll" />
+    <Content Include="packages\RevitTestFramework.1.19.23\tools\RevitTestFrameworkConsole.exe" />
+    <Content Include="packages\RevitTestFramework.1.19.23\tools\RevitTestFrameworkGUI.exe" />
+    <Content Include="packages\RevitTestFramework.1.19.23\tools\RevitTestFrameworkTypes.dll" />
+    <Content Include="packages\RevitTestFramework.1.19.23\tools\RTFRevit.dll" />
+    <Content Include="packages\RevitTestFramework.1.19.23\tools\Runner.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
