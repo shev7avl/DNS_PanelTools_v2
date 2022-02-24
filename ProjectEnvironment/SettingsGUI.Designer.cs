@@ -48,13 +48,13 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
             this.label6 = new System.Windows.Forms.Label();
             this.Раскладка = new System.Windows.Forms.Label();
             this.panel3 = new System.Windows.Forms.Panel();
-            this.straightLayoutBtn = new System.Windows.Forms.PictureBox();
             this.brickLayoutBtn = new System.Windows.Forms.PictureBox();
+            this.straightLayoutBtn = new System.Windows.Forms.PictureBox();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.panel3.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.straightLayoutBtn)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.brickLayoutBtn)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.straightLayoutBtn)).BeginInit();
             this.SuspendLayout();
             // 
             // panel1
@@ -266,21 +266,6 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
             this.panel3.Size = new System.Drawing.Size(214, 66);
             this.panel3.TabIndex = 10;
             // 
-            // straightLayoutBtn
-            // 
-            this.straightLayoutBtn.BackColor = System.Drawing.SystemColors.Control;
-            this.straightLayoutBtn.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.straightLayoutBtn.Image = global::DSKPrim.PanelTools.Properties.Resources.tile__1_;
-            this.straightLayoutBtn.Location = new System.Drawing.Point(32, 0);
-            this.straightLayoutBtn.Name = "straightLayoutBtn";
-            this.straightLayoutBtn.Size = new System.Drawing.Size(66, 62);
-            this.straightLayoutBtn.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
-            this.straightLayoutBtn.TabIndex = 11;
-            this.straightLayoutBtn.TabStop = false;
-            this.straightLayoutBtn.Click += new System.EventHandler(this.straightLayoutBtn_Click);
-            this.straightLayoutBtn.MouseEnter += new System.EventHandler(this.straightLayoutBtn_MouseEnter);
-            this.straightLayoutBtn.MouseLeave += new System.EventHandler(this.straightLayoutBtn_MouseLeave);
-            // 
             // brickLayoutBtn
             // 
             this.brickLayoutBtn.BackColor = System.Drawing.SystemColors.MenuBar;
@@ -296,11 +281,27 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
             this.brickLayoutBtn.MouseEnter += new System.EventHandler(this.brickLayoutBtn_MouseEnter);
             this.brickLayoutBtn.MouseLeave += new System.EventHandler(this.brickLayoutBtn_MouseLeave);
             // 
+            // straightLayoutBtn
+            // 
+            this.straightLayoutBtn.BackColor = System.Drawing.SystemColors.Control;
+            this.straightLayoutBtn.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.straightLayoutBtn.Image = global::DSKPrim.PanelTools.Properties.Resources.tile__1_;
+            this.straightLayoutBtn.Location = new System.Drawing.Point(32, 0);
+            this.straightLayoutBtn.Name = "straightLayoutBtn";
+            this.straightLayoutBtn.Size = new System.Drawing.Size(66, 62);
+            this.straightLayoutBtn.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
+            this.straightLayoutBtn.TabIndex = 11;
+            this.straightLayoutBtn.TabStop = false;
+            this.straightLayoutBtn.Click += new System.EventHandler(this.straightLayoutBtn_Click);
+            this.straightLayoutBtn.MouseEnter += new System.EventHandler(this.straightLayoutBtn_MouseEnter);
+            this.straightLayoutBtn.MouseLeave += new System.EventHandler(this.straightLayoutBtn_MouseLeave);
+            // 
             // SettingsGUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(434, 260);
+            this.Controls.Add(this.panel1);
             this.Controls.Add(this.panel3);
             this.Controls.Add(this.Раскладка);
             this.Controls.Add(this.label6);
@@ -309,7 +310,6 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.panel2);
-            this.Controls.Add(this.panel1);
             this.Name = "SettingsGUI";
             this.Text = "Настройки";
             this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.SettingsGUI_MouseClick);
@@ -318,8 +318,8 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
             this.panel3.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.straightLayoutBtn)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.brickLayoutBtn)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.straightLayoutBtn)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 

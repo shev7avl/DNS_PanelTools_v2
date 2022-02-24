@@ -1,12 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Autodesk.Revit.UI;
+﻿using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
-using DSKPrim.PanelTools.ProjectEnvironment;
-using System.Diagnostics;
-using Autodesk.Revit.Attributes;
+using Autodesk.Revit.UI;
 using DSKPrim.PanelTools.Panel;
+using DSKPrim.PanelTools.ProjectEnvironment;
 using DSKPrim.PanelTools.Utility;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 
 namespace DSKPrim.PanelTools.PanelMaster
 {
@@ -49,7 +49,7 @@ namespace DSKPrim.PanelTools.PanelMaster
 
                 BasePanel panel;
 
-                Routine.GetPanelBehaviour(Document, item, out panel) ;
+                Routine.GetPanelBehaviour(Document, item, out panel);
                 if (panel != null)
                 {
                     if (panel.LongMark is null ||
@@ -61,7 +61,7 @@ namespace DSKPrim.PanelTools.PanelMaster
                     {
                         panel.ReadMarks();
                     }
-                    
+
                     panel.SetMarks(posEnum);
                 }
                 positionEnum++;
@@ -72,6 +72,6 @@ namespace DSKPrim.PanelTools.PanelMaster
 
             return Result.Succeeded;
         }
-        
+
     }
 }

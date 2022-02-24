@@ -3,6 +3,7 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
 using DSKPrim.PanelTools.Panel;
+using DSKPrim.PanelTools.ProjectEnvironment;
 using DSKPrim.PanelTools.Utility;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ namespace DSKPrim.PanelTools.PanelMaster
 {
     [Transaction(mode: TransactionMode.Manual)]
     [Regeneration(RegenerationOption.Manual)]
-    class ARCH_copyMarks : CommandBuilder, IExternalCommand
+    class ARCH_copyMarks : IExternalCommand
     {
 
         public Document Document { get; set ; }
@@ -30,18 +31,31 @@ namespace DSKPrim.PanelTools.PanelMaster
                 return Result.Failed;
             }
 
-            ICollection<Element> fecWalls = base.CollectElements(commandData, new FacadeSelectionFilter(), BuiltInCategory.OST_Walls);
+            AddinSettings settings = AddinSettings.GetSettings();
+            Selector selector = new Selector();
+            ICollection<Element> els = selector.CollectElements(commandData, new FacadeSelectionFilter(), BuiltInCategory.OST_Walls);
+
+
 
             IEnumerable<Element> fecLinksSTRUCT = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_RvtLinks).WhereElementIsNotElementType().Where(doc => doc.Name.Contains("_КР") || doc.Name.Contains("_КЖ"));
-
             Document linkedDocSTR = fecLinksSTRUCT.Cast<RevitLinkInstance>().ToList()[0].GetLinkDocument();
 
-            foreach (Element item in fecWalls)
+            try
             {
-                CreateFacadePanelPartsData(linkedDocSTR, out Dictionary<Element, List<string>> facadePanel, out Dictionary<Element, Dictionary<string, List<ElementId>>> facadeParts, item);
-
-                SetFacadePartsParameters(Document, facadePanel, facadeParts, item);
+                foreach (Element item in els)
+                {
+                    CreateFacadePanelPartsData(linkedDocSTR, out Dictionary<Element, List<string>> facadePanel, out Dictionary<Element, Dictionary<string, List<ElementId>>> facadeParts, item);
+                    SetFacadePartsParameters(Document, facadePanel, facadeParts, item);
+                }
             }
+            catch (Exception e)
+            {
+                message = $"Ошибка {e.Message} \n" +
+                   $"{e.InnerException}" +
+                   $"{e.Source}";
+                return Result.Failed;
+            }
+            
 
             return Result.Succeeded;
         }
@@ -154,17 +168,6 @@ namespace DSKPrim.PanelTools.PanelMaster
             facadeParts.Add(item, temp);
         }
 
-        internal override SelectionType SetSelectionType()
-        {
-            throw new NotImplementedException();
-        }
-
-        
-
-        internal override Result ExecuteCommand(ExternalCommandData commandData, ICollection<BasePanel> panels)
-        {
-            throw new NotImplementedException();
-        }
     }
 
 }

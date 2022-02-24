@@ -27,6 +27,15 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
         {
             InitializeComponent();
 
+            InitializeFields();
+            InitializeTileSectionTypeButtons();
+            InitializeSelectionTypeCheckboxes();
+
+            this.ShowDialog();
+        }
+
+        private void InitializeFields()
+        {
             Settings = AddinSettings.GetSettings();
             temp_SelectionType = Settings.GetSelectionType();
             temp_TileWidth = Settings.GetTileModule().ModuleWidth;
@@ -37,6 +46,10 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
             WidthValueTB.Text = Settings.GetTileModule().ModuleWidth.ToString();
             HeigthValueTB.Text = Settings.GetTileModule().ModuleHeight.ToString();
             GapValueTB.Text = Settings.GetTileModule().ModuleGap.ToString();
+        }
+
+        private void InitializeTileSectionTypeButtons()
+        {
             if (temp_TileSectionType == TileSectionType.TILE_LAYOUT_BRICK)
             {
                 brickLayoutBtn.BackColor = Color.FromKnownColor(KnownColor.ControlDark);
@@ -45,8 +58,47 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
             {
                 straightLayoutBtn.BackColor = Color.FromKnownColor(KnownColor.ControlDark);
             }
+        }
 
-            this.ShowDialog();
+        private void InitializeSelectionTypeCheckboxes()
+        {
+            switch (Settings.GetSelectionType())
+            {
+
+                case SelectionType.AllElements:
+                    {
+                        SelectAllButton.Checked = true;
+                        CropBoxButton.Checked = false;
+                        SelectMultipleButton.Checked = false;
+                        SelectSingleButton.Checked = false;
+                        break;
+                    }
+
+                case SelectionType.CropBox:
+                    {
+                        SelectAllButton.Checked = false;
+                        CropBoxButton.Checked = true;
+                        SelectMultipleButton.Checked = false;
+                        SelectSingleButton.Checked = false;
+                        break;
+                    }
+                case SelectionType.MultipleElements:
+                    {
+                        SelectAllButton.Checked = false;
+                        CropBoxButton.Checked = false;
+                        SelectMultipleButton.Checked = true;
+                        SelectSingleButton.Checked = false;
+                        break;
+                    }
+                case SelectionType.SingleElement:
+                    {
+                        SelectAllButton.Checked = false;
+                        CropBoxButton.Checked = false;
+                        SelectMultipleButton.Checked = false;
+                        SelectSingleButton.Checked = true;
+                        break;
+                    }
+            }
         }
 
         private void SelectAllButton_CheckedChanged(object sender, EventArgs e)
