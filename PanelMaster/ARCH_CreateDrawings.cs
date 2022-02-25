@@ -2,6 +2,7 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
+using DSKPrim.PanelTools.ProjectEnvironment;
 using DSKPrim.PanelTools.Utility;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace DSKPrim.PanelTools.PanelMaster
 {
     [Transaction(mode: TransactionMode.Manual)]
     [Regeneration(RegenerationOption.Manual)]
-    class ARCH_CreateDrawings : IExternalCommand
+    public class ARCH_CreateDrawings : IExternalCommand
     {
         public Document Document { get; set; }
 
@@ -43,9 +44,9 @@ namespace DSKPrim.PanelTools.PanelMaster
                 return Result.Failed;
             }
 
-            Selection selection = commandData.Application.ActiveUIDocument.Selection;
-
-            IList<Reference> list_Walls = selection.PickObjects(ObjectType.Element, new FacadeSelectionFilter(), "Выберите стены DNS_Фасад или DNS_Фасад2");
+            AddinSettings settings = AddinSettings.GetSettings();
+            Selector selector = new Selector();
+            ICollection<Element> wallsCollection = selector.CollectElements(commandData, new FacadeSelectionFilter(), BuiltInCategory.OST_Walls);
 
             Transaction transaction = new Transaction(Document, "creating an assembly");
             TransactionSettings.SetFailuresPreprocessor(transaction);
@@ -53,14 +54,14 @@ namespace DSKPrim.PanelTools.PanelMaster
             List<AssemblyInstance> assemblies = new List<AssemblyInstance>();
             using (transaction)
             {
-                foreach (var reference in list_Walls)
+                foreach (var reference in wallsCollection)
                 {
                     assemblies.Add(CreatePartAssembly(transaction, reference));
                 }
                 transaction.Start();
                 foreach (var item in assemblies)
                 {
-                    List<ViewSheet> viewSheets = new List<ViewSheet>();
+                    List<ViewSheet> viewSheets;
                     
                     Utility.SheetUtils.CreateSheets(Document, item.Id, 1, out viewSheets);
                     Utility.SheetUtils.CreateFacadeDrawing(Document, item.Id, viewSheets[0]);
@@ -71,9 +72,9 @@ namespace DSKPrim.PanelTools.PanelMaster
             return Result.Succeeded;
         }
 
-        private AssemblyInstance CreatePartAssembly(Transaction transaction, Reference reference)
+        private AssemblyInstance CreatePartAssembly(Transaction transaction, Element item)
         {
-            Element item = Document.GetElement(reference.ElementId);
+
             BoundingBoxIntersectsFilter boundingBoxIntersectsFilter = new BoundingBoxIntersectsFilter(new Outline(item.get_Geometry(new Options()).GetBoundingBox().Min, item.get_Geometry(new Options()).GetBoundingBox().Max));
 
             ICollection<ElementId> ids = new FilteredElementCollector(Document).OfClass(typeof(Part)).WhereElementIsNotElementType().WherePasses(boundingBoxIntersectsFilter).ToElementIds();

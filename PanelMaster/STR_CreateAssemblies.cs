@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
-
+using System.Linq;
 using Autodesk.Revit.Attributes;
 using DSKPrim.PanelTools.ProjectEnvironment;
 using System.Diagnostics;
 using DSKPrim.PanelTools.Utility;
+using DSKPrim.PanelTools.Panel;
 
 namespace DSKPrim.PanelTools.PanelMaster
 {
@@ -31,20 +32,28 @@ namespace DSKPrim.PanelTools.PanelMaster
 
             CommonProjectEnvironment environment = CommonProjectEnvironment.GetInstance(Document);
 
-            Selection selection = commandData.Application.ActiveUIDocument.Selection;
-
-            IList<Element> _elements = selection.PickElementsByRectangle(new AssemblyCreationFilter());
-
-            environment.GetStructuralEnvironment().PanelMarks.Sort(Utility.Assemblies.CompareElementIdsByZCoord);
+            Selector selector = new Selector();
+            ICollection<Element> _elements = selector.CollectElements(commandData, new PanelSelectionFilter(), BuiltInCategory.OST_StructuralFraming);
+            List<BasePanel> panels = environment.GetStructuralEnvironment().PanelMarks.Where(o => _elements.Contains(o.ActiveElement)).ToList();
+            panels.Sort(Utility.Assemblies.CompareElementIdsByZCoord);
 
             int counter = 1;
-            foreach (var item in environment.GetStructuralEnvironment().PanelMarks)
+            try
             {
-                Debug.WriteLine($"Итерация: {counter}//{environment.GetStructuralEnvironment().PanelMarks.Count}");
-                Debug.WriteLine($"Панель: {item.ShortMark}");
-                Utility.Assemblies.CreateAssembly(Document, item);
-                counter++;
+                foreach (var item in panels)
+                {
+                    Debug.WriteLine($"Итерация: {counter}//{environment.GetStructuralEnvironment().PanelMarks.Count}");
+                    Debug.WriteLine($"Панель: {item.ShortMark}");
+                    Utility.Assemblies.CreateAssembly(Document, item);
+                    counter++;
+                }
             }
+            catch (Exception e)
+            {
+                message = $"ОШИБКА: {e.Message}";
+                return Result.Failed;
+            }
+            
 
             environment.Reset();
             return Result.Succeeded;

@@ -5,6 +5,7 @@ using DSKPrim.PanelTools.Utility;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace DSKPrim.PanelTools.PanelMaster
 {
@@ -29,7 +30,24 @@ namespace DSKPrim.PanelTools.PanelMaster
                 return Result.Failed;
             }
 
-            Utility.Assemblies.DisassembleAll(Document);
+            Selector selector = new Selector();
+            List<AssemblyInstance> assemblies = selector.CollectElements(commandData, BuiltInCategory.OST_Assemblies).Cast<AssemblyInstance>().ToList();
+
+            Transaction transaction = new Transaction(Document, "Разбираем сборки");
+            TransactionSettings.SetFailuresPreprocessor(transaction);
+
+            try
+            {
+                transaction.Start();
+                Utility.Assemblies.DisassembleAssembliesCollection(Document, assemblies);
+                transaction.Commit();
+            }
+            catch (Exception e)
+            {
+                message = $"ОШИБКА: {e.Message}";
+                return Result.Failed;
+            }
+            
 
             return Result.Succeeded;
         }

@@ -26,16 +26,14 @@ namespace DSKPrim.PanelTools.PanelMaster
                 return Result.Failed;
             }
 
-            Stopwatch stopWatch = new Stopwatch();
-            stopWatch.Start();
-
             StructuralEnvironment structDoc = StructuralEnvironment.GetInstance(Document);
 
             TransactionGroup transactionGroup = new TransactionGroup(Document, "Присвоение длинной марки - ");
             transactionGroup.Start("Группа транзакций");
-            FilteredElementCollector fec = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_StructuralFraming).WhereElementIsNotElementType();
-            List<Element> els = fec.ToElements().Cast<Element>().ToList();
 
+            Selector selector = new Selector();
+            ICollection<Element> els = selector.CollectElements(commandData, new PanelSelectionFilter(), BuiltInCategory.OST_StructuralFraming);
+            
             int positionEnum = 1;
             foreach (var item in els)
             {

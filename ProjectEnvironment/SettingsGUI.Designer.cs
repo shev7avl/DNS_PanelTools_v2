@@ -45,7 +45,6 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
             this.label2 = new System.Windows.Forms.Label();
             this.SaveSettingsButton = new System.Windows.Forms.Button();
             this.CancelButton = new System.Windows.Forms.Button();
-            this.label6 = new System.Windows.Forms.Label();
             this.Раскладка = new System.Windows.Forms.Label();
             this.panel3 = new System.Windows.Forms.Panel();
             this.brickLayoutBtn = new System.Windows.Forms.PictureBox();
@@ -237,16 +236,6 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
             this.CancelButton.MouseEnter += new System.EventHandler(this.CancelButton_MouseEnter);
             this.CancelButton.MouseLeave += new System.EventHandler(this.CancelButton_MouseLeave);
             // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.ForeColor = System.Drawing.Color.Red;
-            this.label6.Location = new System.Drawing.Point(15, 51);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(106, 13);
-            this.label6.TabIndex = 8;
-            this.label6.Text = "Пока не работает :(";
-            // 
             // Раскладка
             // 
             this.Раскладка.AutoSize = true;
@@ -304,7 +293,6 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.panel3);
             this.Controls.Add(this.Раскладка);
-            this.Controls.Add(this.label6);
             this.Controls.Add(this.CancelButton);
             this.Controls.Add(this.SaveSettingsButton);
             this.Controls.Add(this.label2);
@@ -343,7 +331,6 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
         private System.Windows.Forms.Button SaveSettingsButton;
         private System.Windows.Forms.Button CancelButton;
         private System.Windows.Forms.TextBox GapValueTB;
-        private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label Раскладка;
         private System.Windows.Forms.Panel panel3;
         private System.Windows.Forms.PictureBox brickLayoutBtn;

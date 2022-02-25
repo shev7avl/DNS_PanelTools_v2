@@ -21,28 +21,6 @@ namespace DSKPrim.PanelTools.PanelMaster
         //ИДЕЯ
         // Что если парсить json на предмет листов, видов и шаблонов?
 
-
-        class PanelSelectionFilter : ISelectionFilter
-        {
-            public bool AllowElement(Element elem)
-            {
-
-                StructureType structureType = new StructureType(elem);
-
-                if (structureType.GetPanelType(elem) == StructureType.Panels.None.ToString() && !elem.Category.Name.Contains("Каркас несущий") && !(elem is AssemblyInstance) )
-                {
-                    return false;
-                }
-
-                else return true;
-            }
-
-            public bool AllowReference(Reference reference, XYZ position)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
         //Реализация через Panel
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
@@ -99,14 +77,16 @@ namespace DSKPrim.PanelTools.PanelMaster
             Document document = commandData.Application.ActiveUIDocument.Document;
             StructuralEnvironment collector = StructuralEnvironment.GetInstance(document);
 
-            IList<Reference> list_PanelRefs = selection.PickObjects(ObjectType.Element, new PanelSelectionFilter(), "Выберите панели в проекте");
+            Selector selector = new Selector();
+            ICollection<Element> selectedEls = selector.CollectElements(commandData, new PanelSelectionFilter(), BuiltInCategory.OST_StructuralFraming);
+
 
             List<BasePanel> list_Panels = new List<BasePanel>();
 
             //Переписываем выбранные элементы в объекты класса BasePanel
-            foreach (var reference in list_PanelRefs)
+            foreach (var el in selectedEls)
             {
-                BasePanel panel = collector.PanelMarks.Where(o => o.ActiveElement.Id == reference.ElementId).First();
+                BasePanel panel = collector.PanelMarks.Where(o => o.ActiveElement.Id == el.Id).First();
                 list_Panels.Add(panel);
             }
 

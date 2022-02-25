@@ -1,7 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="packages\NUnit3TestAdapter.4.2.1\build\net35\NUnit3TestAdapter.props" Condition="Exists('packages\NUnit3TestAdapter.4.2.1\build\net35\NUnit3TestAdapter.props')" />
-  <Import Project="packages\NUnit.3.13.2\build\NUnit.props" Condition="Exists('packages\NUnit.3.13.2\build\NUnit.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -39,32 +37,6 @@
       <HintPath>C:\Program Files\Autodesk\Revit 2019\AdWindows.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
-      <HintPath>packages\NLog.4.7.13\lib\net45\NLog.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="nunit.engine, Version=3.15.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
-      <HintPath>packages\NUnit.Engine.3.15.0\lib\net20\nunit.engine.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="nunit.engine.api, Version=3.0.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
-      <HintPath>packages\NUnit.Engine.3.15.0\lib\net20\nunit.engine.api.dll</HintPath>
-      <Private>True</Private>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="nunit.engine.core, Version=3.15.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
-      <HintPath>packages\NUnit.Engine.3.15.0\lib\net20\nunit.engine.core.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="nunit.framework, Version=3.13.2.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
-      <HintPath>packages\NUnit.3.13.2\lib\net45\nunit.framework.dll</HintPath>
-      <Private>False</Private>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="nunitlite, Version=3.13.2.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
-      <HintPath>packages\NUnitLite.3.13.2\lib\net45\nunitlite.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="RevitAPI">
@@ -73,14 +45,6 @@
     </Reference>
     <Reference Include="RevitAPIUI">
       <HintPath>C:\Program Files\Autodesk\Revit 2019\RevitAPIUI.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="RevitTestFrameworkTypes, Version=1.19.23.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\RevitTestFramework.1.19.23\lib\net47\RevitTestFrameworkTypes.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="RTFRevit, Version=1.19.23.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\RevitTestFramework.1.19.23\lib\net47\RTFRevit.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -100,11 +64,6 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="testcentric.engine.metadata, Version=1.7.1.0, Culture=neutral, PublicKeyToken=6fe0a02d2036aa1d, processorArchitecture=MSIL">
-      <HintPath>packages\NUnit.Engine.3.15.0\lib\net20\testcentric.engine.metadata.dll</HintPath>
-      <Private>True</Private>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
@@ -137,6 +96,7 @@
     <Compile Include="PanelMaster\ARCH_CreateDrawings.cs" />
     <Compile Include="PanelMaster\ARCH_SplitToParts.cs" />
     <Compile Include="PanelMaster\ARCH_Windows.cs" />
+    <Compile Include="PanelMaster\SelectionFilters.cs" />
     <Compile Include="PanelMaster\STR_CreateDrawings.cs" />
     <Compile Include="PanelMaster\STR_UniqueAssemblies.cs" />
     <Compile Include="PanelMaster\STR_DisassembleAll.cs" />
@@ -166,7 +126,6 @@
     <Compile Include="Precast\BasePrecast.cs" />
     <Compile Include="Precast\Mark.cs" />
     <Compile Include="Precast\PrecastType.cs" />
-    <Compile Include="Program.cs" />
     <Compile Include="ProjectEnvironment\CommonProjectEnvironment.cs" />
     <Compile Include="ProjectEnvironment\IResettable.cs" />
     <Compile Include="ProjectEnvironment\AddinSettings.cs" />
@@ -215,10 +174,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
-    <None Include="packages.config" />
-    <None Include="packages\RevitTestFramework.1.19.23\.signature.p7s" />
-    <None Include="packages\RevitTestFramework.1.19.23\RevitTestFramework.1.19.23.nupkg" />
-    <None Include="packages\RevitTestFramework.1.19.23\tools\empty.rfa" />
     <None Include="PanelTools.addin">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -320,9 +275,7 @@
   <ItemGroup>
     <None Include="Resources\technical-drawing.ico" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Logger\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Page Include="GUI\UserControl1.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -338,17 +291,6 @@
   <ItemGroup>
     <None Include="Resources\wall.png" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="packages\RevitTestFramework.1.19.23\lib\net47\RevitTestFrameworkTypes.dll" />
-    <Content Include="packages\RevitTestFramework.1.19.23\lib\net47\RTFRevit.dll" />
-    <Content Include="packages\RevitTestFramework.1.19.23\tools\licenses.txt" />
-    <Content Include="packages\RevitTestFramework.1.19.23\tools\RevitAddInUtility.dll" />
-    <Content Include="packages\RevitTestFramework.1.19.23\tools\RevitTestFrameworkConsole.exe" />
-    <Content Include="packages\RevitTestFramework.1.19.23\tools\RevitTestFrameworkGUI.exe" />
-    <Content Include="packages\RevitTestFramework.1.19.23\tools\RevitTestFrameworkTypes.dll" />
-    <Content Include="packages\RevitTestFramework.1.19.23\tools\RTFRevit.dll" />
-    <Content Include="packages\RevitTestFramework.1.19.23\tools\Runner.dll" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy /Y "$(SolutionDir)bin\Debug\v2019" "C:\Users\shevyakov.a.PARTNER\AppData\Roaming\Autodesk\Revit\Addins\2019"
@@ -358,11 +300,4 @@ copy /Y "$(SolutionDir)bin\Debug\v2019" "\\IR-DSK\DNSDevelopment\1_ДСК При
     <PreBuildEvent>
     </PreBuildEvent>
   </PropertyGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>Данный проект ссылается на пакеты NuGet, отсутствующие на этом компьютере. Используйте восстановление пакетов NuGet, чтобы скачать их.  Дополнительную информацию см. по адресу: http://go.microsoft.com/fwlink/?LinkID=322105. Отсутствует следующий файл: {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('packages\NUnit.3.13.2\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\NUnit.3.13.2\build\NUnit.props'))" />
-    <Error Condition="!Exists('packages\NUnit3TestAdapter.4.2.1\build\net35\NUnit3TestAdapter.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\NUnit3TestAdapter.4.2.1\build\net35\NUnit3TestAdapter.props'))" />
-  </Target>
 </Project>

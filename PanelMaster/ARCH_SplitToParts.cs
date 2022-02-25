@@ -13,9 +13,13 @@ namespace DSKPrim.PanelTools.PanelMaster
 {
     [Transaction(mode: TransactionMode.Manual)]
     [Regeneration(RegenerationOption.Manual)]
-    class ARCH_SplitToParts : IExternalCommand
+    public class ARCH_SplitToParts : IExternalCommand
     {
         Document Document;
+
+        public ARCH_SplitToParts()
+        { }
+
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
 
@@ -77,22 +81,5 @@ namespace DSKPrim.PanelTools.PanelMaster
         }
     }
 
-    internal class FacadeSelectionFilter : ISelectionFilter
-    {
-        public bool AllowElement(Element elem)
-        {
-
-            if (elem.GetType() == typeof(Wall) && elem.Name.Contains("DNS_Фасад"))
-            {
-                return true;
-            }
-
-            else return false;
-        }
-
-        public bool AllowReference(Reference reference, XYZ position)
-        {
-            throw new NotImplementedException();
-        }
-    }
+    
 }

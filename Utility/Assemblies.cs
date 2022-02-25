@@ -300,20 +300,14 @@ namespace DSKPrim.PanelTools.Utility
          
         }
 
-        internal static void DisassembleAll(Document document)
+        internal static void DisassembleAssembliesCollection(Document document, ICollection<AssemblyInstance> assemblies)
         {
-            List<AssemblyInstance> assemblies = new FilteredElementCollector(document).OfCategory(BuiltInCategory.OST_Assemblies).WhereElementIsNotElementType().Cast<AssemblyInstance>().ToList();
-
-                
-            Transaction transaction = new Transaction(document, "Разбираем сборки");
-                TransactionSettings.SetFailuresPreprocessor(transaction);
                 string index;
                 foreach (AssemblyInstance assembly in assemblies)
                 {
                     index = "";
                     if (Eligible(assembly))
                     {
-                        transaction.Start();
 
                     FailureResolution fr = DeleteElements.Create(document, assembly.Id);
 
@@ -326,7 +320,6 @@ namespace DSKPrim.PanelTools.Utility
                             panel.get_Parameter(new Guid(Properties.Resource.ADSK_Номер_изделия)).Set(index);
                         }
                         assembly.Disassemble();
-                        transaction.Commit();
                     }
                 }
          

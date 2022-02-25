@@ -33,88 +33,67 @@ namespace DSKPrim.PanelTools.PanelMaster
                 return Result.Failed;
             }
 
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-
-
-            Debug.WriteLine($"Активный документ: {Document.PathName}");
-
-            Debug.WriteLine("Начали создание проемов в документе");
 
             IEnumerable<Element> fecLinksARCH = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_RvtLinks).WhereElementIsNotElementType().Where(doc => doc.Name.Contains("_АР"));
 
-            Debug.WriteLine($"Найдено связей, содержащих \"_АР\" в названии: {fecLinksARCH.Count()}");
 
             if (fecLinksARCH.Count() == 0)
             {
-                Debug.WriteLine("ОШИБКА: Не загружены корректные связи АР");
-                throw new NullReferenceException("Не вижу связей");
+                message = "ОШИБКА: Не загружены корректные связи АР";
+                return Result.Failed;
             }
-
-            Debug.WriteLine("Процедура начата");
-            Debug.WriteLine("Создаём синглтон категории \"Каркас несущий\"");
-            Stopwatch stopWatch = new Stopwatch();
-            stopWatch.Start();
 
             StructuralEnvironment structDoc = StructuralEnvironment.GetInstance(Document);
 
+            Selector selector = new Selector();
+            List<Element> els = selector.CollectElements(commandData, new PanelSelectionFilter(), BuiltInCategory.OST_StructuralFraming).ToList();
 
-
-            Debug.WriteLine($"Проанализировано панелей: {structDoc.PanelMarks.Count}");
-
-            Debug.WriteLine($"{structDoc.PanelMarks.Count} panels analyzed");
-
-            FilteredElementCollector fecStruct = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_StructuralFraming).WhereElementIsNotElementType();
-            FilteredElementCollector fecWalls = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_Walls).WhereElementIsNotElementType();
-
-            List<Element> els;
-            if (fecStruct.GetElementCount() == 0)
+            try
             {
-                els = fecWalls.Cast<Element>().ToList();
-            }
-            else
-            {
-                els = fecStruct.Cast<Element>().ToList();
-            }
-
-            foreach (RevitLinkInstance link in fecLinksARCH.Cast<RevitLinkInstance>().ToList())
-            {
-                RevitLinkInstance revitLink = link;
-                LinkedArch = revitLink.GetLinkDocument();
-
-                SingleArchDoc archDoc = SingleArchDoc.GetInstance(LinkedArch);
-
-                List<IPerforable> intersected = new List<IPerforable>();
-
-                int counter = els.Count;
-                for (int i = 0; i < counter; i++)
+                foreach (RevitLinkInstance link in fecLinksARCH.Cast<RevitLinkInstance>().ToList())
                 {
-                    Element item = els[i];
-                    BasePanel temp;
-                    Routine.GetPanelBehaviour(Document, item, out temp);
-                    Behaviour = temp;
-                    if (Behaviour is IPerforable perforable)
+                    RevitLinkInstance revitLink = link;
+                    LinkedArch = revitLink.GetLinkDocument();
+
+                    SingleArchDoc archDoc = SingleArchDoc.GetInstance(LinkedArch);
+
+                    List<IPerforable> intersected = new List<IPerforable>();
+
+                    int counter = els.Count;
+                    for (int i = 0; i < counter; i++)
                     {
-                        IPerforable panel = perforable;
-                        panel.GetOpeningsFromLink(LinkedArch, revitLink, out List<Element> IntersectedWindows);
-                        if (IntersectedWindows.Count > 0)
+                        Element item = els[i];
+                        BasePanel temp;
+                        Routine.GetPanelBehaviour(Document, item, out temp);
+                        Behaviour = temp;
+                        if (Behaviour is IPerforable perforable)
                         {
-                            intersected.Add(panel);
+                            IPerforable panel = perforable;
+                            panel.GetOpeningsFromLink(LinkedArch, revitLink, out List<Element> IntersectedWindows);
+                            if (IntersectedWindows.Count > 0)
+                            {
+                                intersected.Add(panel);
+                            }
                         }
                     }
-                }
 
-                foreach (IPerforable item in intersected)
-                {
-                    item.GetOpeningsFromLink(LinkedArch, revitLink, out List<Element> IntersectedWindows);
-                    item.Perforate(IntersectedWindows, revitLink);
-                }
+                    foreach (IPerforable item in intersected)
+                    {
+                        item.GetOpeningsFromLink(LinkedArch, revitLink, out List<Element> IntersectedWindows);
+                        item.Perforate(IntersectedWindows, revitLink);
+                    }
 
-                archDoc.Dispose();
-                structDoc.Reset();
+                    archDoc.Dispose();
+                    structDoc.Reset();
+                }
             }
+            catch (Exception e)
+            {
+                message = $"Ошибка {e.Message}";
+                return Result.Failed;
+            }
+            
 
-            Debug.WriteLine(stopWatch);
             return Result.Succeeded;
         }
     }

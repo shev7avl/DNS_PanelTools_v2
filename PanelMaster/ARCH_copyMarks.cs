@@ -13,7 +13,7 @@ namespace DSKPrim.PanelTools.PanelMaster
 {
     [Transaction(mode: TransactionMode.Manual)]
     [Regeneration(RegenerationOption.Manual)]
-    class ARCH_copyMarks : IExternalCommand
+    public class ARCH_copyMarks : IExternalCommand
     {
 
         public Document Document { get; set ; }
@@ -34,7 +34,6 @@ namespace DSKPrim.PanelTools.PanelMaster
             AddinSettings settings = AddinSettings.GetSettings();
             Selector selector = new Selector();
             ICollection<Element> els = selector.CollectElements(commandData, new FacadeSelectionFilter(), BuiltInCategory.OST_Walls);
-
 
 
             IEnumerable<Element> fecLinksSTRUCT = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_RvtLinks).WhereElementIsNotElementType().Where(doc => doc.Name.Contains("_КР") || doc.Name.Contains("_КЖ"));
