@@ -11,17 +11,11 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
     {
         private static StructuralEnvironment instance;
 
-        private Document Document;
-
-        private BasePanel Behaviour;
-
         public List<BasePanel> PanelMarks { get; private set; }
 
         private StructuralEnvironment(Document document)
         {
-            Document = document;
-
-            List<Element> panelsList = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_StructuralFraming).WhereElementIsNotElementType().ToElements().Cast<Element>().ToList();
+            List<Element> panelsList = new FilteredElementCollector(document).OfCategory(BuiltInCategory.OST_StructuralFraming).WhereElementIsNotElementType().ToElements().Cast<Element>().ToList();
             
             panelsList.Sort(CompareByLevel);
             panelsList.Sort(CompareByName);
@@ -32,12 +26,11 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
 
             foreach (var item in panelsList)
             {
-                SetPanelBehaviour(item);
-                if (Behaviour != null)
+                BasePanel panel = DefinePanelBehaviour(document, item);
+                if (panel != null)
                 {
-                    Behaviour.CreateMarks();
-                    PanelMarks.Add(Behaviour);
-                    Behaviour = null;
+                    panel.CreateMarks();
+                    PanelMarks.Add(panel);
                 }
             }
         }
@@ -45,7 +38,6 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
 
         private StructuralEnvironment(Document document, IList<Element> panels, bool exist = false)
         {
-            Document = document;
 
             List<Element> panelsList = (List<Element>)panels;
 
@@ -63,20 +55,19 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
 
             foreach (var item in panelsList)
             {
-                SetPanelBehaviour(item);
-                if (Behaviour != null)
+                BasePanel panel = DefinePanelBehaviour(document, item);
+                if (panel != null)
                 {
                     if (exist)
                     {
-                        Behaviour.ReadMarks();
+                        panel.ReadMarks();
                     }
                     else
                     {
-                        Behaviour.CreateMarks();
+                        panel.CreateMarks();
                     }
 
-                    PanelMarks.Add(Behaviour);
-                    Behaviour = null;
+                    PanelMarks.Add(panel);
                 }
             }
         }
@@ -165,49 +156,51 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
             return instance;
         }
 
-        public void SetPanelBehaviour(Element element)
+        public static BasePanel DefinePanelBehaviour(Document doc, Element element)
         {
             StructureType structureType = new StructureType(element);
-            string type = structureType.GetPanelType(element);
-            if (type != StructureType.Panels.None.ToString())
+            StructureType.PanelTypes type = structureType.GetPanelType(element);
+
+            if (type != StructureType.PanelTypes.NOT_A_PANEL)
             {
-                if (type == StructureType.Panels.NS.ToString())
+                if (type == StructureType.PanelTypes.NS_PANEL)
                 {
-                    NS_Panel nS = new NS_Panel(Document, element);
-                    Behaviour = nS;
+                    NS_Panel nS = new NS_Panel(doc, element);
+                    return nS;
                 }
-                if (type == StructureType.Panels.VS.ToString())
+                if (type == StructureType.PanelTypes.VS_PANEL)
                 {
-                    VS_Panel vS = new VS_Panel(Document, element);
-                    Behaviour = vS;
+                    VS_Panel vS = new VS_Panel(doc, element);
+                    return vS;
                 }
-                if (type == StructureType.Panels.BP.ToString())
+                if (type == StructureType.PanelTypes.BP_PANEL)
                 {
-                    BP_Panel bP = new BP_Panel(Document, element);
-                    Behaviour = bP;
+                    BP_Panel bP = new BP_Panel(doc, element);
+                    return bP;
                 }
-                if (type == StructureType.Panels.PS.ToString())
+                if (type == StructureType.PanelTypes.PS_PANEL)
                 {
-                    PS_Panel pS = new PS_Panel(Document, element);
-                    Behaviour = pS;
+                    PS_Panel pS = new PS_Panel(doc, element);
+                    return pS;
                 }
-                if (type == StructureType.Panels.PP.ToString())
+                if (type == StructureType.PanelTypes.PP_PANEL)
                 {
-                    PP_Panel pP = new PP_Panel(Document, element);
-                    Behaviour = pP;
+                    PP_Panel pP = new PP_Panel(doc, element);
+                    return pP;
+                }
+                if (type == StructureType.PanelTypes.FACADE_PANEL)
+                {
+                    Facade_Panel facade = new Facade_Panel(doc, element);
+                    return facade;
                 }
             }
-            else
-            {
-                Behaviour = null;
-            }
+            return null;
         }
 
         public void Reset()
         {
-            Document = null;
             instance = null;
-            Behaviour = null;
+
             if (PanelMarks != null)
             {
                 foreach (var item in PanelMarks)

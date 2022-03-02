@@ -34,13 +34,25 @@ namespace DSKPrim.PanelTools.PanelMaster
 
             Selector selector = new Selector();
             ICollection<Element> _elements = selector.CollectElements(commandData, new PanelSelectionFilter(), BuiltInCategory.OST_StructuralFraming);
-            List<BasePanel> panels = environment.GetStructuralEnvironment().PanelMarks.Where(o => _elements.Contains(o.ActiveElement)).ToList();
-            panels.Sort(Utility.Assemblies.CompareElementIdsByZCoord);
+            IEnumerable<Element> panels =
+                from panelMark in environment.GetStructuralEnvironment().PanelMarks
+                select panelMark.ActiveElement;
+
+            List<BasePanel> panelsList = new List<BasePanel>();
+            foreach (var item in environment.GetStructuralEnvironment().PanelMarks)
+            {
+                if (panels.Contains(item.ActiveElement))
+                {
+                    panelsList.Add(item);
+                }
+            }
+
+            panelsList.Sort(Utility.Assemblies.CompareElementIdsByZCoord);
 
             int counter = 1;
             try
             {
-                foreach (var item in panels)
+                foreach (var item in panelsList)
                 {
                     Debug.WriteLine($"Итерация: {counter}//{environment.GetStructuralEnvironment().PanelMarks.Count}");
                     Debug.WriteLine($"Панель: {item.ShortMark}");
@@ -67,7 +79,7 @@ namespace DSKPrim.PanelTools.PanelMaster
 
             StructureType structureType = new StructureType(elem);
 
-            if (structureType.GetPanelType(elem) == StructureType.Panels.None.ToString() && elem.Category.Name.Contains("Каркас несущий"))
+            if (structureType.GetPanelType(elem) == StructureType.PanelTypes.NOT_A_PANEL && elem.Category.Name.Contains("Каркас несущий"))
             {
                 return false;
             }

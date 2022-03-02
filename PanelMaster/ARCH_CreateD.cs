@@ -12,60 +12,69 @@ namespace DSKPrim.PanelTools.PanelMaster
 {
     [Transaction(mode: TransactionMode.Manual)]
     [Regeneration(RegenerationOption.Manual)]
-    class ARCH_CreateD : IExternalCommand
+    public class ARCH_CreateD : IExternalCommand
     {
         public Document Document { get; set; }
 
+        private static int CompareElementsByArea(Element x, Element y)
+        {
+            double areaX = x.get_Parameter(BuiltInParameter.DPART_AREA_COMPUTED).AsDouble();
+            double areaY = y.get_Parameter(BuiltInParameter.DPART_AREA_COMPUTED).AsDouble();
+            if (areaX > areaY)
+            {
+                return 1;
+            }
+            else if (areaY > areaX)
+            {
+                return -1;
+            }
+            else
+            {
+                return 0;
+            }
+        }
 
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
             Document = commandData.Application.ActiveUIDocument.Document;
 
-            CommonProjectEnvironment environment = CommonProjectEnvironment.GetInstance(Document);
-
-            IList<Reference> list_Walls = GetFacadeFromSelection(commandData);
-            List<AssemblyInstance> assemblies;
-            Transaction transaction;
-            CreateFacadeAssembly(list_Walls, out assemblies, out transaction);
-
-            transaction.Start();
-            foreach (var item in assemblies)
+            if (TransactionSettings.WorksetsUnavailable(Document))
             {
-                List<ViewSheet> viewSheets = new List<ViewSheet>();
-
-                Utility.SheetUtils.CreateSheets(Document, item.Id, 1, out viewSheets);
-                Utility.SheetUtils.CreateFacadeDrawing(Document, item.Id, viewSheets[0]);
+                message = "Рабочие наборы недоступны. Освободите ВСЕ рабочие наборы";
+                return Result.Failed;
             }
-            transaction.Commit();
+
+            AddinSettings settings = AddinSettings.GetSettings();
+            Selector selector = new Selector();
+            ICollection<Element> wallsCollection = selector.CollectElements(commandData, new FacadeSelectionFilter(), BuiltInCategory.OST_Walls);
+
+            Transaction transaction = new Transaction(Document, "creating an assembly");
+            TransactionSettings.SetFailuresPreprocessor(transaction);
+
+            List<AssemblyInstance> assemblies = new List<AssemblyInstance>();
+            using (transaction)
+            {
+                foreach (var reference in wallsCollection)
+                {
+                    assemblies.Add(CreatePartAssembly(transaction, reference));
+                }
+                transaction.Start();
+                foreach (var item in assemblies)
+                {
+                    List<ViewSheet> viewSheets;
+                    
+                    Utility.SheetUtils.CreateSheets(Document, item.Id, 1, out viewSheets);
+                    Utility.SheetUtils.CreateFacadeDrawing(Document, item.Id, viewSheets[0]);
+                }
+                transaction.Commit();
+            }
 
             return Result.Succeeded;
         }
 
-        private void CreateFacadeAssembly(IList<Reference> list_Walls, out List<AssemblyInstance> assemblies, out Transaction transaction)
+        private AssemblyInstance CreatePartAssembly(Transaction transaction, Element item)
         {
-            assemblies = new List<AssemblyInstance>();
-            transaction = new Transaction(Document, "creating an assembly");
-            TransactionSettings.SetFailuresPreprocessor(transaction);
-            using (transaction)
-            {
-                foreach (var reference in list_Walls)
-                {
-                    assemblies.Add(CreatePartAssembly(transaction, reference));
-                }
-            }
-        }
 
-        private static IList<Reference> GetFacadeFromSelection(ExternalCommandData commandData)
-        {
-            Selection selection = commandData.Application.ActiveUIDocument.Selection;
-
-            IList<Reference> list_Walls = selection.PickObjects(ObjectType.Element, new FacadeSelectionFilter(), "Выберите стены DNS_Фасад или DNS_Фасад2");
-            return list_Walls;
-        }
-
-        private AssemblyInstance CreatePartAssembly(Transaction transaction, Reference reference)
-        {
-            Element item = Document.GetElement(reference.ElementId);
             BoundingBoxIntersectsFilter boundingBoxIntersectsFilter = new BoundingBoxIntersectsFilter(new Outline(item.get_Geometry(new Options()).GetBoundingBox().Min, item.get_Geometry(new Options()).GetBoundingBox().Max));
 
             ICollection<ElementId> ids = new FilteredElementCollector(Document).OfClass(typeof(Part)).WhereElementIsNotElementType().WherePasses(boundingBoxIntersectsFilter).ToElementIds();

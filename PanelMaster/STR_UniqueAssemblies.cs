@@ -2,7 +2,9 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using DSKPrim.PanelTools.Utility;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace DSKPrim.PanelTools.PanelMaster
 {
@@ -26,7 +28,15 @@ namespace DSKPrim.PanelTools.PanelMaster
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
 
-            Utility.Assemblies.LeaveUniquePanels(Document);
+            Selector selector = new Selector();
+            List<AssemblyInstance> panels = selector
+                .CollectElements(commandData, BuiltInCategory.OST_Assemblies)
+                //.Select(o => Document.GetElement(o.AssemblyInstanceId))
+                .Where(o => o.IsValidObject)
+                .Cast<AssemblyInstance>()
+                .ToList();
+
+            Utility.Assemblies.UniquePanels(Document, panels);
 
             return Result.Succeeded;
         }

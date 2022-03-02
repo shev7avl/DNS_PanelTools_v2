@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using Autodesk.Revit.DB;
 using DSKPrim.PanelTools.Panel;
+using DSKPrim.PanelTools.ProjectEnvironment;
 
 namespace DSKPrim.PanelTools.Utility
 {
@@ -24,7 +25,7 @@ namespace DSKPrim.PanelTools.Utility
                 {
                     foreach (var ints in intersected)
                     {
-                        PanelMaster.Routine.GetPanelBehaviour(document, ints, out BasePanel behaviour);
+                        BasePanel behaviour = StructuralEnvironment.DefinePanelBehaviour(document, ints);
                         if (behaviour is NS_Panel || behaviour is VS_Panel)
                         {
                             IAssembler assembler1 = (IAssembler)behaviour;
@@ -186,77 +187,44 @@ namespace DSKPrim.PanelTools.Utility
             return orientations;
         }
 
-
-
-        internal static void LeaveUniquePanels(Document document)
+        internal static void UniquePanels(Document document, ICollection<AssemblyInstance> assemblies)
         {
-
-            List<AssemblyInstance> assemblies = new FilteredElementCollector(document).OfCategory(BuiltInCategory.OST_Assemblies).WhereElementIsNotElementType().Cast<AssemblyInstance>().ToList();
-            assemblies.Sort(CompareAssembliesByName);
-
-            List<AssemblyType> assemblyTypes = new FilteredElementCollector(document).OfClass(typeof(AssemblyType)).WhereElementIsElementType().Cast<AssemblyType>().ToList();
-
-            List<List<AssemblyInstance>> instances = new List<List<AssemblyInstance>>();
-
-            foreach (var assemblyType in assemblyTypes)
+            SortedDictionary<string, int> assembliesSortedHashMap = new SortedDictionary<string, int>();
+            foreach (AssemblyInstance assembly in assemblies)
             {
-                List<AssemblyInstance> inst = new List<AssemblyInstance>();
-                for (int i = 1; i < assemblies.Count; i++)
+                if (assembly.IsValidObject)
                 {
-                    
-                    if (!(AssemblyInstance.CompareAssemblyInstances(assemblies[i-1], assemblies[i]) is AssemblyDifferenceNone))
+                    string keyName = assembly.AssemblyTypeName;
+                    if (assembliesSortedHashMap.ContainsKey(keyName))
                     {
-                        inst.Add(assemblies[i]);
+                        assembliesSortedHashMap[keyName]++;
+                    }
+                    else
+                    {
+                        assembliesSortedHashMap.Add(keyName, 1);
                     }
                 }
-                instances.Add(inst);
+                
             }
 
-            List<AssemblyInstance> disposables = new List<AssemblyInstance>();
-
-            IEqualityComparer<AssemblyInstance> comparer = new AssemblyComparer();
-
-            int amount = assemblies.Count;
-
-            foreach (var lst in instances)
+            Transaction transaction = new Transaction(document, "Deleting duplicates");
+            TransactionSettings.SetFailuresPreprocessor(transaction);
+            using (transaction)
             {
-                int cnt = lst.Count;
-                lst.Sort(CompareAsembliesbyLvl);
-                foreach (var assembly in lst)
+                transaction.Start();
+                foreach (var item in assemblies)
                 {
-                    if (cnt > 1)
+                    if (item.IsValidObject)
                     {
-                        disposables.Add(assembly);
+                        string keyName = item.AssemblyTypeName;
+                        if (assembliesSortedHashMap[keyName] > 1)
+                        {
+                            document.Delete(item.Id);
+                            assembliesSortedHashMap[keyName]--;
+                        }
                     }
-                    cnt--;
                 }
-                Debug.WriteLine($"Число сборок: {disposables.Count} / {amount - assemblyTypes.Count}");
-            }
-
-            Debug.WriteLine($"Уникальные сборки определены");
-
-            using (Transaction transaction = new Transaction(document, "Разбираем сборки"))
-            {
-                IFailuresPreprocessor preprocessor = new TransactionSettings.WarningDiscard();
-                FailureHandlingOptions fho = transaction.GetFailureHandlingOptions();
-                fho.SetFailuresPreprocessor(preprocessor);
-                transaction.SetFailureHandlingOptions(fho);
-
-                Debug.WriteLine("Начинаем разборку");
-                int counter = 1;
-                foreach (AssemblyInstance assembly in disposables)
-                {
-                    Debug.WriteLine($"Прогресс {counter} / {disposables.Count}");
-                    transaction.Start();
-                    //assembly.Disassemble();
-                    if (assembly.IsValidObject)
-                    {
-                        document.Delete(assembly.Id);
-                    }
-
-                    transaction.Commit();
-                    counter++;
-                }
+                transaction.Commit();
             }
         }
 
@@ -274,11 +242,6 @@ namespace DSKPrim.PanelTools.Utility
         {
             LocationPoint locoPocoX = (LocationPoint)x.Location;
             LocationPoint locoPocoY = (LocationPoint)y.Location;
-
-            int i = 0;
-            int j = 1;
-
-            int[,] vs = new int[i, j];
 
             XYZ X = locoPocoX.Point;
             XYZ Y = locoPocoY.Point;
@@ -309,7 +272,7 @@ namespace DSKPrim.PanelTools.Utility
                     if (Eligible(assembly))
                     {
 
-                    FailureResolution fr = DeleteElements.Create(document, assembly.Id);
+                    //FailureResolution fr = DeleteElements.Create(document, assembly.Id);
 
                         index = assembly.get_Parameter(new Guid(Properties.Resource.ADSK_Номер_изделия)).AsString();
                         if (index != "")
@@ -319,7 +282,8 @@ namespace DSKPrim.PanelTools.Utility
                             Element panel = elements.Where(o => o.Category.Name.Contains("Каркас несущий")).First();
                             panel.get_Parameter(new Guid(Properties.Resource.ADSK_Номер_изделия)).Set(index);
                         }
-                        assembly.Disassemble();
+                    //document.Delete(assembly.Id);
+                    assembly.Disassemble();
                     }
                 }
          

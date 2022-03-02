@@ -73,24 +73,26 @@ namespace DSKPrim.PanelTools.PanelMaster
 
         private static List<BasePanel> GetPanelsFromSelection(ExternalCommandData commandData)
         {
-            Selection selection = commandData.Application.ActiveUIDocument.Selection;
             Document document = commandData.Application.ActiveUIDocument.Document;
-            StructuralEnvironment collector = StructuralEnvironment.GetInstance(document);
 
             Selector selector = new Selector();
             ICollection<Element> selectedEls = selector.CollectElements(commandData, new PanelSelectionFilter(), BuiltInCategory.OST_StructuralFraming);
 
+            List<BasePanel> panelsList = new List<BasePanel>();
 
-            List<BasePanel> list_Panels = new List<BasePanel>();
+            
 
-            //Переписываем выбранные элементы в объекты класса BasePanel
-            foreach (var el in selectedEls)
+            foreach (var item in selectedEls)
             {
-                BasePanel panel = collector.PanelMarks.Where(o => o.ActiveElement.Id == el.Id).First();
-                list_Panels.Add(panel);
+                BasePanel panel = StructuralEnvironment.DefinePanelBehaviour(document, item);
+                if (panel != null)
+                {
+                    panel.ReadMarks();
+                    panelsList.Add(panel);
+                }
             }
 
-            return list_Panels;
+            return panelsList;
         }
         
     }

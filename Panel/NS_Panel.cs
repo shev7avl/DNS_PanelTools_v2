@@ -250,55 +250,64 @@ namespace DSKPrim.PanelTools.Panel
         {
             var elementFamily = ActiveElement as FamilyInstance;
             var familySymbol = elementFamily.Symbol;
-            string i1 = ActiveElement.LookupParameter("СТАРТ").AsValueString();
-            string i2 = ActiveElement.LookupParameter("ФИНИШ").AsValueString();
-            string i3 = Marks.AsDecimString(ActiveElement, "ГабаритДлина");
-            string i4 = Marks.AsDecimString(familySymbol, "ГабаритВысота");
-            string i5 = Marks.AsDecimString(familySymbol, "ГабаритТолщина");
-            string[] temp_i6 = ActiveElement.LookupParameter("Тип PVL_СТАРТ").AsString().Split(' ');
-            string i6 = temp_i6[1];
-            string[] temp_i7 = ActiveElement.LookupParameter("Тип PVL_ФИНИШ").AsString().Split(' ');
-            string i7 = temp_i7[1];
-            return $"{i1}.{i2}_{i3}.{i4}.{i5}_{i6}.{i7}";
+
+            ParameterMap instanceMap = elementFamily.ParametersMap;
+            ParameterMap symbolMap = familySymbol.ParametersMap;
+
+            string[] tempPvlStart = instanceMap.get_Item("Тип PVL_СТАРТ").AsString().Split(' ');
+            string[] tempPvlFinish = instanceMap.get_Item("Тип PVL_ФИНИШ").AsString().Split(' ');
+
+            return String.Format("{0}.{1}_{2}.{3}.{4}_{5}.{6}",
+                instanceMap.get_Item("СТАРТ").AsValueString(),
+                instanceMap.get_Item("ФИНИШ").AsValueString(),
+                Marks.ParameterValueAsDecimeterString(instanceMap.get_Item("ГабаритДлина")),
+                Marks.ParameterValueAsDecimeterString(symbolMap.get_Item("ГабаритВысота")),
+                Marks.ParameterValueAsDecimeterString(symbolMap.get_Item("ГабаритТолщина")),
+                tempPvlStart[1],
+                tempPvlFinish[1]);
         }
         private string GetClosureCode()
         {
-            bool Closure1 = ActiveElement.LookupParameter("ПР1.ВКЛ").AsValueString() == "Да";
-            bool Closure2 = ActiveElement.LookupParameter("ПР2.ВКЛ").AsValueString() == "Да";
-            string window1 = "";
+            var elementFamily = ActiveElement as FamilyInstance;
+            ParameterMap instanceMap = elementFamily.ParametersMap;
 
+            bool Closure1 = instanceMap.get_Item("ПР1.ВКЛ").AsValueString() == "Да";
+            bool Closure2 = instanceMap.get_Item("ПР2.ВКЛ").AsValueString() == "Да";
+
+            string window1 = "";
             if (Closure1)
             {
-                string w1 = Marks.AsDecimString(ActiveElement, "ПР1.Отступ");
-                string w2 = Marks.AsDecimString(ActiveElement, "ПР1.Ширина");
-                string w3 = Marks.AsDecimString(ActiveElement, "ПР1.Высота");
-                string w4 = Marks.AsDecimString(ActiveElement, "ПР1.ВысотаСмещение");
-                window1 = $"{w2}.{w3}.{w4}.{w1}";
+                window1 = String.Format("{0}.{1}.{2}.{3}",
+                Marks.ParameterValueAsDecimeterString(instanceMap.get_Item("ПР1.Отступ")),
+                Marks.ParameterValueAsDecimeterString(instanceMap.get_Item("ПР1.Ширина")),
+                Marks.ParameterValueAsDecimeterString(instanceMap.get_Item("ПР1.Высота")),
+                Marks.ParameterValueAsDecimeterString(instanceMap.get_Item("ПР1.ВысотаСмещение"))
+                );
             }
             string window2 = "";
             if (Closure2)
             {
-                string w1 = Marks.AsDecimString(ActiveElement, "ПР2.Отступ");
-                string w2 = Marks.AsDecimString(ActiveElement, "ПР2.Ширина");
-                string w3 = Marks.AsDecimString(ActiveElement, "ПР2.Высота");
-                string w4 = Marks.AsDecimString(ActiveElement, "ПР2.ВысотаСмещение");
-                window2 = $"{w2}.{w3}.{w4}.{w1}";
+                window2 = String.Format("{0}.{1}.{2}.{3}",
+                Marks.ParameterValueAsDecimeterString(instanceMap.get_Item("ПР2.Отступ")),
+                Marks.ParameterValueAsDecimeterString(instanceMap.get_Item("ПР2.Ширина")),
+                Marks.ParameterValueAsDecimeterString(instanceMap.get_Item("ПР2.Высота")),
+                Marks.ParameterValueAsDecimeterString(instanceMap.get_Item("ПР2.ВысотаСмещение"))
+                );
             }
-            string windows;
+
             if (Closure1 && Closure2)
             {
-                windows = $"{window1}_{window2}";
+                return String.Format("{0}_{1}", window1, window2);
             }
             else if (Closure1 || Closure1)
             {
-                windows = $"{window1}{window2}";
+                return String.Format("{0}{1}", window1, window2);
             }
             else
             {
-                windows = "Г";
+                return "Г";
             }
 
-            return windows;
         }
 
         private int CompareElementIdsByZCoord(ElementId x, ElementId y)

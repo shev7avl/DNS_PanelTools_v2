@@ -20,7 +20,7 @@ namespace DSKPrim.PanelTools.PanelMaster
 
             StructureType structureType = new StructureType(elem);
 
-            if (structureType.GetPanelType(elem) == StructureType.Panels.None.ToString() && !elem.Category.Name.Contains("Каркас несущий") && !(elem is AssemblyInstance))
+            if (structureType.GetPanelType(elem) == StructureType.PanelTypes.NOT_A_PANEL && !elem.Category.Name.Contains("Каркас несущий") && !(elem is AssemblyInstance))
             {
                 return false;
             }
@@ -38,13 +38,14 @@ namespace DSKPrim.PanelTools.PanelMaster
     {
         public bool AllowElement(Element elem)
         {
-            bool elIsCorrect = (elem.Name.Contains("_Empty") || elem.Name.Contains("_Medium")) && elem.Category.Name.Contains("Каркас несущий");
+            StructureType structureType = new StructureType(elem);
+            bool elIsCorrect = structureType.GetPanelType(elem) != StructureType.PanelTypes.NOT_A_PANEL && elem.Category.Name.Contains("Каркас несущий");
+
             if (elIsCorrect)
             {
                 return true;
             }
-
-            else return false;
+            return false;
         }
 
         public bool AllowReference(Reference reference, XYZ position)

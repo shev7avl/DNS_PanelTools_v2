@@ -10,6 +10,16 @@ namespace DSKPrim.PanelTools.Utility
     public static class Marks
     {
         #region ParameterConversion
+
+        public static string ParameterValueAsDecimeterString(Parameter parameter)
+        {
+            if (parameter is null)
+            {
+                return "0";
+            }
+            return Math.Round(Convert.ToDouble(parameter.AsValueString()) / 10, 0).ToString();
+        }
+
         public static string AsDecimString(Element element, string lkp)
         {
             if (element.LookupParameter(lkp) is null)

@@ -45,30 +45,35 @@ namespace DSKPrim.PanelTools.Panel
 
         private string GetPanelCode()
         {
-            string i3 = Marks.AsDecimString(ActiveElement, "ADSK_Размер_Длина");
-            string i4 = Marks.AsDecimString(ActiveElement, "ADSK_Размер_Ширина");
-            string i5 = ActiveElement.LookupParameter("КодНагрузки").AsString();
-            return $"{i3}.{i4}-{i5}";
+            var elementFamily = ActiveElement as FamilyInstance;
+
+            ParameterMap instanceMap = elementFamily.ParametersMap;
+
+            return String.Format("{0}.{1}-{2}",
+                Marks.ParameterValueAsDecimeterString(instanceMap.get_Item("ADSK_Размер_Длина")),
+                Marks.ParameterValueAsDecimeterString(instanceMap.get_Item("ADSK_Размер_Ширина")),
+                instanceMap.get_Item("КодНагрузки").AsString());
         }
         private string GetClosureCode()
         {
             var elementFamily = ActiveElement as FamilyInstance;
-            var familySymbol = elementFamily.Symbol;
 
-            bool closureBool = familySymbol.LookupParameter("Вырезы").AsValueString() == "Да";
+            ParameterMap instanceMap = elementFamily.ParametersMap;
+            ParameterMap symbolMap = elementFamily.Symbol.ParametersMap;
 
-            string closureCode = "";
+            bool closureBool = symbolMap.get_Item("Вырезы").AsValueString() == "Да";
 
             if (closureBool)
             {
-                string w1 = Marks.AsDecimString(ActiveElement, "Вырезы_Отступ_Начало");
-                string w2 = Marks.AsDecimString(familySymbol, "Вырезы_Шаг");
-                string w3 = ActiveElement.LookupParameter("Отверстия_Количество").AsValueString();
-                string w4 = Marks.AsDecimString(ActiveElement, "Вырезы_Отступ_Конец");
-                closureCode = $"_{w1}.{w2}.{w3}.{w4}";
+                return String.Format("_{0}.{1}.{2}.{3}",
+                    Marks.ParameterValueAsDecimeterString(instanceMap.get_Item("Вырезы_Отступ_Начало")),
+                    Marks.ParameterValueAsDecimeterString(symbolMap.get_Item("Вырезы_Шаг")),
+                    instanceMap.get_Item("Отверстия_Количество").AsValueString(),
+                    Marks.ParameterValueAsDecimeterString(instanceMap.get_Item("Вырезы_Отступ_Конец"))
+                    );
             }
 
-            return closureCode;
+            return string.Empty;
         }
 
         public void SetAssemblyElements()

@@ -92,8 +92,8 @@
     <Compile Include="GUI\UserControl1.xaml.cs">
       <DependentUpon>UserControl1.xaml</DependentUpon>
     </Compile>
-    <Compile Include="PanelMaster\ARCH_CreateDrawings - Копировать.cs" />
     <Compile Include="PanelMaster\ARCH_CreateDrawings.cs" />
+    <Compile Include="PanelMaster\ARCH_CreateD.cs" />
     <Compile Include="PanelMaster\ARCH_SplitToParts.cs" />
     <Compile Include="PanelMaster\ARCH_Windows.cs" />
     <Compile Include="PanelMaster\SelectionFilters.cs" />

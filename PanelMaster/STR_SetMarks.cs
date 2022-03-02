@@ -45,9 +45,8 @@ namespace DSKPrim.PanelTools.PanelMaster
                 }
                 else posEnum = positionEnum.ToString();
 
-                BasePanel panel;
+                BasePanel panel = StructuralEnvironment.DefinePanelBehaviour(Document, item);
 
-                Routine.GetPanelBehaviour(Document, item, out panel);
                 if (panel != null)
                 {
                     if (panel.LongMark is null ||

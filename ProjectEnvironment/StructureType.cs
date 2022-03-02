@@ -7,15 +7,15 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
     {
         public Element ActiveElement { get; }
 
-        [Flags]
-        public enum Panels
+        public enum PanelTypes
         {
-            NS = 0x00000001, // 1
-            VS = 0x00000002, //2
-            PP = 0x00000003,//3
-            BP = 0x0000003D,//61    
-            PS = 0x00000007, //7
-            None = 0x00000008
+            NS_PANEL,
+            VS_PANEL,
+            PP_PANEL,
+            BP_PANEL,   
+            PS_PANEL,
+            FACADE_PANEL,
+            NOT_A_PANEL
         }
         
         public StructureType(Element element)
@@ -23,31 +23,36 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
             ActiveElement = element;
         }
 
-        public string GetPanelType(Element element)
+        public PanelTypes GetPanelType(Element element)
         {
+
             if (element.Name.Contains("НС") || element.Name.Contains("есущая"))
             {
-                return Panels.NS.ToString();
+                return PanelTypes.NS_PANEL;
             }
             else if (element.Name.Contains("ВС"))
             {
-                return Panels.VS.ToString();
+                return PanelTypes.VS_PANEL;
             }
             else if (element.Name.Contains("ПП"))
             {
-                return Panels.PP.ToString();
+                return PanelTypes.PP_PANEL;
             }
             else if (element.Name.Contains("ПС") || element.Name.Contains("П_100-"))
             {
-                return Panels.PS.ToString();
+                return PanelTypes.PS_PANEL;
             }
             else if (element.Name.Contains("БП"))
             {
-                return Panels.BP.ToString();
+                return PanelTypes.BP_PANEL;
+            }
+            else if (element.Name.Contains("Фасад"))
+            {
+                return PanelTypes.FACADE_PANEL;
             }
             else
             {
-                return Panels.None.ToString();
+                return PanelTypes.NOT_A_PANEL;
             }
         }
 

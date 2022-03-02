@@ -63,8 +63,8 @@ namespace DSKPrim.PanelTools.PanelMaster
                     for (int i = 0; i < counter; i++)
                     {
                         Element item = els[i];
-                        BasePanel temp;
-                        Routine.GetPanelBehaviour(Document, item, out temp);
+                        BasePanel temp = StructuralEnvironment.DefinePanelBehaviour(Document, item);
+
                         Behaviour = temp;
                         if (Behaviour is IPerforable perforable)
                         {

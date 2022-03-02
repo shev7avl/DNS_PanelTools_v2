@@ -46,7 +46,7 @@ namespace DSKPrim.PanelTools.Builders
             else if (Panel is Facade_Panel)
             {
                 BuilderTemplate = new TemplateFactory(DrawingSchemes.GetFacadeSchema());
-        }
+            }
         }
 
         public void BuildSheets(Document document)

@@ -21,10 +21,13 @@ namespace DSKPrim.PanelTools.Utility
                     }
                     else
                     {
-                        if (Viewport.CanAddViewToSheet(document, sheet.SheetLink.Id, item.Id))
+                        if (sheet.SheetLink.IsValidObject)
                         {
-                        Viewport.Create(document, sheet.SheetLink.Id, item.Id, viewReference.GetCreatedViewsWithCoords()[item]);
-                    }
+                            if (Viewport.CanAddViewToSheet(document, sheet.SheetLink.Id, item.Id))
+                            {
+                                Viewport.Create(document, sheet.SheetLink.Id, item.Id, viewReference.GetCreatedViewsWithCoords()[item]);
+                            }
+                        }
                 }
             }
         }
