@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace DSKPrim.PanelTools_v2.Properties {
+namespace DSKPrim.PanelTools.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace DSKPrim.PanelTools_v2.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("DSKPrim.PanelTools_v2.Properties.Resource", typeof(Resource).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("DSKPrim.PanelTools.Properties.Resource", typeof(Resource).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -84,6 +84,16 @@ namespace DSKPrim.PanelTools_v2.Properties {
         internal static System.Drawing.Icon construction_plan {
             get {
                 object obj = ResourceManager.GetObject("construction_plan", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Icon, аналогичного (Значок).
+        /// </summary>
+        internal static System.Drawing.Icon demolition {
+            get {
+                object obj = ResourceManager.GetObject("demolition", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }
@@ -137,6 +147,16 @@ namespace DSKPrim.PanelTools_v2.Properties {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Drawing.Icon, аналогичного (Значок).
         /// </summary>
+        internal static System.Drawing.Icon element {
+            get {
+                object obj = ResourceManager.GetObject("element", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Icon, аналогичного (Значок).
+        /// </summary>
         internal static System.Drawing.Icon files {
             get {
                 object obj = ResourceManager.GetObject("files", resourceCulture);
@@ -147,9 +167,49 @@ namespace DSKPrim.PanelTools_v2.Properties {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Drawing.Icon, аналогичного (Значок).
         /// </summary>
+        internal static System.Drawing.Icon id_card {
+            get {
+                object obj = ResourceManager.GetObject("id_card", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Icon, аналогичного (Значок).
+        /// </summary>
+        internal static System.Drawing.Icon open_door {
+            get {
+                object obj = ResourceManager.GetObject("open_door", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Icon, аналогичного (Значок).
+        /// </summary>
+        internal static System.Drawing.Icon product {
+            get {
+                object obj = ResourceManager.GetObject("product", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Icon, аналогичного (Значок).
+        /// </summary>
         internal static System.Drawing.Icon settings {
             get {
                 object obj = ResourceManager.GetObject("settings", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Icon, аналогичного (Значок).
+        /// </summary>
+        internal static System.Drawing.Icon technical_drawing {
+            get {
+                object obj = ResourceManager.GetObject("technical_drawing", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }

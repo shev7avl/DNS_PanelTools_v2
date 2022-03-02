@@ -1,15 +1,9 @@
-﻿using DSKPrim.PanelTools_v2.Commands;
+﻿using DSKPrim.PanelTools.PanelMaster;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace DSKPrim.PanelTools_v2.GUI
+namespace DSKPrim.PanelTools.GUI
 {
     public partial class PanelWizard : Form
     {

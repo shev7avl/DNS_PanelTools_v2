@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Autodesk.Revit.DB;
-using DSKPrim.PanelTools_v2.StructuralApps;
+using DSKPrim.PanelTools.ProjectEnvironment;
 
-namespace DSKPrim.PanelTools_v2.Utility
+namespace DSKPrim.PanelTools.Utility
 {
     public static class Geometry
     {
@@ -50,7 +45,7 @@ namespace DSKPrim.PanelTools_v2.Utility
             Options options = new Options();
             BoundingBoxXYZ panelBbox = element.get_Geometry(options).GetBoundingBox();
 
-            SingleArchDoc archDoc = SingleArchDoc.getInstance(document);
+            SingleArchDoc archDoc = SingleArchDoc.GetInstance(document);
 
             List<Element> elems;
             if (windows)
