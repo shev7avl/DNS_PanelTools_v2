@@ -196,7 +196,10 @@ namespace DSKPrim.PanelTools.Utility
 
         private static void CreateWindowsData(Document activeDocument, Element elementHost, out Element panel, out SortedList<string, List<double>> WindowsWithParameters)
         {
-            IEnumerable<Element> fecLinksSTRUCT = new FilteredElementCollector(activeDocument).OfCategory(BuiltInCategory.OST_RvtLinks).WhereElementIsNotElementType().Where(doc => doc.Name.Contains("_КР")|| doc.Name.Contains("_КЖ"));
+            IEnumerable<Element> fecLinksSTRUCT = new FilteredElementCollector(activeDocument).
+                OfClass(typeof(RevitLinkInstance)).
+                WhereElementIsNotElementType().
+                Where(doc => doc.Name.Contains("_КР") || doc.Name.Contains("_КЖ"));
 
             List<RevitLinkInstance> linkedDocSTR = fecLinksSTRUCT.Cast<RevitLinkInstance>().ToList();
 
@@ -204,7 +207,11 @@ namespace DSKPrim.PanelTools.Utility
 
             foreach (var item in linkedDocSTR)
             {
-                LinkedStructs.Add(item.GetLinkDocument());
+                if (item.GetLinkDocument() != null)
+                {
+                    LinkedStructs.Add(item.GetLinkDocument());
+                }
+                
             }
 
             panel = default;
@@ -213,18 +220,23 @@ namespace DSKPrim.PanelTools.Utility
 
             ElementIntersectsElementFilter panelFilter = new ElementIntersectsElementFilter(elementHost);
             
-
+            
             foreach (var item in LinkedStructs)
             {
-                List<FamilySymbol> nsFamSymbol = new FilteredElementCollector(item).OfCategory(BuiltInCategory.OST_StructuralFraming).OfClass(typeof(FamilySymbol)).Cast<FamilySymbol>().ToList();
-                ElementId nsFamId = nsFamSymbol.Where(o => o.FamilyName.Contains("NS_Empty")).FirstOrDefault().Id;
 
-                FamilyInstanceFilter typeFilter = new FamilyInstanceFilter(item, nsFamId);
-                panel = new FilteredElementCollector(item).OfCategory(BuiltInCategory.OST_StructuralFraming).WhereElementIsNotElementType().WherePasses(panelFilter).WherePasses(typeFilter).FirstOrDefault();
-                if (panel != null)
-                {
-                    break;
-                }
+                    panel = new FilteredElementCollector(item).
+                        OfCategory(BuiltInCategory.OST_StructuralFraming).
+                        OfClass(typeof(FamilyInstance)).
+                        WherePasses(panelFilter).
+                        Cast<FamilyInstance>().
+                        Where(x => x.Symbol.FamilyName.Contains("NS_Empty")).
+                        FirstOrDefault();
+
+                    if (panel != null)
+                    {
+                        break;
+                    }
+                
             }
 
             WindowsWithParameters = new SortedList<string, List<double>>();
@@ -343,7 +355,15 @@ namespace DSKPrim.PanelTools.Utility
 
                         // Create window
                         // unliss you specified a host, Rebit will create the family instance as orphabt object.
-                        FamilyInstance window = activeDocument.Create.NewFamilyInstance(pointOnFace, windowSymbol, elementHost, StructuralType.NonStructural);
+
+                        FamilyInstance window = activeDocument.Create.
+                            NewFamilyInstance(
+                            pointOnFace, 
+                            windowSymbol, 
+                            elementHost, 
+                            level: (Level)activeDocument.GetElement(elementHost.LevelId), 
+                            StructuralType.NonStructural);
+                        
                         t.Commit();
 
                         t.Start();

@@ -34,7 +34,10 @@ namespace DSKPrim.PanelTools.PanelMaster
             }
 
 
-            IEnumerable<Element> fecLinksARCH = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_RvtLinks).WhereElementIsNotElementType().Where(doc => doc.Name.Contains("_АР"));
+            IEnumerable<Element> fecLinksARCH = new FilteredElementCollector(Document).
+                OfCategory(BuiltInCategory.OST_RvtLinks).
+                WhereElementIsNotElementType().
+                Where(doc => doc.Name.Contains("_АР"));
 
 
             if (fecLinksARCH.Count() == 0)
@@ -43,7 +46,7 @@ namespace DSKPrim.PanelTools.PanelMaster
                 return Result.Failed;
             }
 
-            StructuralEnvironment structDoc = StructuralEnvironment.GetInstance(Document);
+            CommonProjectEnvironment environment = CommonProjectEnvironment.GetInstance(Document);
 
             Selector selector = new Selector();
             List<Element> els = selector.CollectElements(commandData, new PanelSelectionFilter(), BuiltInCategory.OST_StructuralFraming).ToList();
@@ -84,12 +87,13 @@ namespace DSKPrim.PanelTools.PanelMaster
                     }
 
                     archDoc.Dispose();
-                    structDoc.Reset();
+                    environment.Reset();
                 }
             }
             catch (Exception e)
             {
                 message = $"Ошибка {e.Message}";
+                environment.Reset();
                 return Result.Failed;
             }
             

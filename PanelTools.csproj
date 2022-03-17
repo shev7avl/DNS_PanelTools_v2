@@ -156,7 +156,6 @@
     <Compile Include="Utility\WarningDiscard.cs" />
     <Compile Include="Utility\Marks.cs" />
     <Compile Include="Utility\Openings.cs" />
-    <Compile Include="Utility\Parts.cs" />
     <Compile Include="PanelMaster\ARCH_copyMarks.cs" />
     <Compile Include="PanelMaster\STR_CreateAssemblies.cs" />
     <Compile Include="PanelMaster\STR_CreateOpenings.cs" />
@@ -293,7 +292,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /Y "$(SolutionDir)bin\Debug\v2019" "C:\Users\shevyakov.a.PARTNER\AppData\Roaming\Autodesk\Revit\Addins\2019"
+    <PostBuildEvent>copy /Y "$(SolutionDir)bin\Debug\v2019" "C:\Users\shevyakov.a\AppData\Roaming\Autodesk\Revit\Addins\2019"
 copy /Y "$(SolutionDir)bin\Debug\v2019" "\\IR-DSK\DNSDevelopment\1_ДСК Приморье\13. Проектный институт\ДНС ПРОЕКТ РАБОЧАЯ\BIM\00_DNSPanel\11_МастерПанелей\v2019"</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>

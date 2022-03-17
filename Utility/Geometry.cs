@@ -64,7 +64,10 @@ namespace DSKPrim.PanelTools.Utility
                 {
                     LocationPoint locationPointBase = (LocationPoint)item.Location;
 
-                    XYZ newPoint = new XYZ(locationPointBase.Point.X + transform.X, locationPointBase.Point.Y + transform.Y, locationPointBase.Point.Z + transform.Z);
+                    XYZ newPoint = new XYZ(
+                        locationPointBase.Point.X + transform.X, 
+                        locationPointBase.Point.Y + transform.Y, 
+                        locationPointBase.Point.Z + transform.Z);
 
                     if (Geometry.InBox(panelBbox, newPoint) && LevelEq(element, item))
                     {

@@ -26,7 +26,7 @@ namespace DSKPrim.PanelTools.PanelMaster
                 return Result.Failed;
             }
 
-            StructuralEnvironment structDoc = StructuralEnvironment.GetInstance(Document);
+            CommonProjectEnvironment environment = CommonProjectEnvironment.GetInstance(Document);
 
             TransactionGroup transactionGroup = new TransactionGroup(Document, "Присвоение длинной марки - ");
             transactionGroup.Start("Группа транзакций");
@@ -65,7 +65,7 @@ namespace DSKPrim.PanelTools.PanelMaster
             }
             transactionGroup.Assimilate();
             transactionGroup.Dispose();
-            structDoc.Reset();
+            environment.Reset();
 
             return Result.Succeeded;
         }

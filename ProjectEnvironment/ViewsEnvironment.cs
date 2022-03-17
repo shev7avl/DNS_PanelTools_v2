@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace DSKPrim.PanelTools.ProjectEnvironment
@@ -34,16 +35,26 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
 
         public ElementId GetElementIdFromViewTemplateName(ViewTemplateName viewTemplateName)
         {
-            Element temp = CheckIfTemplateExists(viewTemplateName);
-
-            if (temp is null)
+            try
             {
+                Element temp = CheckIfTemplateExists(viewTemplateName);
+                if (temp is null)
+                {
+                    return null;
+                }
+                else
+                {
+                    return temp.Id;
+                }
+            }
+            catch (Autodesk.Revit.Exceptions.InvalidObjectException e)
+            {
+                Debug.WriteLine($"Возникла ошибка {e} с {viewTemplateName}");
                 return null;
             }
-            else
-            {
-                return temp.Id;
-            }
+            
+
+            
         }
 
         private Element CheckIfTemplateExists(ViewTemplateName viewTemplateName)

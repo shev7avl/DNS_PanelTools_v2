@@ -48,6 +48,8 @@ namespace DSKPrim.PanelTools.PanelMaster
                 {
                     //Element item = Document.GetElement(reference.ElementId);
 
+
+
                     TileAlgorythm tileAlgorythm;
                     if (settings.GetTileSectionType() == TileSectionType.TILE_LAYOUT_STRAIGHT)
                     {
@@ -60,7 +62,6 @@ namespace DSKPrim.PanelTools.PanelMaster
 
                     tileAlgorythm.Execute(Document);
 
-                    Utility.Parts.ExcludeStitches(Document, el);
                     Debug.WriteLine(el.Name);
                 }
             }

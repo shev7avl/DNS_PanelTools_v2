@@ -5,6 +5,7 @@
         AllElements,
         SingleElement,
         MultipleElements,
-        CropBox
+        CropBox,
+        SelectionWindow
     }
 }

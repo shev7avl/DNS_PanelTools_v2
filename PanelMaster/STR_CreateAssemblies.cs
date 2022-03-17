@@ -63,6 +63,7 @@ namespace DSKPrim.PanelTools.PanelMaster
             catch (Exception e)
             {
                 message = $"ОШИБКА: {e.Message}";
+                environment.Reset();
                 return Result.Failed;
             }
             

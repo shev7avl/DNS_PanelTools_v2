@@ -71,6 +71,7 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
                         CropBoxButton.Checked = false;
                         SelectMultipleButton.Checked = false;
                         SelectSingleButton.Checked = false;
+                        SelectionWindowButton.Checked = false;
                         break;
                     }
 
@@ -80,6 +81,7 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
                         CropBoxButton.Checked = true;
                         SelectMultipleButton.Checked = false;
                         SelectSingleButton.Checked = false;
+                        SelectionWindowButton.Checked = false;
                         break;
                     }
                 case SelectionType.MultipleElements:
@@ -88,6 +90,7 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
                         CropBoxButton.Checked = false;
                         SelectMultipleButton.Checked = true;
                         SelectSingleButton.Checked = false;
+                        SelectionWindowButton.Checked = false;
                         break;
                     }
                 case SelectionType.SingleElement:
@@ -96,6 +99,16 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
                         CropBoxButton.Checked = false;
                         SelectMultipleButton.Checked = false;
                         SelectSingleButton.Checked = true;
+                        SelectionWindowButton.Checked = false;
+                        break;
+                    }
+                case SelectionType.SelectionWindow:
+                    {
+                        SelectAllButton.Checked = false;
+                        CropBoxButton.Checked = false;
+                        SelectMultipleButton.Checked = false;
+                        SelectSingleButton.Checked = false;
+                        SelectionWindowButton.Checked = true;
                         break;
                     }
             }
@@ -109,6 +122,7 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
                 CropBoxButton.Checked = false;
                 SelectMultipleButton.Checked = false;
                 SelectSingleButton.Checked = false;
+                SelectionWindowButton.Checked = false;
             }
         }
 
@@ -120,6 +134,7 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
                 SelectAllButton.Checked = false;
                 SelectMultipleButton.Checked = false;
                 SelectSingleButton.Checked = false;
+                SelectionWindowButton.Checked = false;
             }
         }
 
@@ -131,6 +146,7 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
                 SelectAllButton.Checked = false;
                 CropBoxButton.Checked = false;
                 SelectSingleButton.Checked = false;
+                SelectionWindowButton.Checked = false;
             }
         }
 
@@ -142,6 +158,19 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
                 SelectAllButton.Checked = false;
                 CropBoxButton.Checked = false;
                 SelectMultipleButton.Checked = false;
+                SelectionWindowButton.Checked = false;
+            }
+        }
+
+        private void SelectionWindowButton_CheckedChanged(object sender, EventArgs e)
+        {
+            if (SelectionWindowButton.Checked == true)
+            {
+                temp_SelectionType = SelectionType.SelectionWindow;
+                SelectAllButton.Checked = false;
+                CropBoxButton.Checked = false;
+                SelectMultipleButton.Checked = false;
+                SelectSingleButton.Checked = false;
             }
         }
 
@@ -346,5 +375,11 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
             brickLayoutBtn.BackColor = Color.FromKnownColor(KnownColor.Control);
         }
 
+        private void SettingsGUI_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        
     }
 }

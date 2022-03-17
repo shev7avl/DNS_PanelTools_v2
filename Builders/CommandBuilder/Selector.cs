@@ -54,6 +54,19 @@ namespace DSKPrim.PanelTools
                     chosenElements.Add(document.GetElement(item.ElementId));
                 }
             }
+            else if (SelectionType == SelectionType.SelectionWindow)
+            {
+                GUI.PanelSelector pS = new GUI.PanelSelector(document);
+
+                if (pS.DialogResult == System.Windows.Forms.DialogResult.OK)
+                {
+                    chosenElements = pS.SelectedElements;
+                }
+                else
+                {
+                    chosenElements = null;
+                }
+            }
             return chosenElements;
         }
 
@@ -88,6 +101,19 @@ namespace DSKPrim.PanelTools
                 foreach (var item in references)
                 {
                     chosenElements.Add(document.GetElement(item.ElementId));
+                }
+            }
+            else if (SelectionType == SelectionType.SelectionWindow)
+            {
+                GUI.PanelSelector pS = new GUI.PanelSelector(document);
+
+                if (pS.DialogResult == System.Windows.Forms.DialogResult.OK)
+                {
+                    chosenElements = pS.SelectedElements;
+                }
+                else
+                {
+                    chosenElements = null;
                 }
             }
             return chosenElements;
