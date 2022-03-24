@@ -118,15 +118,47 @@ namespace DSKPrim.PanelTools.Utility
 
         }
 
-        internal static List<AssemblyDetailViewOrientation> DefineViewOrientations(Document document, ElementId assemblyInstanceId)
+        internal static List<AssemblyDetailViewOrientation> DefineViewOrientations(Document document, BasePanel basePanel)
         {
+            ElementId assemblyInstanceId = basePanel.AssemblyInstance.Id;
             Element elAssembly = document.GetElement(assemblyInstanceId);
             AssemblyInstance assembly = (AssemblyInstance)elAssembly;
             ICollection<ElementId> ids = assembly.GetMemberIds();
             List<Element> elements = ids.Select(o => document.GetElement(o)).ToList();
-            Element panel = elements.Where(o => o.Category.Name.Contains("Каркас несущий")).First();
-            FamilyInstance instance = (FamilyInstance)panel;
-            //instance.FacingOrientation;
+            Element panel;
+            if (basePanel is Facade_Panel)
+            {
+                Part part = elements.Where(o => o.Category.Name.Contains("Части")).Cast<Part>().First();
+                ICollection<LinkElementId> links = part.GetSourceElementIds();
+                ElementId elementId = links.First().HostElementId;
+                panel = document.GetElement(elementId);
+                while (panel is Part)
+                {
+                    part = (Part)panel;
+                    links = part.GetSourceElementIds();
+                    elementId = links.First().HostElementId;
+                    panel = document.GetElement(elementId);
+                }
+                
+
+            }
+            else
+            {
+                panel = elements.Where(o => o.Category.Name.Contains(basePanel.ActiveElement.Category.Name)).First();
+            }
+
+            XYZ facingOrientation;
+            if (panel is Wall)
+            {
+                Wall wall = (Wall)panel;
+                facingOrientation = wall.Orientation;
+            }
+            else
+            {
+                FamilyInstance instance = (FamilyInstance)panel;
+                facingOrientation = instance.FacingOrientation;
+            }
+
             List<AssemblyDetailViewOrientation> orientations = null;
 
             XYZ f = new XYZ(0, 1, 0);
@@ -134,7 +166,7 @@ namespace DSKPrim.PanelTools.Utility
             XYZ l = new XYZ(1, 0, 0);
             XYZ r = new XYZ(-1, 0, 0);
 
-            if (instance.FacingOrientation.IsAlmostEqualTo(b))
+            if (facingOrientation.IsAlmostEqualTo(b))
             {
                 orientations = new List<AssemblyDetailViewOrientation>()
                     {
@@ -144,7 +176,7 @@ namespace DSKPrim.PanelTools.Utility
                         AssemblyDetailViewOrientation.HorizontalDetail
                     };
             }
-            else if (instance.FacingOrientation.IsAlmostEqualTo( f))
+            else if (facingOrientation.IsAlmostEqualTo( f))
             {
                 orientations = new List<AssemblyDetailViewOrientation>()
                     {
@@ -154,7 +186,7 @@ namespace DSKPrim.PanelTools.Utility
                         AssemblyDetailViewOrientation.HorizontalDetail
                     };
             }
-            else if(instance.FacingOrientation.IsAlmostEqualTo( r))
+            else if(facingOrientation.IsAlmostEqualTo( r))
             {
                 orientations = new List<AssemblyDetailViewOrientation>()
                     {
@@ -164,7 +196,7 @@ namespace DSKPrim.PanelTools.Utility
                         AssemblyDetailViewOrientation.HorizontalDetail
                     };
             }
-            else if(instance.FacingOrientation.IsAlmostEqualTo( l))
+            else if(facingOrientation.IsAlmostEqualTo( l))
             {
                 orientations = new List<AssemblyDetailViewOrientation>()
                     {

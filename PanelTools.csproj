@@ -102,8 +102,6 @@
     <Compile Include="PanelMaster\STR_DisassembleAll.cs" />
     <Compile Include="PanelMaster\Run.cs" />
     <Compile Include="PanelMaster\Routine.cs" />
-    <Compile Include="Global\Variables.cs" />
-    <Compile Include="Global\ViewTemplates.cs" />
     <Compile Include="Builders\ButtonBuilderGUI\ButtonBuilder.cs" />
     <Compile Include="Builders\ButtonBuilderGUI\Button.cs" />
     <Compile Include="GUI\PanelWizard.cs">

@@ -13,15 +13,20 @@ namespace DSKPrim.PanelTools.Facade
         internal XYZ DirectionalBasis { get; private set;  }
         internal Element WallPart { get; private set;  }
 
-        internal FacadeDescription(Document document, ElementId wallElementId)
+        internal FacadeDescription(Document document, ElementId wallElementId, bool CreateParts = true)
         {
             WallElement = document.GetElement(wallElementId);
             Solid = SelectSolid();
             PlanarFace = SelectPlanarFace();
             Plane = SelectPlane();
             DirectionalBasis = SelectDirectionalBasis();
-            WallPart = SetWallPart(document);
+
+            if (CreateParts)
+            {
+                WallPart = SetWallPart(document);
+            }
         }
+
         private Plane SelectPlane()
         {
             XYZ origin = PlanarFace.Origin;

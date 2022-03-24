@@ -39,8 +39,6 @@ namespace DSKPrim.PanelTools.PanelMaster
             //Selection selection = commandData.Application.ActiveUIDocument.Selection;
             //IList<Reference> list_Walls = selection.PickObjects(ObjectType.Element, new FacadeSelectionFilter(), "Выберите стены DNS_Фасад или DNS_Фасад2");
 
-            
-
             Debug.WriteLine(Document.PathName);
             try
             {

@@ -42,7 +42,16 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
             return Instance;
         }
 
+        public static List<RevitLinkInstance> FindLinkedDocuments(Document document)
+        { 
 
+            return new FilteredElementCollector(document).
+                OfClass(typeof(RevitLinkInstance)).
+                WhereElementIsNotElementType().
+                Cast<RevitLinkInstance>().
+                ToList();
+
+        }
 
         public void Reset()
         {

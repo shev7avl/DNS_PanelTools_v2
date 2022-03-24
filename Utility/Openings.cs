@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
+using DSKPrim.PanelTools.Facade;
+using DSKPrim.PanelTools.ProjectEnvironment;
 
 namespace DSKPrim.PanelTools.Utility
 {
@@ -174,27 +176,21 @@ namespace DSKPrim.PanelTools.Utility
         /// <param name="elementHost">Объект стены в который будет вставояться окно</param>
         public static void CreateFacadeOpening(Document activeDocument, Element elementHost)
         {
-            Element panel;
-            SortedList<string, List<double>> WindowsWithParameters;
-            CreateWindowsData(activeDocument, elementHost, out panel, out WindowsWithParameters);
 
-            if (WindowsWithParameters.Keys.Count > 0)
+            WindowParameter[] windowParameters = CreateWindowsData(activeDocument, elementHost);
+
+            foreach (var window in windowParameters)
             {
-                if (WindowsWithParameters.Keys.Contains("ПР1.ВКЛ: 1"))
+                if (window.Exists)
                 {
-                    PlaceWindow(activeDocument, elementHost, panel, WindowsWithParameters);
+                    PlaceWindow(activeDocument, elementHost, window);
                 }
-                if (WindowsWithParameters.Keys.Contains("ПР2.ВКЛ: 1"))
-                {
-                    PlaceWindow(activeDocument, elementHost, panel, WindowsWithParameters, win1: false);
-                }
+
             }
 
-
-            // TODO: придумать как в нужном месте сделать вырез
         }
 
-        private static void CreateWindowsData(Document activeDocument, Element elementHost, out Element panel, out SortedList<string, List<double>> WindowsWithParameters)
+        private static WindowParameter[] CreateWindowsData(Document activeDocument, Element elementHost)
         {
             IEnumerable<Element> fecLinksSTRUCT = new FilteredElementCollector(activeDocument).
                 OfClass(typeof(RevitLinkInstance)).
@@ -211,136 +207,73 @@ namespace DSKPrim.PanelTools.Utility
                 {
                     LinkedStructs.Add(item.GetLinkDocument());
                 }
-                
             }
 
-            panel = default;
-
-            List<double> ParValues;
+            Element panel = default;
 
             ElementIntersectsElementFilter panelFilter = new ElementIntersectsElementFilter(elementHost);
-            
-            
+
+            Transform activeDocTransform = activeDocument.ActiveProjectLocation.GetTotalTransform();
+
+            string NSPanelName = "NS_Empty";
+
             foreach (var item in LinkedStructs)
             {
+                Transform linkTransform = item.ActiveProjectLocation.GetTotalTransform();
 
-                    panel = new FilteredElementCollector(item).
+                FilteredElementCollector panelCollector = new FilteredElementCollector(item).
                         OfCategory(BuiltInCategory.OST_StructuralFraming).
-                        OfClass(typeof(FamilyInstance)).
+                        OfClass(typeof(FamilyInstance));
+
+                    panel = panelCollector.
                         WherePasses(panelFilter).
                         Cast<FamilyInstance>().
-                        Where(x => x.Symbol.FamilyName.Contains("NS_Empty")).
+                        Where(x => x.Symbol.FamilyName.Contains(NSPanelName)).
                         FirstOrDefault();
 
-                    if (panel != null)
-                    {
-                        break;
-                    }
-                
-            }
-
-            WindowsWithParameters = new SortedList<string, List<double>>();
-            if (panel != null)
-            {
-                ParValues = new List<double>
+                if (panel != null)
                 {
-                    Double.Parse(panel.LookupParameter("ПР1.Отступ").AsValueString()),
-                    Double.Parse(panel.LookupParameter("ПР1.Ширина").AsValueString()),
-                    Double.Parse(panel.LookupParameter("ПР1.Высота").AsValueString()),
-                    Double.Parse(panel.LookupParameter("ПР1.ВысотаСмещение").AsValueString()),
-                    Double.Parse(panel.LookupParameter("Выступ_Старт").AsValueString()),
-                    Double.Parse(panel.LookupParameter("СН").AsValueString())
-                };
-                Debug.WriteLine($"{panel.Id}  --  ПР1.ВКЛ: {panel.LookupParameter("ПР1.ВКЛ").AsInteger()}");
-
-                WindowsWithParameters.Add($"ПР1.ВКЛ: {panel.LookupParameter("ПР1.ВКЛ").AsInteger()}", ParValues);
-
-                ParValues = new List<double>
-                {
-                    Double.Parse(panel.LookupParameter("ПР2.Отступ").AsValueString()),
-                    Double.Parse(panel.LookupParameter("ПР2.Ширина").AsValueString()),
-                    Double.Parse(panel.LookupParameter("ПР2.Высота").AsValueString()),
-                    Double.Parse(panel.LookupParameter("ПР2.ВысотаСмещение").AsValueString()),
-                    Double.Parse(panel.LookupParameter("Выступ_Старт").AsValueString()),
-                    Double.Parse(panel.LookupParameter("СН").AsValueString())
-                };
-                Debug.WriteLine($"{panel.Id}  --  ПР2.ВКЛ: {panel.LookupParameter("ПР2.ВКЛ").AsInteger()}");
-                WindowsWithParameters.Add($"ПР2.ВКЛ: {panel.LookupParameter("ПР2.ВКЛ").AsInteger()}", ParValues);
-            }
-            
-        }
-
-        private static void PlaceWindow(Document activeDocument, Element elementHost, Element panel, SortedList<string, List<double>> WindowsWithParameters, bool win1 = true)
-        {
-            ElementIntersectsElementFilter filter = new ElementIntersectsElementFilter(elementHost);
-            List<ElementId> windows = new FilteredElementCollector(activeDocument).OfCategory(BuiltInCategory.OST_Windows).WhereElementIsElementType().WherePasses(filter).ToElementIds().ToList();
-
-            if (windows.Count == 0)
-            {
-                List<double> tempValues = new List<double>();
-                if (win1)
-                {
-                    tempValues = WindowsWithParameters["ПР1.ВКЛ: 1"];
+                    break;
                 }
                 else
                 {
-                    tempValues = WindowsWithParameters["ПР2.ВКЛ: 1"];
-                }
+                    throw new NullReferenceException(message: $"Не удалось найти экземпляр семейства {NSPanelName}" +
+                            $" для данной стены, ID : {elementHost.Id}. Проверьте наименования семейств и убедитесь, что " +
+                            "координаты получены из связи КР");
+                } 
+            }
 
+            WindowParameter[] windowParameters = new WindowParameter[2];
 
-                GeometryElement geometryObject = elementHost.get_Geometry(new Options());
-                Solid geomSolid = null;
-                
-                //TODO: Везде по коду заменить вот этот цикл на коллекцию солидов
-                foreach (GeometryObject item in geometryObject)
-                {
-                    if (item is Solid solid)
-                    {
-                        geomSolid = solid;
-                    }
-                }
-                FaceArray faceArray = geomSolid.Faces;
+            windowParameters[0] = new WindowParameter(panel, 1);
+            windowParameters[1] = new WindowParameter(panel, 2);
 
-                Face face = faceArray.get_Item(0);
-                for (int i = 1; i < 5; i++)
-                {
-                    if (faceArray.get_Item(i).Area > face.Area)
-                    {
-                        face = faceArray.get_Item(i);
-                    }
-                }
+            return windowParameters;
+            
+        }
 
-                LocationCurve wallCurve = (LocationCurve)elementHost.Location;
-                XYZ startWall = wallCurve.Curve.GetEndPoint(1);
+        private static void PlaceWindow(Document activeDocument, Element elementHost, WindowParameter window)
+        {
+            ElementIntersectsElementFilter filter = new ElementIntersectsElementFilter(elementHost);
+            List<ElementId> windows = new FilteredElementCollector(activeDocument).
+                OfCategory(BuiltInCategory.OST_Windows).WhereElementIsElementType().WherePasses(filter).ToElementIds().ToList();
 
-                Line directionalBasis = (Line)wallCurve.Curve;
+            if (windows.Count == 0)
+            {
+                double[] tempValues = window.ParameterValues;
 
-                XYZ newPoint = default;
-                FamilyInstance panelFI = (FamilyInstance)panel;
-                if (Math.Abs(panelFI.HandOrientation.X) == 1)
-                {
-                    double deltaAxis = UnitUtils.ConvertToInternalUnits(tempValues[0]+tempValues[4]-tempValues[5]-6, DisplayUnitType.DUT_MILLIMETERS) + 0.5 * UnitUtils.ConvertToInternalUnits(tempValues[1], DisplayUnitType.DUT_MILLIMETERS);
-                    double newX = startWall.X - deltaAxis * directionalBasis.Direction.X;
-                    double newY = startWall.Y;
-                    double newZ = startWall.Z + UnitUtils.ConvertToInternalUnits(tempValues[3]-80, DisplayUnitType.DUT_MILLIMETERS);
-
-                    newPoint = new XYZ(newX, newY, newZ);
-                }
-                else if (Math.Abs(panelFI.HandOrientation.Y) == 1)
-                {
-                    double deltaAxis = UnitUtils.ConvertToInternalUnits(tempValues[0] + tempValues[4] - tempValues[5] - 6, DisplayUnitType.DUT_MILLIMETERS) + 0.5 * UnitUtils.ConvertToInternalUnits(tempValues[1], DisplayUnitType.DUT_MILLIMETERS);
-                    double newY = startWall.Y - deltaAxis * directionalBasis.Direction.Y;
-                    double newX = startWall.X;
-                    double newZ = startWall.Z + UnitUtils.ConvertToInternalUnits(tempValues[3] - 80, DisplayUnitType.DUT_MILLIMETERS);
-
-                    newPoint = new XYZ(newX, newY, newZ);
-                }
+                FacadeDescription facade = new FacadeDescription(activeDocument, elementHost.Id, CreateParts: false);
+                XYZ insertionPoint = CalculateInsertionPoint(facade, tempValues);
 
                 try
                 {
-                    XYZ pointOnFace = face.Project(newPoint).XYZPoint;
 
-                    FamilySymbol windowSymbol = new FilteredElementCollector(activeDocument).OfClass(typeof(FamilySymbol)).Cast<FamilySymbol>().Where(o => o.Name == "DNS_ПроемДляПлитки").First();
+                    XYZ pointOnFace = facade.PlanarFace.Project(insertionPoint).XYZPoint;
+
+                    FamilySymbol windowSymbol = new FilteredElementCollector(activeDocument).
+                        OfClass(typeof(FamilySymbol)).
+                        Cast<FamilySymbol>().
+                        Where(o => o.Name == "DNS_ПроемДляПлитки").First();
 
                     using (Transaction t = new Transaction(activeDocument, "Create window"))
                     {
@@ -348,29 +281,25 @@ namespace DSKPrim.PanelTools.Utility
 
                         if (!windowSymbol.IsActive)
                         {
-                            // Ensure the family symbol is activated.
                             windowSymbol.Activate();
                             activeDocument.Regenerate();
                         }
 
-                        // Create window
-                        // unliss you specified a host, Rebit will create the family instance as orphabt object.
-
-                        FamilyInstance window = activeDocument.Create.
+                        FamilyInstance windowInstance = activeDocument.Create.
                             NewFamilyInstance(
-                            pointOnFace, 
-                            windowSymbol, 
-                            elementHost, 
-                            level: (Level)activeDocument.GetElement(elementHost.LevelId), 
+                            pointOnFace,
+                            windowSymbol,
+                            elementHost,
+                            level: (Level)activeDocument.GetElement(elementHost.LevelId),
                             StructuralType.NonStructural);
-                        
+
                         t.Commit();
 
                         t.Start();
                         activeDocument.Regenerate();
-                        double height = tempValues[2] + 20;
-                        window.get_Parameter(BuiltInParameter.DOOR_HEIGHT).SetValueString(height.ToString());
-                        window.get_Parameter(BuiltInParameter.FURNITURE_WIDTH).SetValueString(tempValues[1].ToString());
+                        double height = tempValues[2];
+                        windowInstance.get_Parameter(BuiltInParameter.DOOR_HEIGHT).SetValueString(height.ToString());
+                        windowInstance.get_Parameter(BuiltInParameter.FURNITURE_WIDTH).SetValueString(tempValues[1].ToString());
                         t.Commit();
                     }
                 }
@@ -380,7 +309,45 @@ namespace DSKPrim.PanelTools.Utility
                 }
             }
 
+            else
+            {
+                string message = "В панели уже есть проёмы. Удалите их и попробуйте заново";
+                throw new InvalidOperationException(message);
+            }
+
+        }
+
+        private static XYZ CalculateInsertionPoint(FacadeDescription facade, double[] tempValues)
+        {
             
+            LocationCurve wallCurve = (LocationCurve)facade.WallElement.Location;
+
+            double wallOffset = Double.Parse(facade.WallElement.get_Parameter(BuiltInParameter.WALL_BASE_OFFSET).AsValueString());
+
+            XYZ startWall = wallCurve.Curve.GetEndPoint(1);
+            XYZ newPoint = default;
+            double deltaAxis = UnitUtils.ConvertToInternalUnits(tempValues[0] + tempValues[4] - tempValues[5], DisplayUnitType.DUT_MILLIMETERS)
+                    + 0.5 * UnitUtils.ConvertToInternalUnits(tempValues[1], DisplayUnitType.DUT_MILLIMETERS);
+
+
+            if (Math.Abs(facade.DirectionalBasis.X) == 1)
+            {
+                double newX = startWall.X - deltaAxis * facade.DirectionalBasis.X;
+                double newY = startWall.Y;
+                double newZ = startWall.Z + UnitUtils.ConvertToInternalUnits(tempValues[3] + wallOffset, DisplayUnitType.DUT_MILLIMETERS);
+
+                newPoint = new XYZ(newX, newY, newZ);
+            }
+            else if (Math.Abs(facade.DirectionalBasis.Y) == 1)
+            {
+                double newY = startWall.Y - deltaAxis * facade.DirectionalBasis.Y;
+                double newX = startWall.X;
+                double newZ = startWall.Z + UnitUtils.ConvertToInternalUnits(tempValues[3] + wallOffset, DisplayUnitType.DUT_MILLIMETERS);
+
+                newPoint = new XYZ(newX, newY, newZ);
+            }
+
+            return newPoint;
         }
 
         #endregion
@@ -428,8 +395,10 @@ namespace DSKPrim.PanelTools.Utility
             FamilyInstance familyInstance = window as FamilyInstance;
             FamilySymbol familySymbol = familyInstance.Symbol;
 
+            AddinSettings settings = AddinSettings.GetSettings();
+            TileModule tileModule = settings.GetTileModule();
+            double step = tileModule.ModuleWidth + tileModule.ModuleGap;
 
-            Debug.WriteLine("Вызван статический метод Utility.Openings.CalculateOffset()");
             double appHalfWidth;
             try
             {
@@ -451,7 +420,8 @@ namespace DSKPrim.PanelTools.Utility
             double mmLen = Math.Abs(UnitUtils.ConvertFromInternalUnits(CalculateAxialLength(panelXYZ, windowXYZ), DisplayUnitType.DUT_MILLIMETERS));
 
             offset = RoundToOnes(mmLen - appHalfWidth);
-            RoundToStep(offset, 300, out offset);
+
+            RoundToStep(offset, step, out offset);
         }
         
         private static void RoundToStep(double value, double step, out double result)
@@ -506,6 +476,39 @@ namespace DSKPrim.PanelTools.Utility
 
         }
         #endregion
+
+    }
+
+    internal class WindowParameter
+    {
+
+        internal int Number;
+
+        internal bool Exists;
+
+        internal double[] ParameterValues;
+
+        /// <param name="panel">Элемент панели из связи</param>
+        /// <param name="number">Номер проема в формате ПР1 или ПР2</param>
+        internal WindowParameter(Element panel, int number)
+        {
+            Number = number;
+            Exists = false;
+            ParameterValues = new double[6];
+
+            ParameterMap parameterMap = panel.ParametersMap;
+
+            if (parameterMap.get_Item($"ПР{Number}.ВКЛ").AsInteger() == 1)
+            {
+                Exists = true;
+                ParameterValues[0] = Double.Parse(parameterMap.get_Item($"ПР{Number}.Отступ").AsValueString());
+                ParameterValues[1] = Double.Parse(parameterMap.get_Item($"ПР{Number}.Ширина").AsValueString());
+                ParameterValues[2] = Double.Parse(parameterMap.get_Item($"ПР{Number}.Высота").AsValueString());
+                ParameterValues[3] = Double.Parse(parameterMap.get_Item($"ПР{Number}.ВысотаСмещение").AsValueString());
+                ParameterValues[4] = Double.Parse(parameterMap.get_Item("Выступ_Старт").AsValueString());
+                ParameterValues[5] = Double.Parse(parameterMap.get_Item("СН").AsValueString());
+            }        
+        }
 
     }
 }

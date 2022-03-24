@@ -1,4 +1,6 @@
 ﻿using Autodesk.Revit.DB;
+using DSKPrim.PanelTools.ProjectEnvironment;
+using DSKPrim.PanelTools.Utility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,9 +14,9 @@ namespace DSKPrim.PanelTools.Panel
         public override Document ActiveDocument { get ; set ; }
         public override Element ActiveElement { get ; set ; }
         public override AssemblyInstance AssemblyInstance { get ; set ; }
-        public override string LongMark { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public override string ShortMark { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public override string Index { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public override string LongMark { get; set; }
+        public override string ShortMark { get; set; }
+        public override string Index { get; set; }
 
         public Facade_Panel(Document document, Element element)
         {
@@ -24,7 +26,101 @@ namespace DSKPrim.PanelTools.Panel
 
         public override void CreateMarks()
         {
-            throw new NotImplementedException();
+            string lngMark = "DNS_Код изделия полный";
+            string shortMark = "ADSK_Марка конструкции";
+            string posMart = "DNS_Марка элемента";
+
+            Element linkedPanel = FindLinkedPanel(ActiveDocument);
+            ParameterMap panelMap = linkedPanel.ParametersMap;
+
+            string[] values = new string[3]
+                {
+                panelMap.get_Item(lngMark).AsString(),
+                panelMap.get_Item(shortMark).AsString(),
+                panelMap.get_Item(posMart).AsString()
+                };
+
+            Transaction transaction = new Transaction(ActiveDocument, "setting facade params");
+            TransactionSettings.SetFailuresPreprocessor(transaction);
+
+            using (transaction)
+            {
+                transaction.Start();
+
+                panelMap = ActiveElement.ParametersMap;
+                panelMap.get_Item(lngMark).Set(values[0]);
+                panelMap.get_Item(shortMark).Set(values[1]);
+                panelMap.get_Item(posMart).Set(values[2]);
+
+                transaction.Commit();
+            }
+            
+
+            List<Part> parts = FindParts();
+            List<ParameterMap> partsMaps = parts.Select(o => o.ParametersMap).ToList();
+
+            using (transaction)
+            {
+                transaction.Start();
+
+                foreach (var map in partsMaps)
+                {
+                    map.get_Item(lngMark).Set(values[0]);
+                    map.get_Item(shortMark).Set(values[1]);
+                    map.get_Item(posMart).Set(values[2]);
+                }
+
+                transaction.Commit();
+            }
+            
+        }
+
+        private List<Part> FindParts()
+        {
+
+            BoundingBoxIntersectsFilter boundingBoxIntersectsFilter = new BoundingBoxIntersectsFilter
+                (new Outline(ActiveElement.get_Geometry(new Options())
+                .GetBoundingBox().Min,
+                ActiveElement.get_Geometry(new Options())
+                .GetBoundingBox().Max));
+
+            List<Element> parts = new FilteredElementCollector(ActiveDocument).
+                OfCategory(BuiltInCategory.OST_Parts).
+                WhereElementIsNotElementType().
+                WherePasses(boundingBoxIntersectsFilter).
+                ToElements().
+                ToList();
+
+            return parts.Cast<Part>().ToList();
+        }
+
+        private Element FindLinkedPanel(Document activeDocument)
+        {
+            CommonProjectEnvironment projectEnvironment = CommonProjectEnvironment.GetInstance(ActiveDocument);
+            Document linkedDocSTR = CommonProjectEnvironment.FindLinkedDocuments(ActiveDocument).
+                Where<RevitLinkInstance>(o => o.Name.Contains("_КР")).
+                Select(o => o.Document).
+                FirstOrDefault();
+
+
+            ElementIntersectsElementFilter facadeIntersectionFilter = new ElementIntersectsElementFilter(ActiveElement);
+            BoundingBoxIntersectsFilter boundingBoxIntersectsFilter = new BoundingBoxIntersectsFilter
+                (new Outline(ActiveElement.get_Geometry(new Options())
+                .GetBoundingBox().Min,
+                ActiveElement.get_Geometry(new Options())
+                .GetBoundingBox().Max));
+
+
+            Element panel = new FilteredElementCollector(linkedDocSTR).
+                OfCategory(BuiltInCategory.OST_StructuralFraming).
+                WhereElementIsNotElementType().
+                WherePasses(boundingBoxIntersectsFilter).
+                WherePasses(facadeIntersectionFilter).
+                ToElements().
+                FirstOrDefault();
+
+            return panel;
+
         }
     }
 }

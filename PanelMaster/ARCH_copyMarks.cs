@@ -35,16 +35,12 @@ namespace DSKPrim.PanelTools.PanelMaster
             Selector selector = new Selector();
             ICollection<Element> els = selector.CollectElements(commandData, new FacadeSelectionFilter(), BuiltInCategory.OST_Walls);
 
-
-            IEnumerable<Element> fecLinksSTRUCT = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_RvtLinks).WhereElementIsNotElementType().Where(doc => doc.Name.Contains("_КР") || doc.Name.Contains("_КЖ"));
-            Document linkedDocSTR = fecLinksSTRUCT.Cast<RevitLinkInstance>().ToList()[0].GetLinkDocument();
-
             try
             {
                 foreach (Element item in els)
                 {
-                    CreateFacadePanelPartsData(linkedDocSTR, out Dictionary<Element, List<string>> facadePanel, out Dictionary<Element, Dictionary<string, List<ElementId>>> facadeParts, item);
-                    SetFacadePartsParameters(Document, facadePanel, facadeParts, item);
+                    Facade_Panel facade = new Facade_Panel(Document, item);
+                    facade.CreateMarks();
                 }
             }
             catch (Exception e)
@@ -53,8 +49,7 @@ namespace DSKPrim.PanelTools.PanelMaster
                    $"{e.InnerException}" +
                    $"{e.Source}";
                 return Result.Failed;
-            }
-            
+            }  
 
             return Result.Succeeded;
         }
@@ -80,10 +75,13 @@ namespace DSKPrim.PanelTools.PanelMaster
 
                     string fullCode = parameterValues[0];
                     string shortCode = parameterValues[1];
+                    string posCode = parameterValues[2];
 
-                    //TODO: Вписать нужные параметры трансфера Панель - Фасад
-                    facade.get_Parameter(new Guid(Properties.Resource.DNS_Полная_марка_изделия)).Set(fullCode);
-                    facade.get_Parameter(new Guid(Properties.Resource.ADSK_Марка_изделия)).Set(shortCode);
+                    ParameterMap parameters = facade.ParametersMap;
+
+                    parameters.get_Item("DNS_Код изделия полный").Set(fullCode);
+                    parameters.get_Item("ADSK_Марка конструкции").Set(shortCode);
+                    parameters.get_Item("DNS_Марка элемента").Set(posCode);
                    
                     if (facadeParts.Count > 0)
                     {
@@ -126,20 +124,40 @@ namespace DSKPrim.PanelTools.PanelMaster
         /// <param name="item"></param>
         private void CreateFacadePanelPartsData(Document linkedDocSTR, out Dictionary<Element, List<string>> facadePanel, out Dictionary<Element, Dictionary<string, List<ElementId>>> facadeParts, Element item)
         {
-            ElementIntersectsElementFilter facadeIntersectionFilter = new ElementIntersectsElementFilter(item);
-            BoundingBoxIntersectsFilter boundingBoxIntersectsFilter = new BoundingBoxIntersectsFilter(new Outline(item.get_Geometry(new Options()).GetBoundingBox().Min, item.get_Geometry(new Options()).GetBoundingBox().Max));
             facadePanel = new Dictionary<Element, List<string>>();
             facadeParts = new Dictionary<Element, Dictionary<string, List<ElementId>>>();
 
-            Element panel = new FilteredElementCollector(linkedDocSTR).OfCategory(BuiltInCategory.OST_StructuralFraming).WhereElementIsNotElementType().WherePasses(boundingBoxIntersectsFilter).WherePasses(facadeIntersectionFilter).ToElements().FirstOrDefault();
-            List<Element> parts = new FilteredElementCollector(Document).OfCategory(BuiltInCategory.OST_Parts).WhereElementIsNotElementType().WherePasses(boundingBoxIntersectsFilter).ToElements().ToList();
+            ElementIntersectsElementFilter facadeIntersectionFilter = new ElementIntersectsElementFilter(item);
+            BoundingBoxIntersectsFilter boundingBoxIntersectsFilter = new BoundingBoxIntersectsFilter
+                (new Outline(item.get_Geometry(new Options())
+                .GetBoundingBox().Min,
+                item.get_Geometry(new Options())
+                .GetBoundingBox().Max));
+
+
+            Element panel = new FilteredElementCollector(linkedDocSTR).
+                OfCategory(BuiltInCategory.OST_StructuralFraming).
+                WhereElementIsNotElementType().
+                WherePasses(boundingBoxIntersectsFilter).
+                WherePasses(facadeIntersectionFilter).
+                ToElements().
+                FirstOrDefault();
+
+            List<Element> parts = new FilteredElementCollector(Document).
+                OfCategory(BuiltInCategory.OST_Parts).
+                WhereElementIsNotElementType().
+                WherePasses(boundingBoxIntersectsFilter).
+                ToElements().
+                ToList();
+
+            ParameterMap parameterMap = panel.ParametersMap;
 
             facadePanel.Add(item, new List<string>()
                 {
-                    //TODO: Вписать нужные параметры трансфера Панель - Фасад
-                    panel.get_Parameter(new Guid(Properties.Resource.DNS_Полная_марка_изделия)).AsString(),
-                    panel.get_Parameter(new Guid(Properties.Resource.ADSK_Марка_изделия)).AsString()
-                });
+                parameterMap.get_Item("DNS_Код изделия полный").AsString(),
+                parameterMap.get_Item("ADSK_Марка конструкции").AsString(),
+                parameterMap.get_Item("DNS_Марка элемента").AsString(),
+                }) ;
 
             Dictionary<string, List<ElementId>> temp = new Dictionary<string, List<ElementId>>();
 

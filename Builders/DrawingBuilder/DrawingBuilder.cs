@@ -189,33 +189,41 @@ namespace DSKPrim.PanelTools.Builders
 
             transaction.Start();
 
-            foreach (var item in viewsFiltered1)
+            if (basePanel is Facade_Panel)
             {
-                List<Element> viewersOnView = new FilteredElementCollector(document, item.Id).
-                    OfCategory(BuiltInCategory.OST_Viewers).ToList();
 
-
-                List<Element> hideEls = viewersOnView.Where(o => o.Name.Contains(item.Name.Substring(0, 9))).ToList();
-                List<ElementId> hideIds = hideEls.Select<Element, ElementId>(o => o.Id).ToList();
-
-                if (hideEls.Count > 0)
+            }
+            else
+            {
+                foreach (var item in viewsFiltered1)
                 {
-                    item.HideElements(hideIds);
-                    foreach (var hideEl in hideEls)
+                    List<Element> viewersOnView = new FilteredElementCollector(document, item.Id).
+                        OfCategory(BuiltInCategory.OST_Viewers).ToList();
+
+
+                    List<Element> hideEls = viewersOnView.Where(o => o.Name.Contains(item.Name.Substring(0, 9))).ToList();
+                    List<ElementId> hideIds = hideEls.Select<Element, ElementId>(o => o.Id).ToList();
+
+                    if (hideEls.Count > 0)
                     {
-                        viewersOnView.Remove(hideEl);
+                        item.HideElements(hideIds);
+                        foreach (var hideEl in hideEls)
+                        {
+                            viewersOnView.Remove(hideEl);
+                        }
+
                     }
 
-                }
-
-                if (viewersOnView.Count > 0 && newSection != null)
-                {
-                    foreach (var viewer in viewersOnView)
+                    if (viewersOnView.Count > 0 && newSection != null)
                     {
-                        viewer.ChangeTypeId(newSection.Id);
+                        foreach (var viewer in viewersOnView)
+                        {
+                            viewer.ChangeTypeId(newSection.Id);
+                        }
                     }
                 }
             }
+            
             transaction.Commit();
         }
 
@@ -290,7 +298,7 @@ namespace DSKPrim.PanelTools.Builders
 
             internal static View CreateSectionView(Document document, ViewReference viewReference, BasePanel Panel, bool SideSection)
             {
-                List<AssemblyDetailViewOrientation> orientations = Assemblies.DefineViewOrientations(document, Panel.AssemblyInstance.Id);
+                List<AssemblyDetailViewOrientation> orientations = Assemblies.DefineViewOrientations(document, Panel);
                 if (TemplateExists(viewReference))
                 {
                     if (viewReference.ViewTemplate.ToString().Contains("FRONT"))
