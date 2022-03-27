@@ -48,19 +48,24 @@ namespace DSKPrim.PanelTools.Facade
             Transaction transaction = new Transaction(document, "Creating a SketchPlane");
             TransactionSettings.SetFailuresPreprocessor(transaction);
 
-            transaction.Start();
-            ICollection<ElementId> refiD = new List<ElementId>();
-            SketchPlane sketchPlane = SketchPlane.Create(document, FacadeDescription.Plane);
-            ICollection<ElementId> partsId = new List<ElementId>() { FacadeDescription.WallPart.Id };
+            using (transaction)
+            {
+                transaction.Start();
+                SketchPlane sketchPlane = SketchPlane.Create(document, FacadeDescription.Plane);
+                transaction.Commit();
+                
+                ICollection<ElementId> partsId = new List<ElementId>() { FacadeDescription.WallPart.Id };
+                IList<Curve> curves = Architecture.SplitGeometry.CreateTileOutlay(FacadeDescription);
+                ICollection<ElementId> refiD = new List<ElementId>();
 
-            IList<Curve> curves = Architecture.SplitGeometry.CreateTileOutlay(FacadeDescription);
+                transaction.Start();
+                PartMaker maker = PartUtils.DivideParts(document, partsId, refiD, curves, sketchPlane.Id);
+                transaction.Commit();
 
-            PartMaker maker = PartUtils.DivideParts(document, partsId, refiD, curves, sketchPlane.Id);
-            transaction.Commit();
-
-            transaction.Start();
-            maker.get_Parameter(BuiltInParameter.PARTMAKER_PARAM_DIVISION_GAP).SetValueString($"{settings.GetTileModule().ModuleGap}");
-            transaction.Commit();
+                transaction.Start();
+                maker.get_Parameter(BuiltInParameter.PARTMAKER_PARAM_DIVISION_GAP).SetValueString($"{settings.GetTileModule().ModuleGap}");
+                transaction.Commit();
+            }
         }
     }
 
@@ -75,27 +80,29 @@ namespace DSKPrim.PanelTools.Facade
 
         internal override void Execute(Document document)
         {
+
             AddinSettings settings = AddinSettings.GetSettings();
             Transaction transaction = new Transaction(document, "Creating a SketchPlane");
             TransactionSettings.SetFailuresPreprocessor(transaction);
 
-            transaction.Start();
-            ICollection<ElementId> refiD = new List<ElementId>();
-            SketchPlane sketchPlane = SketchPlane.Create(document, FacadeDescription.Plane);
-            ICollection<ElementId> partsId = new List<ElementId>() { FacadeDescription.WallPart.Id };
+            using (transaction)
+            {
+                transaction.Start();
+                SketchPlane sketchPlane = SketchPlane.Create(document, FacadeDescription.Plane);
+                transaction.Commit();
 
-            IList<Curve> curves = Architecture.SplitGeometry.CreateBrickOutlay(FacadeDescription);
+                ICollection<ElementId> partsId = new List<ElementId>() { FacadeDescription.WallPart.Id };
+                IList<Curve> curves = Architecture.SplitGeometry.CreateBrickOutlay(FacadeDescription);
+                ICollection<ElementId> refiD = new List<ElementId>();
 
-            PartMaker maker = PartUtils.DivideParts(document, partsId, refiD, curves, sketchPlane.Id);
-            transaction.Commit();
+                transaction.Start();
+                PartMaker maker = PartUtils.DivideParts(document, partsId, refiD, curves, sketchPlane.Id);
+                transaction.Commit();
 
-            transaction.Start();
-            maker.get_Parameter(BuiltInParameter.PARTMAKER_PARAM_DIVISION_GAP).SetValueString($"{settings.GetTileModule().ModuleGap}");
-            transaction.Commit();
-
-
-
-
+                transaction.Start();
+                maker.get_Parameter(BuiltInParameter.PARTMAKER_PARAM_DIVISION_GAP).SetValueString($"{settings.GetTileModule().ModuleGap}");
+                transaction.Commit();
+            }
         }
     }
 

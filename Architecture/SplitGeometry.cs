@@ -151,12 +151,12 @@ namespace DSKPrim.PanelTools.Architecture
         }
         private static IList<Curve> PanelOutline(FacadeDescription facadeDescription, out double conLenU, out double conHeiV)
         {
+            //TODO: переключить считывание габаритов с части на стену
+            Element wallElement = facadeDescription.WallElement;
 
-            Element partEl = (Part)facadeDescription.WallPart;
 
-
-            double LenU = partEl.get_Parameter(BuiltInParameter.DPART_LENGTH_COMPUTED).AsDouble();
-            double HeiV = partEl.get_Parameter(BuiltInParameter.DPART_HEIGHT_COMPUTED).AsDouble();
+            double LenU = wallElement.get_Parameter(BuiltInParameter.CURVE_ELEM_LENGTH).AsDouble();
+            double HeiV = wallElement.get_Parameter(BuiltInParameter.WALL_USER_HEIGHT_PARAM).AsDouble();
 
             conLenU = UnitUtils.ConvertFromInternalUnits(LenU, DisplayUnitType.DUT_MILLIMETERS);
             conHeiV = UnitUtils.ConvertFromInternalUnits(HeiV, DisplayUnitType.DUT_MILLIMETERS);
@@ -169,7 +169,7 @@ namespace DSKPrim.PanelTools.Architecture
         private static List<Curve> CreateRectangle(FacadeDescription facadeDescription, double width, double heigth)
         {
             //Определения базисных векторов
-            Element partEl = (Part)facadeDescription.WallPart;
+
             Face face = facadeDescription.PlanarFace;
 
             XYZ[] scaledPoints = ScalePointsOnPanel(face, width, heigth);
@@ -191,9 +191,13 @@ namespace DSKPrim.PanelTools.Architecture
         {
             XYZ[] points = GetOriginPoints(face);
             Line[] basicLines = GetBasicLines(points);
+            AddinSettings settings = AddinSettings.GetSettings();
+            TileModule tileModule = settings.GetTileModule();
+
 
             double convWidth = UnitUtils.ConvertToInternalUnits(width, DisplayUnitType.DUT_MILLIMETERS);
             double convHeigth = UnitUtils.ConvertToInternalUnits(heigth, DisplayUnitType.DUT_MILLIMETERS);
+            double convHalfGap = UnitUtils.ConvertToInternalUnits(tileModule.ModuleGap, DisplayUnitType.DUT_MILLIMETERS);
 
             XYZ[] scaledPoints = new XYZ[4];
 
@@ -204,12 +208,12 @@ namespace DSKPrim.PanelTools.Architecture
             {
                 if (basicLines[0].Direction.X == 1)
                 {
-                    scaledPoints[0] = new XYZ(points[0].X, points[0].Y, points[0].Z);
+                    scaledPoints[0] = new XYZ(points[0].X - convHalfGap, points[0].Y, points[0].Z);
                     scaledPoints[1] = new XYZ(scaledPoints[0].X + convWidth * basicLines[0].Direction.X, scaledPoints[0].Y, scaledPoints[0].Z);
                 }
                 else
                 {
-                    scaledPoints[0] = new XYZ(points[0].X, points[0].Y, points[0].Z);
+                    scaledPoints[0] = new XYZ(points[0].X - convHalfGap, points[0].Y, points[0].Z);
                     scaledPoints[1] = new XYZ(scaledPoints[0].X + convWidth * basicLines[0].Direction.X, scaledPoints[0].Y, scaledPoints[0].Z);
                 }
 
@@ -218,12 +222,12 @@ namespace DSKPrim.PanelTools.Architecture
             {
                 if (basicLines[0].Direction.Y == 1)
                 {
-                    scaledPoints[0] = new XYZ(points[0].X, points[0].Y, points[0].Z);
+                    scaledPoints[0] = new XYZ(points[0].X, points[0].Y - convHalfGap, points[0].Z);
                     scaledPoints[1] = new XYZ(scaledPoints[0].X, scaledPoints[0].Y + convWidth * basicLines[0].Direction.Y, scaledPoints[0].Z);
                 }
                 else
                 {
-                    scaledPoints[0] = new XYZ(points[0].X, points[0].Y, points[0].Z);
+                    scaledPoints[0] = new XYZ(points[0].X, points[0].Y - convHalfGap, points[0].Z);
                     scaledPoints[1] = new XYZ(scaledPoints[0].X, scaledPoints[0].Y + convWidth * basicLines[0].Direction.Y, scaledPoints[0].Z);
                 }
 
