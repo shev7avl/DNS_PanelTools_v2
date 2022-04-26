@@ -144,7 +144,6 @@ namespace DSKPrim.PanelTools.Builders
                 {
                     return AssemblyViewLogic.CreateLegendView(document, viewReference);
                 }
-                
             }
             else
             {
@@ -238,7 +237,11 @@ namespace DSKPrim.PanelTools.Builders
                 }
                 else
                 {
-                    if (AssemblyViewLogic.TemplateIsCategorySchedule(viewReference))
+                    if (TemplateIsDetailSchedule(viewReference))
+                    {
+                        return CreateAssemblyDetailSchedule(document, viewReference, Panel);
+                    }
+                    else if (AssemblyViewLogic.TemplateIsCategorySchedule(viewReference))
                     {
                         return CreateCategorySchedule(document, viewReference, Panel);
                     }
@@ -259,6 +262,55 @@ namespace DSKPrim.PanelTools.Builders
                 else
                 {
                     return AssemblyViewUtils.CreateSingleCategorySchedule(document, Panel.AssemblyInstance.Id, schedTypeElement.Category.Id);
+                }
+            }
+
+            internal static bool TemplateIsDetailSchedule(ViewReference viewReference)
+            { 
+            return viewReference.ViewTemplate.ToString().Contains("DETAIL");
+            }
+
+            internal static View CreateLocationDetailSchedule(Document document, ViewReference viewReference, BasePanel basePanel)
+            {
+                Element part = new FilteredElementCollector(document)
+                        .OfClass(typeof(Part))
+                        .WhereElementIsNotElementType()
+                        .Where(o => o.AssemblyInstanceId == basePanel.AssemblyInstance.Id)
+                        .First();
+
+                var locationSchedule = ViewSchedule.CreateSchedule(document, part.Category.Id);
+                if (TemplateExists(viewReference))
+                {
+                    View templateView = document.GetElement(viewReference.TemplateId) as View;
+                    locationSchedule.ApplyViewTemplateParameters(templateView);
+
+                    ScheduleFieldId locationFieldId = locationSchedule.Definition.GetFieldId(2);
+                    ScheduleFilter locationFilter = new ScheduleFilter(locationFieldId, ScheduleFilterType.Equal, basePanel.AssemblyInstance.Name);
+
+                    locationSchedule.Definition.AddFilter(locationFilter);
+
+                }
+                return locationSchedule;
+            }
+
+            internal static View CreateAssemblyDetailSchedule(Document document, ViewReference viewReference, BasePanel basePanel)
+            {
+                Element part = new FilteredElementCollector(document)
+                    .OfClass(typeof(Part))
+                    .WhereElementIsNotElementType()
+                    .Where(o => o.AssemblyInstanceId == basePanel.AssemblyInstance.Id)
+                    .First();
+
+              
+
+                if (TemplateExists(viewReference))
+                {
+
+                    return AssemblyViewUtils.CreateSingleCategorySchedule(document, basePanel.AssemblyInstance.Id, part.Category.Id, viewReference.TemplateId, true);
+                }
+                else
+                { 
+                    return AssemblyViewUtils.CreateSingleCategorySchedule(document, basePanel.AssemblyInstance.Id, part.Category.Id);
                 }
             }
 

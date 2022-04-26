@@ -1,10 +1,6 @@
-﻿using Autodesk.Revit.DB;
-using DSKPrim.PanelTools.ProjectEnvironment;
-using System;
+﻿using DSKPrim.PanelTools.ProjectEnvironment;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DSKPrim.PanelTools.Builders
 {
@@ -14,7 +10,7 @@ namespace DSKPrim.PanelTools.Builders
 
         public List<ViewReference> ViewReferences { get; set; }
 
-        public DrawingSchema DrawingSchema;
+        private readonly DrawingSchema DrawingSchema;
 
         public TemplateFactory(DrawingSchema drawingSchema)
         {

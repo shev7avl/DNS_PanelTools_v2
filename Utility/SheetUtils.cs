@@ -153,8 +153,8 @@ namespace DSKPrim.PanelTools.Utility
             ViewsEnvironment views = ViewsEnvironment.getInstance(document);
 
             ElementId viewFront = views.GetElementIdFromViewTemplateName(ViewTemplateName.FACADE_VIEW_FRONT_VIEW);
-            ElementId sched1 = views.GetElementIdFromViewTemplateName(ViewTemplateName.SCHEDULE_FACADE);
-            ElementId sched2 = views.GetElementIdFromViewTemplateName(ViewTemplateName.SCHEDULE_FACADE_TYPES);
+            ElementId sched1 = views.GetElementIdFromViewTemplateName(ViewTemplateName.SCHEDULE_FACADE_DETAILS);
+            ElementId sched2 = views.GetElementIdFromViewTemplateName(ViewTemplateName.SCHEDULE_FACADE_DETAILS_TYPES);
             ElementId leg1 = views.GetElementIdFromViewTemplateName(ViewTemplateName.LEGEND_FACADE_ANNOTATION);
             ElementId leg2 = views.GetElementIdFromViewTemplateName(ViewTemplateName.LEGEND_FACADE_DESCRIPTION);
             ElementId leg3 = views.GetElementIdFromViewTemplateName(ViewTemplateName.LEGEND_FACADE_LAYOUT_SCHEME);

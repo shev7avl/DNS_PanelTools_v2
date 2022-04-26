@@ -203,8 +203,8 @@ namespace DSKPrim.PanelTools.Builders
                     ViewTemplateName.LEGEND_FACADE_ANNOTATION,
                     ViewTemplateName.LEGEND_FACADE_DESCRIPTION,
                     ViewTemplateName.LEGEND_FACADE_LAYOUT_SCHEME,
-                    ViewTemplateName.SCHEDULE_FACADE,
-                    ViewTemplateName.SCHEDULE_FACADE_TYPES
+                    ViewTemplateName.SCHEDULE_FACADE_DETAILS,
+                    ViewTemplateName.SCHEDULE_FACADE_DETAILS_TYPES
                 } }
         });
 

@@ -46,7 +46,6 @@ namespace DSKPrim.PanelTools.PanelMaster
                     }
 
                     tileAlgorythm.Execute(Document);
-
                     Debug.WriteLine(el.Name);
                 }
             }

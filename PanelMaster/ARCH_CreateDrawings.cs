@@ -17,7 +17,6 @@ namespace DSKPrim.PanelTools.PanelMaster
     {
         public Document Document { get; set; }
 
-
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
             Document = commandData.Application.ActiveUIDocument.Document;
@@ -70,30 +69,56 @@ namespace DSKPrim.PanelTools.PanelMaster
             }
         }
 
-        private void CreateFacadeAssembly(IList<Reference> list_Walls, out List<AssemblyInstance> assemblies, out Transaction transaction)
+        private ElementId GetWallHostId(ElementId partId)
         {
-            assemblies = new List<AssemblyInstance>();
-            transaction = new Transaction(Document, "creating an assembly");
-            TransactionSettings.SetFailuresPreprocessor(transaction);
-            
+            if (Document.GetElement(partId) is Part)
+            {
+                Part part = (Part)Document.GetElement(partId);
+                if (Document.GetElement(part.GetSourceElementIds().First().HostElementId) is Wall)
+                {
+                    return Document.GetElement(part.GetSourceElementIds().First().HostElementId).Id;
+                }
+                else if (Document.GetElement(part.GetSourceElementIds().First().HostElementId) is Part)
+                {
+                    part = Document.GetElement(part.GetSourceElementIds().First().HostElementId) as Part;
+                    return part.GetSourceElementIds().First().HostElementId;
+                }
+                else
+                {
+                    throw new ArgumentException("Element is not a Part");
+                }
+                
+            }
+            else
+            {
+                throw new ArgumentException("Element is not a Part");
+            }
         }
-
-
 
         private AssemblyInstance CreatePartAssembly(Transaction transaction, Element item)
         {
+            XYZ[] boundaries = new XYZ[2];
+            boundaries[0] = item.get_Geometry(new Options()).GetBoundingBox().Min;
+            boundaries[1] = item.get_Geometry(new Options()).GetBoundingBox().Max;
 
-            BoundingBoxIntersectsFilter boundingBoxIntersectsFilter = new BoundingBoxIntersectsFilter(new Outline(item.get_Geometry(new Options()).GetBoundingBox().Min, item.get_Geometry(new Options()).GetBoundingBox().Max));
+            BoundingBoxIntersectsFilter boundingBoxIntersectsFilter = new BoundingBoxIntersectsFilter(new Outline(boundaries[0], boundaries[1]));
 
-            ICollection<ElementId> ids = new FilteredElementCollector(Document).OfClass(typeof(Part)).WhereElementIsNotElementType().WherePasses(boundingBoxIntersectsFilter).ToElementIds();
+            ICollection<Part> parts = new FilteredElementCollector(Document).
+                OfClass(typeof(Part)).
+                WhereElementIsNotElementType().
+                WherePasses(boundingBoxIntersectsFilter).
+                Cast<Part>().ToList();
 
-            List<Element> els = ids.Select(x => Document.GetElement(x)).Where(x => x.get_Parameter(BuiltInParameter.DPART_VOLUME_COMPUTED).AsDouble() < 1).ToList();
+            ICollection<ElementId> ids = new FilteredElementCollector(Document).
+                OfClass(typeof(Part)).
+                WhereElementIsNotElementType().
+                WherePasses(boundingBoxIntersectsFilter).
+                Cast<Part>().
+                Where(o => GetWallHostId(o.Id) == item.Id).
+                Where(x => x.get_Parameter(BuiltInParameter.DPART_VOLUME_COMPUTED).AsDouble() < 1).
+                Select(o => o.Id).ToList();
 
-            ids = els.Select(x => x.Id).ToList();
-
-            ICollection<ElementId> ids1 = new List<ElementId>() { ids.First() };
-
-            ElementId partNamingCategory = els[0].Category.Id;
+            ElementId partNamingCategory = ids.Select(x => Document.GetElement(x)).First().Category.Id;
 
             AssemblyInstance assembly = null;
 
@@ -105,13 +130,39 @@ namespace DSKPrim.PanelTools.PanelMaster
                     if (transaction.GetStatus() == TransactionStatus.Committed)
                     {
                         transaction.Start();
-                        string name = $"{item.get_Parameter(new Guid(Properties.Resource.ADSK_Марка_изделия)).AsString()} ({item.get_Parameter(new Guid(Properties.Resource.DNS_Марка_элемента)).AsString()})";
+                        string name = SetPartAssemblyName(parts);
                         assembly.AssemblyTypeName = name;
                         transaction.Commit();
                     }
                 }
-
             return assembly;
+        }
+
+        private string SetPartAssemblyName(ICollection<Part> parts)
+        {
+            List<string> partNames = new List<string>();
+
+            foreach (var item in parts)
+            {
+                Element material = Document.GetElement(item.ParametersMap.get_Item("Материал").AsElementId());
+                if (material != null)
+                {
+                    if (material.ParametersMap.get_Item("ADSK_Наименование и номер цвета").AsString() != null)
+                    {
+                        string code = material.ParametersMap.get_Item("ADSK_Наименование и номер цвета").AsString();
+                        string name = code.Substring(code.Length - 2, 2);
+                        partNames.Add(name);
+                    }
+                    
+                }
+                
+            }
+            if (partNames.Distinct().Count() > 0)
+            {
+                return String.Join("-", partNames.Distinct());
+            }
+            else return $"ID{parts.First().Id}";
+
         }
     }
 }

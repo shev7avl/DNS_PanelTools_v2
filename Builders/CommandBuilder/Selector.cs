@@ -17,8 +17,10 @@ namespace DSKPrim.PanelTools
 
         internal Selector()
         {
+
             AddinSettings settings = AddinSettings.GetSettings();
             SelectionType = settings.GetSelectionType();
+
         }
 
         internal ICollection<Element> CollectElements(ExternalCommandData commandData, BuiltInCategory builtInCategory)
@@ -119,8 +121,5 @@ namespace DSKPrim.PanelTools
             return chosenElements;
         }
 
-        
-
-        
     }
 }

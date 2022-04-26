@@ -200,8 +200,8 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
 
             {ViewTemplateName.SCHEDULE_BALCONY_REINFORCEMENT_TYPES,  "СТА_Балконная плита"},
             {ViewTemplateName.SCHEDULE_WALL_REINFORCEMENT_TYPES,  "СТА_Панель стеновая"},
-            {ViewTemplateName.SCHEDULE_FACADE,  "DNS_Ф_Плитка"},
-            {ViewTemplateName.SCHEDULE_FACADE_TYPES,  "DNS_Марки_Плитка"}
+            {ViewTemplateName.SCHEDULE_FACADE_DETAILS,  "DNS_Ф_Плитка"},
+            {ViewTemplateName.SCHEDULE_FACADE_DETAILS_TYPES,  "DNS_С_Плитка"}
         };
     }
     public enum ViewTemplateName
@@ -295,8 +295,8 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
         SCHEDULE_WALL_REINFORCEMENT,
         SCHEDULE_WALL_REINFORCEMENT_MASS,
         SCHEDULE_WALL_REINFORCEMENT_TYPES,
-        SCHEDULE_FACADE,
-        SCHEDULE_FACADE_TYPES,
+        SCHEDULE_FACADE_DETAILS,
+        SCHEDULE_FACADE_DETAILS_TYPES,
     }
 
     

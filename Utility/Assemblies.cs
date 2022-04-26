@@ -126,97 +126,77 @@ namespace DSKPrim.PanelTools.Utility
             ICollection<ElementId> ids = assembly.GetMemberIds();
             List<Element> elements = ids.Select(o => document.GetElement(o)).ToList();
             Element panel;
-            if (basePanel is Facade_Panel)
-            {
-                Part part = elements.Where(o => o.Category.Name.Contains("Части")).Cast<Part>().First();
-                ICollection<LinkElementId> links = part.GetSourceElementIds();
-                ElementId elementId = links.First().HostElementId;
-                panel = document.GetElement(elementId);
-                while (panel is Part)
+
+                XYZ facingOrientation;
+                if (basePanel.ActiveElement is Wall)
                 {
-                    part = (Part)panel;
-                    links = part.GetSourceElementIds();
-                    elementId = links.First().HostElementId;
-                    panel = document.GetElement(elementId);
+                    Wall wall = (Wall)basePanel.ActiveElement;
+                    facingOrientation = wall.Orientation;
                 }
-                
+                else
+                {
+                    FamilyInstance instance = (FamilyInstance)basePanel.ActiveElement;
+                    facingOrientation = instance.FacingOrientation;
+                }
 
-            }
-            else
-            {
-                panel = elements.Where(o => o.Category.Name.Contains(basePanel.ActiveElement.Category.Name)).First();
-            }
+                List<AssemblyDetailViewOrientation> orientations = null;
 
-            XYZ facingOrientation;
-            if (panel is Wall)
-            {
-                Wall wall = (Wall)panel;
-                facingOrientation = wall.Orientation;
-            }
-            else
-            {
-                FamilyInstance instance = (FamilyInstance)panel;
-                facingOrientation = instance.FacingOrientation;
-            }
+                XYZ f = new XYZ(0, 1, 0);
+                XYZ b = new XYZ(0, -1, 0);
+                XYZ l = new XYZ(1, 0, 0);
+                XYZ r = new XYZ(-1, 0, 0);
 
-            List<AssemblyDetailViewOrientation> orientations = null;
-
-            XYZ f = new XYZ(0, 1, 0);
-            XYZ b = new XYZ(0, -1, 0);
-            XYZ l = new XYZ(1, 0, 0);
-            XYZ r = new XYZ(-1, 0, 0);
-
-            if (facingOrientation.IsAlmostEqualTo(b))
-            {
-                orientations = new List<AssemblyDetailViewOrientation>()
+                if (facingOrientation.IsAlmostEqualTo(b))
+                {
+                    orientations = new List<AssemblyDetailViewOrientation>()
                     {
                         AssemblyDetailViewOrientation.ElevationFront,
                         AssemblyDetailViewOrientation.DetailSectionA,
                         AssemblyDetailViewOrientation.DetailSectionB,
                         AssemblyDetailViewOrientation.HorizontalDetail
                     };
-            }
-            else if (facingOrientation.IsAlmostEqualTo( f))
-            {
-                orientations = new List<AssemblyDetailViewOrientation>()
+                }
+                else if (facingOrientation.IsAlmostEqualTo(f))
+                {
+                    orientations = new List<AssemblyDetailViewOrientation>()
                     {
                         AssemblyDetailViewOrientation.ElevationBack,
                         AssemblyDetailViewOrientation.DetailSectionA,
                         AssemblyDetailViewOrientation.DetailSectionB,
                         AssemblyDetailViewOrientation.HorizontalDetail
                     };
-            }
-            else if(facingOrientation.IsAlmostEqualTo( r))
-            {
-                orientations = new List<AssemblyDetailViewOrientation>()
+                }
+                else if (facingOrientation.IsAlmostEqualTo(r))
+                {
+                    orientations = new List<AssemblyDetailViewOrientation>()
                     {
                         AssemblyDetailViewOrientation.ElevationLeft,
                         AssemblyDetailViewOrientation.DetailSectionB,
                         AssemblyDetailViewOrientation.DetailSectionA,
                         AssemblyDetailViewOrientation.HorizontalDetail
                     };
-            }
-            else if(facingOrientation.IsAlmostEqualTo( l))
-            {
-                orientations = new List<AssemblyDetailViewOrientation>()
+                }
+                else if (facingOrientation.IsAlmostEqualTo(l))
+                {
+                    orientations = new List<AssemblyDetailViewOrientation>()
                     {
                         AssemblyDetailViewOrientation.ElevationRight,
                         AssemblyDetailViewOrientation.DetailSectionB,
                         AssemblyDetailViewOrientation.DetailSectionA,
                         AssemblyDetailViewOrientation.HorizontalDetail
                     };
-            }
-            else
-            {
-                orientations = new List<AssemblyDetailViewOrientation>()
+                }
+                else
+                {
+                    orientations = new List<AssemblyDetailViewOrientation>()
                     {
                         AssemblyDetailViewOrientation.ElevationFront,
                         AssemblyDetailViewOrientation.DetailSectionA,
                         AssemblyDetailViewOrientation.DetailSectionB,
                         AssemblyDetailViewOrientation.HorizontalDetail
                     };
-            }
-            return orientations;
+                }
+                return orientations;
         }
 
         internal static void UniquePanels(Document document, ICollection<AssemblyInstance> assemblies)
@@ -301,7 +281,7 @@ namespace DSKPrim.PanelTools.Utility
                 foreach (AssemblyInstance assembly in assemblies)
                 {
                     index = "";
-                    if (Eligible(assembly))
+                    if (Eligible(document, assembly))
                     {
 
                     //FailureResolution fr = DeleteElements.Create(document, assembly.Id);
@@ -321,13 +301,22 @@ namespace DSKPrim.PanelTools.Utility
          
         }
 
-        private static bool Eligible(AssemblyInstance assembly)
+        private static bool Eligible(Document document, AssemblyInstance assembly)
         {
+            List<ElementId> ids = assembly.GetMemberIds().ToList();
+            Category category = document.GetElement(ids.First()).Category;
+            bool isFacade = category == Category.GetCategory(document, BuiltInCategory.OST_Parts) ||
+                category == Category.GetCategory(document, BuiltInCategory.OST_Walls);
+
             if (assembly.AssemblyTypeName.Contains("НС") ||
                 assembly.AssemblyTypeName.Contains("ВС") ||
                 assembly.AssemblyTypeName.Contains("ПС") ||
                 assembly.AssemblyTypeName.Contains("ПП") ||
                 assembly.AssemblyTypeName.Contains("БП")) return true;
+            else if (isFacade)
+            {
+                return true;
+            }
             else return false;
         }
 
