@@ -125,6 +125,15 @@
     <value>a531f6df-1e58-48e0-8c14-77cf7c1809b8</value>
   </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="a_copyMarks" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\a_copyMarks.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="a_createDrawings" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\a_createDrawings.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="a_createTile" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\a_createTile.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="construction_plan" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\construction-plan.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -163,6 +172,24 @@
   </data>
   <data name="settings" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\settings.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="s_createAssemblies" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\s_createAssemblies.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="s_createDrawings" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\s_createDrawings.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="s_createMarks" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\s_createMarks.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="s_createOpening" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\s_createOpening.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="s_disassembleAssemblies" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\s_disassembleAssemblies.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="s_distinctAssemblies" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\s_distinctAssemblies.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="technical_drawing" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\technical-drawing.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>

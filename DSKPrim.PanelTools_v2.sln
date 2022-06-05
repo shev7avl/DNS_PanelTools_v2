@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.1.32228.430
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PanelTools", "PanelTools.csproj", "{E5D1FBF6-29A5-4031-8E0B-CD7A88EDE02E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4C239826-4490-4C24-960A-FF5C802BBFC0} = {4C239826-4490-4C24-960A-FF5C802BBFC0}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{04753E8F-7444-44FA-AE9C-643CCFAD63CE}"
 	ProjectSection(SolutionItems) = preProject
