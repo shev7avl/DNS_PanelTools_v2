@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>DSKPrim.PanelTools</RootNamespace>
     <AssemblyName>PanelTools</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <NuGetPackageImportStamp>
@@ -34,22 +34,32 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'v2019|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\v2019\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="AdWindows">
       <HintPath>C:\Program Files\Autodesk\Revit 2019\AdWindows.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="DSK.Application">
-      <HintPath>Legacy\bin\Debug\v2021\DSK.Application.dll</HintPath>
+    <Reference Include="DSK.Application, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\v2019\DSK.Application.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="RevitAPI">
-      <HintPath>C:\Program Files\Autodesk\Revit 2021\RevitAPI.dll</HintPath>
+      <HintPath>C:\Program Files\Autodesk\Revit 2019\RevitAPI.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="RevitAPIUI">
-      <HintPath>C:\Program Files\Autodesk\Revit 2021\RevitAPIUI.dll</HintPath>
+      <HintPath>C:\Program Files\Autodesk\Revit 2019\RevitAPIUI.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -310,8 +320,8 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /Y "$(SolutionDir)bin\Debug\v2021" "C:\Users\shevyakov.a\AppData\Roaming\Autodesk\Revit\Addins\2021"
-copy /Y "$(SolutionDir)bin\Debug\v2021" "\\IR-DSK\DNSDevelopment\1_ДСК Приморье\13. Проектный институт\ДНС ПРОЕКТ РАБОЧАЯ\BIM\00_DNSPanel\11_МастерПанелей\v2021"</PostBuildEvent>
+    <PostBuildEvent>copy /Y "$(SolutionDir)bin\v2019" "C:\Users\shevyakov.a\AppData\Roaming\Autodesk\Revit\Addins\2019"
+copy /Y "$(SolutionDir)bin\v2019" "\\IR-DSK\DNSDevelopment\1_ДСК Приморье\13. Проектный институт\ДНС ПРОЕКТ РАБОЧАЯ\BIM\00_DNSPanel\11_МастерПанелей\v2019"</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>
