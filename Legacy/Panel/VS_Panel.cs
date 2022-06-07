@@ -5,7 +5,7 @@ using DSKPrim.PanelTools.Utility;
 
 namespace DSKPrim.PanelTools.Panel
 {
-    class VS_Panel : BasePanel, IPerforable, IAssembler
+    private class VS_Panel : BasePanel, IPerforable, IAssembler
     {
         #region Fields
         public override Document ActiveDocument { get; set; }
@@ -75,59 +75,7 @@ namespace DSKPrim.PanelTools.Panel
 
         #region Private Methods
         
-        private string GetPanelCode()
-        {
-            var elementFamily = ActiveElement as FamilyInstance;
-            var familySymbol = elementFamily.Symbol;
-            string i3 = Marks.AsDecimString(ActiveElement, "ГабаритДлина");
-            string i4 = Marks.AsDecimString(familySymbol, "ГабаритВысота");
-            string i5 = Marks.AsDecimString(familySymbol, "ГабаритТолщина");
-            string[] temp_i6 = ActiveElement.LookupParameter("Тип PVL_СТАРТ").AsString().Split(' ');
-            string i6 = temp_i6[1];
-            string[] temp_i7 = ActiveElement.LookupParameter("Тип PVL_ФИНИШ").AsString().Split(' ');
-            string i7 = temp_i7[1];
-            return $"{i3}.{i4}.{i5}_{i6}.{i7}";
-        }
-        private string GetClosureCode()
-        {
-            bool Closure1 = ActiveElement.LookupParameter("ПР1.ВКЛ").AsValueString() == "Да";
-            bool Closure2 = ActiveElement.LookupParameter("ПР2.ВКЛ").AsValueString() == "Да";
-            string window1 = "";
-
-            if (Closure1)
-            {
-                string w1 = Marks.AsDecimString(ActiveElement, "ПР1.Отступ");
-                string w2 = Marks.AsDecimString(ActiveElement, "ПР1.Ширина");
-                string w3 = Marks.AsDecimString(ActiveElement, "ПР1.Высота");
-                string w4 = Marks.AsDecimString(ActiveElement, "ПР1.ВысотаСмещение");
-                window1 = $"{w2}.{w3}.{w4}.{w1}";
-            }
-            string window2 = "";
-            if (Closure2)
-            {
-                string w1 = Marks.AsDecimString(ActiveElement, "ПР2.Отступ");
-                string w2 = Marks.AsDecimString(ActiveElement, "ПР2.Ширина");
-                string w3 = Marks.AsDecimString(ActiveElement, "ПР2.Высота");
-                string w4 = Marks.AsDecimString(ActiveElement, "ПР2.ВысотаСмещение");
-                window2 = $"{w2}.{w3}.{w4}.{w1}";
-            }
-            string windows;
-            if (Closure1 && Closure2)
-            {
-                windows = $"{window1}_{window2}";
-            }
-            else if (Closure1 || Closure1)
-            {
-                windows = $"{window1}{window2}";
-            }
-            else
-            {
-                windows = "Г";
-            }
-
-            return windows;
-        }
-
+       
         public void SetAssemblyElements()
         {
             AssemblyElements = new List<ElementId>();

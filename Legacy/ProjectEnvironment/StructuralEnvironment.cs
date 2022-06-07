@@ -158,37 +158,37 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
 
         public static BasePanel DefinePanelBehaviour(Document doc, Element element)
         {
-            StructureType structureType = new StructureType(element);
-            StructureType.PanelTypes type = structureType.GetPanelType(element);
+            StructureCategory structureType = new StructureCategory(element);
+            StructureCategory.PanelTypes type = structureType.GetPanelType(element);
 
-            if (type != StructureType.PanelTypes.NOT_A_PANEL)
+            if (type != StructureCategory.PanelTypes.NOT_A_PANEL)
             {
-                if (type == StructureType.PanelTypes.NS_PANEL)
+                if (type == StructureCategory.PanelTypes.NS_PANEL)
                 {
                     NS_Panel nS = new NS_Panel(doc, element);
                     return nS;
                 }
-                if (type == StructureType.PanelTypes.VS_PANEL)
+                if (type == StructureCategory.PanelTypes.VS_PANEL)
                 {
                     VS_Panel vS = new VS_Panel(doc, element);
                     return vS;
                 }
-                if (type == StructureType.PanelTypes.BP_PANEL)
+                if (type == StructureCategory.PanelTypes.BP_PANEL)
                 {
                     BP_Panel bP = new BP_Panel(doc, element);
                     return bP;
                 }
-                if (type == StructureType.PanelTypes.PS_PANEL)
+                if (type == StructureCategory.PanelTypes.PS_PANEL)
                 {
                     PS_Panel pS = new PS_Panel(doc, element);
                     return pS;
                 }
-                if (type == StructureType.PanelTypes.PP_PANEL)
+                if (type == StructureCategory.PanelTypes.PP_PANEL)
                 {
                     PP_Panel pP = new PP_Panel(doc, element);
                     return pP;
                 }
-                if (type == StructureType.PanelTypes.FACADE_PANEL)
+                if (type == StructureCategory.PanelTypes.FACADE_PANEL)
                 {
                     Facade_Panel facade = new Facade_Panel(doc, element);
                     return facade;

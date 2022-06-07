@@ -78,9 +78,9 @@ namespace DSKPrim.PanelTools.PanelMaster
         public bool AllowElement(Element elem)
         {
 
-            StructureType structureType = new StructureType(elem);
+            StructureCategory structureType = new StructureCategory(elem);
 
-            if (structureType.GetPanelType(elem) == StructureType.PanelTypes.NOT_A_PANEL && elem.Category.Name.Contains("Каркас несущий"))
+            if (structureType.GetPanelType(elem) == StructureCategory.PanelTypes.NOT_A_PANEL && elem.Category.Name.Contains("Каркас несущий"))
             {
                 return false;
             }

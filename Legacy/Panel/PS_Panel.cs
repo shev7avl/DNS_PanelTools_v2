@@ -5,7 +5,7 @@ using DSKPrim.PanelTools.Utility;
 
 namespace DSKPrim.PanelTools.Panel
 {
-    public class PS_Panel : BasePanel, IAssembler
+    private class PS_Panel : BasePanel, IAssembler
     {
         public override Document ActiveDocument { get; set; }
         public override Element ActiveElement { get; set; }

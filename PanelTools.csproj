@@ -82,6 +82,11 @@
     <Compile Include="Legacy\Builders\DrawingBuilder\Sheet.cs" />
     <Compile Include="Legacy\Builders\DrawingBuilder\ViewReference.cs" />
     <Compile Include="Legacy\Builders\DrawingBuilder\DrawingSchemes.cs" />
+    <Compile Include="Legacy\Builders\MarkBuilder\Mark.cs" />
+    <Compile Include="Legacy\Builders\MarkBuilder\MarkBuilder.cs" />
+    <Compile Include="Legacy\Builders\MarkBuilder\LongMarkSchema.cs" />
+    <Compile Include="Legacy\Builders\MarkBuilder\ShortMarkSchema.cs" />
+    <Compile Include="Legacy\Builders\WindowBuilder\WindowBuilder.cs" />
     <Compile Include="Legacy\Data\FakeDataFactory.cs" />
     <Compile Include="Legacy\Facade\FacadeDescription.cs" />
     <Compile Include="Legacy\Facade\TileAlgorythm.cs" />
@@ -97,6 +102,7 @@
       <DependentUpon>PanelSelector.cs</DependentUpon>
     </Compile>
     <Compile Include="Legacy\PanelMaster\ExportSchedules.cs" />
+    <Compile Include="Legacy\Panel\PrecastType.cs" />
     <Compile Include="MVVM\Data\DataContextBuilder.cs" />
     <Compile Include="MVVM\Model\AssemblyModel.cs" />
     <Compile Include="MVVM\Model\FamilyModel.cs" />
@@ -160,7 +166,6 @@
     <Compile Include="Legacy\Panel\VS_Panel.cs" />
     <Compile Include="Legacy\Panel\NS_Panel.cs" />
     <Compile Include="Legacy\Panel\BasePanel.cs" />
-    <Compile Include="Legacy\ProjectEnvironment\StructureType.cs" />
     <Compile Include="MVVM\ViewModel\FamilyViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -310,7 +315,12 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /Y "$(SolutionDir)bin\Debug\v2021" "C:\Users\shevyakov.a\AppData\Roaming\Autodesk\Revit\Addins\2021"
+    <PostBuildEvent>copy /Y "D:\GitHub\ButtonBuilder\bin\App v2019" "D:\GitHub\DNS_PanelTools_v2\bin\v2019"
+copy /Y "D:\GitHub\DNS_PanelTools_v2\bin\v2019" "C:\Users\shevyakov.a\AppData\Roaming\Autodesk\Revit\Addins\2019"
+copy /Y "D:\GitHub\DNS_PanelTools_v2\bin\v2019" "\\IR-DSK\DNSDevelopment\1_ДСК Приморье\13. Проектный институт\ДНС ПРОЕКТ РАБОЧАЯ\BIM\00_DNSPanel\11_МастерПанелей\v2019"
+
+copy /Y "D:\GitHub\ButtonBuilder\bin\Debug" "D:\GitHub\DNS_PanelTools_v2\bin\Debug\v2021"
+copy /Y "$(SolutionDir)bin\Debug\v2021" "C:\Users\shevyakov.a\AppData\Roaming\Autodesk\Revit\Addins\2021"
 copy /Y "$(SolutionDir)bin\Debug\v2021" "\\IR-DSK\DNSDevelopment\1_ДСК Приморье\13. Проектный институт\ДНС ПРОЕКТ РАБОЧАЯ\BIM\00_DNSPanel\11_МастерПанелей\v2021"</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>

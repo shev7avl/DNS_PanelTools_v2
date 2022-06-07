@@ -18,9 +18,9 @@ namespace DSKPrim.PanelTools.PanelMaster
         public bool AllowElement(Element elem)
         {
 
-            StructureType structureType = new StructureType(elem);
+            StructureCategory structureType = new StructureCategory(elem);
 
-            if (structureType.GetPanelType(elem) == StructureType.PanelTypes.NOT_A_PANEL && !elem.Category.Name.Contains("Каркас несущий") && !(elem is AssemblyInstance))
+            if (structureType.GetPanelType(elem) == StructureCategory.PanelTypes.NOT_A_PANEL && !elem.Category.Name.Contains("Каркас несущий") && !(elem is AssemblyInstance))
             {
                 return false;
             }
@@ -38,8 +38,8 @@ namespace DSKPrim.PanelTools.PanelMaster
     {
         public bool AllowElement(Element elem)
         {
-            StructureType structureType = new StructureType(elem);
-            bool elIsCorrect = structureType.GetPanelType(elem) != StructureType.PanelTypes.NOT_A_PANEL && elem.Category.Name.Contains("Каркас несущий");
+            StructureCategory structureType = new StructureCategory(elem);
+            bool elIsCorrect = structureType.GetPanelType(elem) != StructureCategory.PanelTypes.NOT_A_PANEL && elem.Category.Name.Contains("Каркас несущий");
 
             if (elIsCorrect)
             {

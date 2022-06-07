@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using Autodesk.Revit.DB;
-using DSKPrim.PanelTools.ProjectEnvironment;
+using DSKPrim.PanelTools.Legacy.Builders.MarkBuilder;
+using DSKPrim.PanelTools.Legacy.Panel;
 
 namespace DSKPrim.PanelTools.Panel
 {
@@ -11,19 +12,20 @@ namespace DSKPrim.PanelTools.Panel
     /// Panel wraps API Element of Panel (BuiltInCategory.OST_StructuralFraming) with the document.
     /// Allows further wrapping with interfaces to create suitable panel classes.
     /// </summary>
-    public abstract class BasePanel: IResettable
+    public class PrecastPanel: IResettable
     {
-        public abstract Document ActiveDocument { get; set; }
-        public abstract Element ActiveElement { get; set; }
+        public Document ActiveDocument { get; set; }
+        public Element ActiveElement { get; set; }
+        public AssemblyInstance AssemblyInstance { get; set; }
+        public Mark Mark { get; set; }
+        public StructureCategory StructureCategory { get; set; }
 
-        public abstract AssemblyInstance AssemblyInstance { get; set; }
-
-        public abstract string LongMark { get; set; }
-
-        public abstract string ShortMark { get; set; }
-
-        public abstract string Index { get; set; }
-
+        public PrecastPanel(Document document, Element element)
+        {
+            ActiveDocument = document;
+            ActiveElement = element;
+            StructureCategory = new StructureCategory(element);
+        }
 
         /// <summary>
         /// Проверяет равенство двух панелей по значениям "Марка" и прочим логическим условиям
@@ -32,7 +34,7 @@ namespace DSKPrim.PanelTools.Panel
         /// <returns></returns>
         public virtual bool Equal(BasePanel panelMark)
         {
-            if (LongMark == panelMark.LongMark)
+            if (Mark == panelMark.Mark)
             {
                 return true;
             }

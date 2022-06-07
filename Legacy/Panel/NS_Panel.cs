@@ -8,7 +8,7 @@ using DSKPrim.PanelTools.Utility;
 
 namespace DSKPrim.PanelTools.Panel
 {
-    class NS_Panel : BasePanel, IPerforable, IAssembler
+    private class NS_Panel : BasePanel, IPerforable, IAssembler
     {
         #region Fields&Props
         public override Document ActiveDocument { get; set; }
@@ -57,7 +57,6 @@ namespace DSKPrim.PanelTools.Panel
                 Element window2 = IntersectedWindows[1];
                 Utility.Openings.SetOpeningParams(ActiveDocument, revitLink, ActiveElement, window1, window2);
             }
-
             transaction.Assimilate();
         }
 
@@ -246,69 +245,7 @@ namespace DSKPrim.PanelTools.Panel
         }
 
 
-        private string GetPanelCode()
-        {
-            var elementFamily = ActiveElement as FamilyInstance;
-            var familySymbol = elementFamily.Symbol;
 
-            ParameterMap instanceMap = elementFamily.ParametersMap;
-            ParameterMap symbolMap = familySymbol.ParametersMap;
-
-            string[] tempPvlStart = instanceMap.get_Item("Тип PVL_СТАРТ").AsString().Split(' ');
-            string[] tempPvlFinish = instanceMap.get_Item("Тип PVL_ФИНИШ").AsString().Split(' ');
-
-            return String.Format("{0}.{1}_{2}.{3}.{4}_{5}.{6}",
-                instanceMap.get_Item("СТАРТ").AsValueString(),
-                instanceMap.get_Item("ФИНИШ").AsValueString(),
-                Marks.ParameterValueAsDecimeterString(instanceMap.get_Item("ГабаритДлина")),
-                Marks.ParameterValueAsDecimeterString(symbolMap.get_Item("ГабаритВысота")),
-                Marks.ParameterValueAsDecimeterString(symbolMap.get_Item("ГабаритТолщина")),
-                tempPvlStart[1],
-                tempPvlFinish[1]);
-        }
-        private string GetClosureCode()
-        {
-            var elementFamily = ActiveElement as FamilyInstance;
-            ParameterMap instanceMap = elementFamily.ParametersMap;
-
-            bool Closure1 = instanceMap.get_Item("ПР1.ВКЛ").AsValueString() == "Да";
-            bool Closure2 = instanceMap.get_Item("ПР2.ВКЛ").AsValueString() == "Да";
-
-            string window1 = "";
-            if (Closure1)
-            {
-                window1 = String.Format("{0}.{1}.{2}.{3}",
-                Marks.ParameterValueAsDecimeterString(instanceMap.get_Item("ПР1.Отступ")),
-                Marks.ParameterValueAsDecimeterString(instanceMap.get_Item("ПР1.Ширина")),
-                Marks.ParameterValueAsDecimeterString(instanceMap.get_Item("ПР1.Высота")),
-                Marks.ParameterValueAsDecimeterString(instanceMap.get_Item("ПР1.ВысотаСмещение"))
-                );
-            }
-            string window2 = "";
-            if (Closure2)
-            {
-                window2 = String.Format("{0}.{1}.{2}.{3}",
-                Marks.ParameterValueAsDecimeterString(instanceMap.get_Item("ПР2.Отступ")),
-                Marks.ParameterValueAsDecimeterString(instanceMap.get_Item("ПР2.Ширина")),
-                Marks.ParameterValueAsDecimeterString(instanceMap.get_Item("ПР2.Высота")),
-                Marks.ParameterValueAsDecimeterString(instanceMap.get_Item("ПР2.ВысотаСмещение"))
-                );
-            }
-
-            if (Closure1 && Closure2)
-            {
-                return String.Format("{0}_{1}", window1, window2);
-            }
-            else if (Closure1 || Closure1)
-            {
-                return String.Format("{0}{1}", window1, window2);
-            }
-            else
-            {
-                return "Г";
-            }
-
-        }
 
         private int CompareElementIdsByZCoord(ElementId x, ElementId y)
         {

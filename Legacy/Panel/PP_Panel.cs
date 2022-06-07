@@ -5,7 +5,7 @@ using DSKPrim.PanelTools.Utility;
 
 namespace DSKPrim.PanelTools.Panel
 {
-    public class PP_Panel : BasePanel, IAssembler
+    private class PP_Panel : BasePanel, IAssembler
     {
         public override Document ActiveDocument { get; set; }
         public override Element ActiveElement { get; set; }
@@ -61,9 +61,9 @@ namespace DSKPrim.PanelTools.Panel
             ParameterMap instanceMap = elementFamily.ParametersMap;
             ParameterMap symbolMap = elementFamily.Symbol.ParametersMap;
 
-            bool closureBool = symbolMap.get_Item("Вырезы").AsValueString() == "Да";
 
-            if (closureBool)
+
+            if (symbolMap.get_Item("Вырезы").AsValueString() == "Да")
             {
                 return String.Format("_{0}.{1}.{2}.{3}",
                     Marks.ParameterValueAsDecimeterString(instanceMap.get_Item("Вырезы_Отступ_Начало")),
@@ -72,6 +72,7 @@ namespace DSKPrim.PanelTools.Panel
                     Marks.ParameterValueAsDecimeterString(instanceMap.get_Item("Вырезы_Отступ_Конец"))
                     );
             }
+            else
 
             return string.Empty;
         }

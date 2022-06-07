@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DSKPrim.PanelTools.Panel
 {
-    class Facade_Panel : BasePanel
+    private class Facade_Panel : BasePanel
     {
         public override Document ActiveDocument { get ; set ; }
         public override Element ActiveElement { get ; set ; }

@@ -56,11 +56,8 @@ namespace DSKPrim.PanelTools.Utility
 
         public static void CheckAndSetIndex(Element element, string guidName, out string index)
         {
-            if (element.get_Parameter(new Guid(guidName)).AsString() is null)
-            {
-                index = $"ID{element.Id}";
-            }
-            else if (element.get_Parameter(new Guid(guidName)).AsString() == "")
+            if (element.get_Parameter(new Guid(guidName)).AsString() is null
+                && element.get_Parameter(new Guid(guidName)).AsString() == "")
             {
                 index = $"ID{element.Id}";
             }
@@ -70,10 +67,6 @@ namespace DSKPrim.PanelTools.Utility
             }
         }
 
-        public static void CheckAndWriteMarks(Element element, string nameGuid, string value)
-        {
-            element.get_Parameter(new Guid(nameGuid)).Set(value);
-        }
         #endregion
 
     }

@@ -5,7 +5,7 @@ using DSKPrim.PanelTools.Utility;
 
 namespace DSKPrim.PanelTools.Panel
 {
-    public class BP_Panel : BasePanel, IAssembler
+    private class BP_Panel : BasePanel, IAssembler
     {
         #region Fields
         public override Document ActiveDocument { get; set; }
