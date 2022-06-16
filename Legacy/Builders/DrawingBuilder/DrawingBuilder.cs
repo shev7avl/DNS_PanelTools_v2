@@ -12,10 +12,10 @@ namespace DSKPrim.PanelTools.Builders
 {
     public class DrawingBuilder
     {
-        protected BasePanel Panel { get; private set; }
+        protected PrecastPanel Panel { get; private set; }
         private protected TemplateFactory BuilderTemplate { get; set; }
 
-        public DrawingBuilder(BasePanel panel)
+        public DrawingBuilder(PrecastPanel panel)
         { 
             Panel = panel ?? throw new NullReferenceException(nameof(panel));
             SetBuilderTemplate();
@@ -23,27 +23,27 @@ namespace DSKPrim.PanelTools.Builders
 
         private void SetBuilderTemplate()
         {
-            if (Panel is NS_Panel)
+            if (Panel.StructureCategory.StructureType is Legacy.Panel.StructureType.NS_PANEL)
             {
                 BuilderTemplate = new TemplateFactory(DrawingSchemes.GetNsSchema());
             }
-            else if (Panel is VS_Panel)
+            else if (Panel.StructureCategory.StructureType is Legacy.Panel.StructureType.VS_PANEL)
             {
                 BuilderTemplate = new TemplateFactory(DrawingSchemes.GetVsSchema());
             }
-            else if (Panel is PS_Panel)
+            else if (Panel.StructureCategory.StructureType is Legacy.Panel.StructureType.PS_PANEL)
             {
                 BuilderTemplate = new TemplateFactory(DrawingSchemes.GetPsSchema());
             }
-            else if (Panel is BP_Panel)
+            else if (Panel.StructureCategory.StructureType is Legacy.Panel.StructureType.BP_PANEL)
             {
                 BuilderTemplate = new TemplateFactory(DrawingSchemes.GetBpSchema());
             }
-            else if (Panel is PP_Panel)
+            else if (Panel.StructureCategory.StructureType is Legacy.Panel.StructureType.PP_PANEL)
             {
                 BuilderTemplate = new TemplateFactory(DrawingSchemes.GetPpSchema());
             }
-            else if (Panel is Facade_Panel)
+            else if (Panel.StructureCategory.StructureType is Legacy.Panel.StructureType.FACADE_PANEL)
             {
                 BuilderTemplate = new TemplateFactory(DrawingSchemes.GetFacadeSchema());
             }
@@ -51,7 +51,7 @@ namespace DSKPrim.PanelTools.Builders
 
         public void BuildSheets(Document document)
         {
-            Transaction transaction = new Transaction(document, $"Создание листов панели {Panel.ShortMark}");
+            Transaction transaction = new Transaction(document, $"Создание листов панели {Panel.Mark.ShortMark}");
             TransactionSettings.SetFailuresPreprocessor(transaction);
 
             ElementId elementId = Panel.AssemblyInstance.Id;
@@ -109,7 +109,7 @@ namespace DSKPrim.PanelTools.Builders
             transaction.Commit();
 
             SetFrontView(document, Panel);
-            if (Panel is PP_Panel)
+            if (Panel.StructureCategory.StructureType is Legacy.Panel.StructureType.PP_PANEL)
             {
                 SetPlanView(document, Panel);
             }
@@ -183,7 +183,7 @@ namespace DSKPrim.PanelTools.Builders
             return viewReference.ViewTemplate.ToString().Contains("SECTION_VIEW") && !viewReference.ViewTemplate.ToString().Contains("JOINT");
         }
 
-        private static void SetPlanView(Document document, BasePanel basePanel)
+        private static void SetPlanView(Document document, PrecastPanel basePanel)
         {
             View sectionView = new FilteredElementCollector(document).OfClass(typeof(View)).
                 Cast<View>().ToList().Where(o => basePanel.ActiveElement.AssemblyInstanceId == o.AssociatedAssemblyInstanceId
@@ -216,7 +216,7 @@ namespace DSKPrim.PanelTools.Builders
 
         }
 
-        private static void SetFrontView(Document document, BasePanel basePanel)
+        private static void SetFrontView(Document document, PrecastPanel basePanel)
         {
             FilteredElementCollector views = new FilteredElementCollector(document).OfClass(typeof(View));
             List<View> viewsTempFiltered = views.Cast<View>().ToList();
@@ -232,7 +232,7 @@ namespace DSKPrim.PanelTools.Builders
 
             transaction.Start();
 
-            if (basePanel is Facade_Panel)
+            if (basePanel.StructureCategory.StructureType is Legacy.Panel.StructureType.FACADE_PANEL)
             {
 
             }
@@ -273,7 +273,7 @@ namespace DSKPrim.PanelTools.Builders
         internal static class AssemblyViewLogic
         {
 
-            internal static View CreateSchedule(Document document, ViewReference viewReference, BasePanel Panel)
+            internal static View CreateSchedule(Document document, ViewReference viewReference, PrecastPanel Panel)
             {
                 if (AssemblyViewLogic.TemplateIsMaterialTakeOff(viewReference))
                 {
@@ -308,7 +308,7 @@ namespace DSKPrim.PanelTools.Builders
                 }
             }
 
-            internal static View CreateCategorySchedule(Document document, ViewReference viewReference, BasePanel Panel)
+            internal static View CreateCategorySchedule(Document document, ViewReference viewReference, PrecastPanel Panel)
             {
                 Element schedTypeElement = new FilteredElementCollector(document).OfCategory(BuiltInCategory.OST_GenericModel).FirstElement();
                 if (TemplateExists(viewReference))
@@ -326,7 +326,7 @@ namespace DSKPrim.PanelTools.Builders
             return viewReference.ViewTemplate.ToString().Contains("DETAIL");
             }
 
-            internal static View CreateLocationDetailSchedule(Document document, ViewReference viewReference, BasePanel basePanel)
+            internal static View CreateLocationDetailSchedule(Document document, ViewReference viewReference, PrecastPanel basePanel)
             {
                 View presetView = new FilteredElementCollector(document)
                     .OfClass(typeof(ViewSchedule))
@@ -364,7 +364,7 @@ namespace DSKPrim.PanelTools.Builders
                 }
             }
 
-            internal static View CreateAssemblyDetailSchedule(Document document, ViewReference viewReference, BasePanel basePanel)
+            internal static View CreateAssemblyDetailSchedule(Document document, ViewReference viewReference, PrecastPanel basePanel)
             {
 
                 View presetView = new FilteredElementCollector(document)
@@ -424,7 +424,7 @@ namespace DSKPrim.PanelTools.Builders
                 return viewReference.ViewTemplate.ToString().Contains("SCHEDULE");
             }
 
-            internal static View CreateMaterialTakeOff(Document document, ViewReference viewReference, BasePanel Panel)
+            internal static View CreateMaterialTakeOff(Document document, ViewReference viewReference, PrecastPanel Panel)
             {
                 if (TemplateExists(viewReference))
                 {
@@ -436,7 +436,7 @@ namespace DSKPrim.PanelTools.Builders
                 }
             }
 
-            internal static View CreateReinforcementSchedule(Document document, ViewReference viewReference, BasePanel panel)
+            internal static View CreateReinforcementSchedule(Document document, ViewReference viewReference, PrecastPanel panel)
             {
                 if (TemplateExists(viewReference))
                 {
@@ -459,7 +459,7 @@ namespace DSKPrim.PanelTools.Builders
                 return viewReference.ViewTemplate.ToString().Contains("VOLUME") || viewReference.ViewTemplate.ToString().Contains("INSULATION_WOOL") || viewReference.ViewTemplate.ToString().Contains("INSULATION_XPS");
             }
 
-            internal static View Create3DView(Document document, ViewReference viewReference, BasePanel Panel)
+            internal static View Create3DView(Document document, ViewReference viewReference, PrecastPanel Panel)
             {
                 if (TemplateExists(viewReference))
                 {
@@ -471,7 +471,7 @@ namespace DSKPrim.PanelTools.Builders
                 }
             }
 
-            internal static View CreateSectionView(Document document, ViewReference viewReference, BasePanel Panel, bool SideSection)
+            internal static View CreateSectionView(Document document, ViewReference viewReference, PrecastPanel Panel, bool SideSection)
             {
                 List<AssemblyDetailViewOrientation> orientations = Assemblies.DefineViewOrientations(document, Panel);
                 if (TemplateExists(viewReference))

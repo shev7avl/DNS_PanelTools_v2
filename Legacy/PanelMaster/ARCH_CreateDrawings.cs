@@ -30,10 +30,10 @@ namespace DSKPrim.PanelTools.PanelMaster
 			Transaction transaction = new Transaction(Document, "Создаем сборки");
 			TransactionSettings.SetFailuresPreprocessor(transaction);
 
-			List<BasePanel> panels = new List<BasePanel>();
+			List<PrecastPanel> panels = new List<PrecastPanel>();
 			foreach (var item in wallsCollection)
 			{
-				panels.Add(new Facade_Panel(Document, item));
+				panels.Add(new PrecastPanel(Document, item));
 			}
 
 			CreateAssemblyIfMissing(panels, transaction);
@@ -42,16 +42,16 @@ namespace DSKPrim.PanelTools.PanelMaster
 			return Result.Succeeded;
 		}
 
-		private void CreateDrawingForSelectedPanels(List<BasePanel> list_Panels)
+		private void CreateDrawingForSelectedPanels(List<PrecastPanel> list_Panels)
 		{
-			foreach (BasePanel item in list_Panels)
+			foreach (PrecastPanel item in list_Panels)
 			{
 				BasePanelWrapper panelWrapper = new DrawingWrapper(item);
 				panelWrapper.Execute(Document);
 			}
 		}
 
-		private void CreateAssemblyIfMissing(List<BasePanel> list_Panels, Transaction transaction)
+		private void CreateAssemblyIfMissing(List<PrecastPanel> list_Panels, Transaction transaction)
 		{
 			foreach (var item in list_Panels)
 			{

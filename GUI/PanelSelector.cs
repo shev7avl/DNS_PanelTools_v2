@@ -40,7 +40,7 @@ namespace DSKPrim.PanelTools.GUI
 
             for (int i = 0; i < PanelQuantity; i++)
             {
-                PanelCollection[i] = environment.GetStructuralEnvironment().PanelMarks[i].ShortMark;
+                PanelCollection[i] = environment.GetStructuralEnvironment().PanelMarks[i].Mark.ShortMark;
             }
 
             ListBox.ObjectCollection objectCollection = new ListBox.ObjectCollection(PanelSelectionBox, PanelCollection);
@@ -59,7 +59,7 @@ namespace DSKPrim.PanelTools.GUI
 
             foreach (var item in PanelSelectionBox.CheckedItems)
             {
-                BasePanel _panel = environment.GetStructuralEnvironment().PanelMarks.Where(o => o.ShortMark == item.ToString()).FirstOrDefault();
+                PrecastPanel _panel = environment.GetStructuralEnvironment().PanelMarks.Where(o => o.Mark.ShortMark == item.ToString()).FirstOrDefault();
                 if (_panel != null)
                 {
                     CheckedPanels.Add(_panel.ActiveElement);

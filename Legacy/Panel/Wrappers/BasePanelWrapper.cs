@@ -9,9 +9,9 @@ namespace DSKPrim.PanelTools.Panel
 {
     public abstract class BasePanelWrapper
     {
-        protected abstract BasePanel WrappeePanel { get; set; }
+        protected abstract PrecastPanel WrappeePanel { get; set; }
 
-        public BasePanelWrapper(BasePanel panel)
+        public BasePanelWrapper(PrecastPanel panel)
         {
             WrappeePanel = panel;
         }

@@ -70,8 +70,6 @@ namespace DSKPrim.PanelTools.MVVM.ViewModel
                     viewSchedule.Name);
                 viewSchedule.Export(path, name, exportOptions);
             }
-                
-
         }
     }
 }

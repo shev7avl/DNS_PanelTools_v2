@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI.Selection;
+using DSKPrim.PanelTools.Legacy.Panel;
 using DSKPrim.PanelTools.ProjectEnvironment;
 using System;
 using System.Collections.Generic;
@@ -20,7 +21,9 @@ namespace DSKPrim.PanelTools.PanelMaster
 
             StructureCategory structureType = new StructureCategory(elem);
 
-            if (structureType.GetPanelType(elem) == StructureCategory.PanelTypes.NOT_A_PANEL && !elem.Category.Name.Contains("Каркас несущий") && !(elem is AssemblyInstance))
+            if (structureType.GetStructureType(elem) == StructureType.NOT_A_PANEL 
+                && !elem.Category.Name.Contains("Каркас несущий") 
+                && !(elem is AssemblyInstance))
             {
                 return false;
             }
@@ -39,7 +42,7 @@ namespace DSKPrim.PanelTools.PanelMaster
         public bool AllowElement(Element elem)
         {
             StructureCategory structureType = new StructureCategory(elem);
-            bool elIsCorrect = structureType.GetPanelType(elem) != StructureCategory.PanelTypes.NOT_A_PANEL && elem.Category.Name.Contains("Каркас несущий");
+            bool elIsCorrect = structureType.GetStructureType(elem) != StructureType.NOT_A_PANEL;
 
             if (elIsCorrect)
             {

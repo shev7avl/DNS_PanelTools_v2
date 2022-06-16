@@ -11,11 +11,11 @@ namespace DSKPrim.PanelTools.Panel
     public class DrawingWrapper : BasePanelWrapper
     {
 
-        protected override BasePanel WrappeePanel { get; set; }
+        protected override PrecastPanel WrappeePanel { get; set; }
 
         private DrawingBuilder Behaviour { get; set; }
 
-        public DrawingWrapper(BasePanel panel) : base(panel)
+        public DrawingWrapper(PrecastPanel panel) : base(panel)
         {
             WrappeePanel = panel ?? throw new NullReferenceException(nameof(panel));
             Behaviour = new DrawingBuilder(WrappeePanel);

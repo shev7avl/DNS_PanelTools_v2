@@ -20,7 +20,7 @@ namespace DSKPrim.PanelTools.PanelMaster
 
         Document LinkedArch;
 
-        public BasePanel Behaviour { get; set; }
+        public PrecastPanel Behaviour { get; set; }
 
 
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
@@ -66,7 +66,7 @@ namespace DSKPrim.PanelTools.PanelMaster
                     for (int i = 0; i < counter; i++)
                     {
                         Element item = els[i];
-                        BasePanel temp = StructuralEnvironment.DefinePanelBehaviour(Document, item);
+                        PrecastPanel temp = new PrecastPanel(Document, item);
 
                         Behaviour = temp;
                         if (Behaviour is IPerforable perforable)

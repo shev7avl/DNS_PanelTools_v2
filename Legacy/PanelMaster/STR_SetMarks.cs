@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using DSKPrim.PanelTools.Legacy.Controllers;
 using DSKPrim.PanelTools.Panel;
 using DSKPrim.PanelTools.ProjectEnvironment;
 using DSKPrim.PanelTools.Utility;
@@ -28,39 +29,30 @@ namespace DSKPrim.PanelTools.PanelMaster
 
             CommonProjectEnvironment environment = CommonProjectEnvironment.GetInstance(Document);
 
-            TransactionGroup transactionGroup = new TransactionGroup(Document, "Присвоение длинной марки - ");
-            transactionGroup.Start("Группа транзакций");
+            TransactionGroup transactionGroup = new TransactionGroup(Document, "Присвоение марок");
+            transactionGroup.Start();
 
             Selector selector = new Selector();
-            ICollection<Element> els = selector.CollectElements(commandData, new PanelSelectionFilter(), BuiltInCategory.OST_StructuralFraming);
+            ICollection<Element> els = selector.CollectElements(commandData,
+                new PanelSelectionFilter(),
+                BuiltInCategory.OST_StructuralFraming);
             
             int positionEnum = 1;
             foreach (var item in els)
             {
-                string posEnum;
+                //string posEnum;
 
-                if (positionEnum < 10)
-                {
-                    posEnum = $"0{positionEnum}";
-                }
-                else posEnum = positionEnum.ToString();
+                //if (positionEnum < 10)
+                //{
+                //    posEnum = $"0{positionEnum}";
+                //}
+                //else posEnum = positionEnum.ToString();
 
-                BasePanel panel = StructuralEnvironment.DefinePanelBehaviour(Document, item);
+                PrecastPanel panel = new PrecastPanel(Document, item);
+                MarkController markController = new MarkController(panel);
+                markController.Create();
+                markController.Write();
 
-                if (panel != null)
-                {
-                    if (panel.LongMark is null ||
-                        panel.ShortMark is null)
-                    {
-                        panel.CreateMarks();
-                    }
-                    else
-                    {
-                        panel.ReadMarks();
-                    }
-
-                    panel.SetMarks(posEnum);
-                }
                 positionEnum++;
             }
             transactionGroup.Assimilate();

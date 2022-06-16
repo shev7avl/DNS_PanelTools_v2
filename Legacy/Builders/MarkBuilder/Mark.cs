@@ -13,5 +13,14 @@ namespace DSKPrim.PanelTools.Legacy.Builders.MarkBuilder
         public string ShortMark { get; set; }
 
         public string Index { get; set; }
+
+        public bool IsEqual(Mark mark)
+        { 
+            if (this.LongMark == mark.LongMark &&
+                this.Index == mark.Index &&
+                this.ShortMark == mark.ShortMark) return true;
+            return false;
+        
+        }
     }
 }

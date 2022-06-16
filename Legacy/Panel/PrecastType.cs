@@ -29,37 +29,19 @@ namespace DSKPrim.PanelTools.Legacy.Panel
             _element = element;
         }
 
-        private StructureType GetStructureType(Element element)
+        public StructureType GetStructureType(Element element)
         {
+            FamilyInstance instance = element as FamilyInstance;
+            string familyName = instance.Symbol.Family.Name;
 
-            if (element.Name.Contains("НС") || element.Name.Contains("есущая"))
+            foreach (var type in _familyNameTypeMapping.Keys)
             {
-                return StructureType.NS_PANEL;
+                if (_familyNameTypeMapping[type].Contains(familyName))
+                {
+                    return type;
+                }
             }
-            else if (element.Name.Contains("ВС"))
-            {
-                return StructureType.VS_PANEL;
-            }
-            else if (element.Name.Contains("ПП"))
-            {
-                return StructureType.PP_PANEL;
-            }
-            else if (element.Name.Contains("ПС") || element.Name.Contains("П_100-"))
-            {
-                return StructureType.PS_PANEL;
-            }
-            else if (element.Name.Contains("БП"))
-            {
-                return StructureType.BP_PANEL;
-            }
-            else if (element.Name.Contains("Фасад"))
-            {
-                return StructureType.FACADE_PANEL;
-            }
-            else
-            {
-                return StructureType.NOT_A_PANEL;
-            }
+            return StructureType.NOT_A_PANEL;
         }
 
         public bool IsValidCategory()
@@ -71,6 +53,22 @@ namespace DSKPrim.PanelTools.Legacy.Panel
             else return true;
 
         }
+
+        private readonly Dictionary<StructureType, List<string>> _familyNameTypeMapping = new Dictionary<StructureType, List<string>>()
+        {
+            { StructureType.NS_PANEL, 
+                new List<string>(){"NS_Empty", "NS_Medium" } },
+            { StructureType.VS_PANEL,
+                new List<string>(){"VS_Empty", "VS_Medium" } },
+            { StructureType.PP_PANEL,
+                new List<string>(){"PP_Empty"} },
+            { StructureType.BP_PANEL,
+                new List<string>(){"BP_Empty", "BP_Medium" } },
+            { StructureType.PS_PANEL,
+                new List<string>(){"PS_Empty", "PS_Medium" } },
+            { StructureType.FACADE_PANEL,
+                new List<string>(){"DNS_Фасад", "DNS_Фасад2" } }
+        };
 
     }
 

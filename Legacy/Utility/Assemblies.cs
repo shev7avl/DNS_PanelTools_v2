@@ -10,7 +10,7 @@ namespace DSKPrim.PanelTools.Utility
 {
     internal static class Assemblies
     {
-        internal static void CreateAssembly(Document document, BasePanel item)
+        internal static void CreateAssembly(Document document, PrecastPanel item)
         {
             if (item is IAssembler assembler && item.ActiveElement.AssemblyInstanceId.IntegerValue == -1)
             {
@@ -21,12 +21,14 @@ namespace DSKPrim.PanelTools.Utility
                 List<Element> intersected = fecIntersect.ToList();
 
                 assembler.SetAssemblyElements();
-                if (item is NS_Panel || item is VS_Panel)
+                if (item.StructureCategory.StructureType is Legacy.Panel.StructureType.NS_PANEL ||
+                    item.StructureCategory.StructureType is Legacy.Panel.StructureType.VS_PANEL)
                 {
                     foreach (var ints in intersected)
                     {
-                        BasePanel behaviour = StructuralEnvironment.DefinePanelBehaviour(document, ints);
-                        if (behaviour is NS_Panel || behaviour is VS_Panel)
+                        PrecastPanel behaviour = new PrecastPanel(document, ints);
+                        if (behaviour.StructureCategory.StructureType is Legacy.Panel.StructureType.NS_PANEL 
+                            || behaviour.StructureCategory.StructureType is Legacy.Panel.StructureType.VS_PANEL)
                         {
                             IAssembler assembler1 = (IAssembler)behaviour;
                             assembler.TransferFromPanel(assembler1);
@@ -45,7 +47,7 @@ namespace DSKPrim.PanelTools.Utility
             }
         }
 
-        private static void AssemblyCreationTransaction(Document document, BasePanel item, IAssembler assembler, out AssemblyInstance instance)
+        private static void AssemblyCreationTransaction(Document document, PrecastPanel item, IAssembler assembler, out AssemblyInstance instance)
         {
             Transaction transaction = new Transaction(document, "CreateAssembly");
             TransactionSettings.SetFailuresPreprocessor(transaction);
@@ -59,11 +61,11 @@ namespace DSKPrim.PanelTools.Utility
                 transaction.Start();
                 try
                 {
-                    instance.AssemblyTypeName = item.ShortMark;
+                    instance.AssemblyTypeName = item.Mark.ShortMark;
                 }
                 catch (Autodesk.Revit.Exceptions.ArgumentException)
                 {
-                    instance.AssemblyTypeName = $"{item.ShortMark} ID{item.ActiveElement.Id}";
+                    instance.AssemblyTypeName = $"{item.Mark.ShortMark} ID{item.ActiveElement.Id}";
                 }
 
                 transaction.Commit();
@@ -80,11 +82,11 @@ namespace DSKPrim.PanelTools.Utility
                 transaction.Start();
                 try
                 {
-                    instance.AssemblyTypeName = item.ShortMark;
+                    instance.AssemblyTypeName = item.Mark.ShortMark;
                 }
                 catch (Autodesk.Revit.Exceptions.ArgumentException)
                 {
-                    instance.AssemblyTypeName = $"{item.ShortMark} ID{item.ActiveElement.Id}";
+                    instance.AssemblyTypeName = $"{item.Mark.ShortMark} ID{item.ActiveElement.Id}";
                 }
 
                 transaction.Commit();
@@ -95,7 +97,7 @@ namespace DSKPrim.PanelTools.Utility
             }
         }
 
-        internal static int CompareElementIdsByZCoord(BasePanel x, BasePanel y)
+        internal static int CompareElementIdsByZCoord(PrecastPanel x, PrecastPanel y)
         {
             Element elX = x.ActiveElement;
             Element elY = y.ActiveElement;
@@ -118,7 +120,7 @@ namespace DSKPrim.PanelTools.Utility
 
         }
 
-        internal static List<AssemblyDetailViewOrientation> DefineViewOrientations(Document document, BasePanel basePanel)
+        internal static List<AssemblyDetailViewOrientation> DefineViewOrientations(Document document, PrecastPanel basePanel)
         {
             ElementId assemblyInstanceId = basePanel.AssemblyInstance.Id;
             Element elAssembly = document.GetElement(assemblyInstanceId);

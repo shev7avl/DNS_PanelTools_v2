@@ -34,7 +34,7 @@ namespace DSKPrim.PanelTools.PanelMaster
 
             CommonProjectEnvironment environment = CommonProjectEnvironment.GetInstance(Document);
 
-            List<BasePanel> list_Panels = GetPanelsFromSelection(commandData);
+            List<PrecastPanel> list_Panels = GetPanelsFromSelection(commandData);
             CreateAssemblyIfMissing(list_Panels);
             CreateDrawingForSelectedPanels(list_Panels);
 
@@ -43,16 +43,16 @@ namespace DSKPrim.PanelTools.PanelMaster
             return Result.Succeeded;
         }
 
-        private void CreateDrawingForSelectedPanels(List<BasePanel> list_Panels)
+        private void CreateDrawingForSelectedPanels(List<PrecastPanel> list_Panels)
         {
-            foreach (BasePanel item in list_Panels)
+            foreach (PrecastPanel item in list_Panels)
             {
                 BasePanelWrapper panelWrapper = new DrawingWrapper(item);
                 panelWrapper.Execute(Document);
             }
         }
 
-        private void CreateAssemblyIfMissing(List<BasePanel> list_Panels)
+        private void CreateAssemblyIfMissing(List<PrecastPanel> list_Panels)
         {
             foreach (var item in list_Panels)
             {
@@ -71,23 +71,23 @@ namespace DSKPrim.PanelTools.PanelMaster
             }
         }
 
-        private static List<BasePanel> GetPanelsFromSelection(ExternalCommandData commandData)
+        private static List<PrecastPanel> GetPanelsFromSelection(ExternalCommandData commandData)
         {
             Document document = commandData.Application.ActiveUIDocument.Document;
 
             Selector selector = new Selector();
             ICollection<Element> selectedEls = selector.CollectElements(commandData, new PanelSelectionFilter(), BuiltInCategory.OST_StructuralFraming);
 
-            List<BasePanel> panelsList = new List<BasePanel>();
+            List<PrecastPanel> panelsList = new List<PrecastPanel>();
 
             
 
             foreach (var item in selectedEls)
             {
-                BasePanel panel = StructuralEnvironment.DefinePanelBehaviour(document, item);
+                PrecastPanel panel = new PrecastPanel(document, item);
                 if (panel != null)
                 {
-                    panel.ReadMarks();
+                    //panel.ReadMarks();
                     panelsList.Add(panel);
                 }
             }

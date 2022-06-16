@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Autodesk.Revit.DB;
+using DSKPrim.PanelTools.Legacy.Controllers;
 using DSKPrim.PanelTools.Panel;
 
 namespace DSKPrim.PanelTools.ProjectEnvironment
@@ -11,7 +12,7 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
     {
         private static StructuralEnvironment instance;
 
-        public List<BasePanel> PanelMarks { get; private set; }
+        public List<PrecastPanel> PanelMarks { get; private set; }
 
         private StructuralEnvironment(Document document)
         {
@@ -22,14 +23,13 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
             panelsList.Sort(CompareByXCoord);
             panelsList.Sort(CompareByYCoord);
 
-            PanelMarks = new List<BasePanel>();
+            PanelMarks = new List<PrecastPanel>();
 
             foreach (var item in panelsList)
             {
-                BasePanel panel = DefinePanelBehaviour(document, item);
+                PrecastPanel panel = new PrecastPanel(document, item);
                 if (panel != null)
                 {
-                    panel.CreateMarks();
                     PanelMarks.Add(panel);
                 }
             }
@@ -51,20 +51,20 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
             panelsList.Sort(CompareByYCoord);
             Debug.WriteLine("Панели отсортированы по координате У");
 
-            PanelMarks = new List<BasePanel>();
+            PanelMarks = new List<PrecastPanel>();
 
             foreach (var item in panelsList)
             {
-                BasePanel panel = DefinePanelBehaviour(document, item);
+                PrecastPanel panel = new PrecastPanel(document, item);
                 if (panel != null)
                 {
                     if (exist)
                     {
-                        panel.ReadMarks();
+                        //panel.ReadMarks();
                     }
                     else
                     {
-                        panel.CreateMarks();
+                        //panel.CreateMarks();
                     }
 
                     PanelMarks.Add(panel);
@@ -72,20 +72,7 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
             }
         }
 
-        public void CreateMarks(bool exist = false)
-        {
-            foreach (BasePanel item in PanelMarks)
-            {
-                if (exist)
-                {
-                    item.ReadMarks();
-                }
-                else
-                {
-                    item.CreateMarks();
-                }
-            }
-        }
+
 
         public int CompareByName(Element x, Element y)
         {
@@ -156,46 +143,6 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
             return instance;
         }
 
-        public static BasePanel DefinePanelBehaviour(Document doc, Element element)
-        {
-            StructureCategory structureType = new StructureCategory(element);
-            StructureCategory.PanelTypes type = structureType.GetPanelType(element);
-
-            if (type != StructureCategory.PanelTypes.NOT_A_PANEL)
-            {
-                if (type == StructureCategory.PanelTypes.NS_PANEL)
-                {
-                    NS_Panel nS = new NS_Panel(doc, element);
-                    return nS;
-                }
-                if (type == StructureCategory.PanelTypes.VS_PANEL)
-                {
-                    VS_Panel vS = new VS_Panel(doc, element);
-                    return vS;
-                }
-                if (type == StructureCategory.PanelTypes.BP_PANEL)
-                {
-                    BP_Panel bP = new BP_Panel(doc, element);
-                    return bP;
-                }
-                if (type == StructureCategory.PanelTypes.PS_PANEL)
-                {
-                    PS_Panel pS = new PS_Panel(doc, element);
-                    return pS;
-                }
-                if (type == StructureCategory.PanelTypes.PP_PANEL)
-                {
-                    PP_Panel pP = new PP_Panel(doc, element);
-                    return pP;
-                }
-                if (type == StructureCategory.PanelTypes.FACADE_PANEL)
-                {
-                    Facade_Panel facade = new Facade_Panel(doc, element);
-                    return facade;
-                }
-            }
-            return null;
-        }
 
         public void Reset()
         {
@@ -205,7 +152,7 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
             {
                 foreach (var item in PanelMarks)
                 {
-                    item.Reset();
+                    //item.Reset();
                 }
             }
             PanelMarks = null;
