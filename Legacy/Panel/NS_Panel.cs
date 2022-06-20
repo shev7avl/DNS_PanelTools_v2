@@ -254,10 +254,21 @@ namespace DSKPrim.PanelTools.Panel
             ParameterMap instanceMap = elementFamily.ParametersMap;
             ParameterMap symbolMap = familySymbol.ParametersMap;
 
-            string[] tempPvlStart = instanceMap.get_Item("Тип PVL_СТАРТ").AsString().Split(' ');
-            string[] tempPvlFinish = instanceMap.get_Item("Тип PVL_ФИНИШ").AsString().Split(' ');
+            if (familySymbol.FamilyName.ToLower().Contains(".ns"))
+            {
+                return String.Format("{0}.{1}_{2}.{3}.{4}",
+                instanceMap.get_Item("СТАРТ").AsValueString(),
+                instanceMap.get_Item("ФИНИШ").AsValueString(),
+                Marks.ParameterValueAsDecimeterString(instanceMap.get_Item("ГабаритДлина")),
+                Marks.ParameterValueAsDecimeterString(symbolMap.get_Item("ГабаритВысота")),
+                Marks.ParameterValueAsDecimeterString(symbolMap.get_Item("ГабаритТолщина")));
+            }
+            else
+            {
+                string[] tempPvlStart = instanceMap.get_Item("Тип PVL_СТАРТ").AsString().Split(' ');
+                string[] tempPvlFinish = instanceMap.get_Item("Тип PVL_ФИНИШ").AsString().Split(' ');
 
-            return String.Format("{0}.{1}_{2}.{3}.{4}_{5}.{6}",
+                return String.Format("{0}.{1}_{2}.{3}.{4}_{5}.{6}",
                 instanceMap.get_Item("СТАРТ").AsValueString(),
                 instanceMap.get_Item("ФИНИШ").AsValueString(),
                 Marks.ParameterValueAsDecimeterString(instanceMap.get_Item("ГабаритДлина")),
@@ -265,6 +276,8 @@ namespace DSKPrim.PanelTools.Panel
                 Marks.ParameterValueAsDecimeterString(symbolMap.get_Item("ГабаритТолщина")),
                 tempPvlStart[1],
                 tempPvlFinish[1]);
+            }
+            
         }
         private string GetClosureCode()
         {

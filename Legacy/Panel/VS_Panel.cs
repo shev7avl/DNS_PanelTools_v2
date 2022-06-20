@@ -77,16 +77,33 @@ namespace DSKPrim.PanelTools.Panel
         
         private string GetPanelCode()
         {
+
             var elementFamily = ActiveElement as FamilyInstance;
             var familySymbol = elementFamily.Symbol;
-            string i3 = Marks.AsDecimString(ActiveElement, "ГабаритДлина");
-            string i4 = Marks.AsDecimString(familySymbol, "ГабаритВысота");
-            string i5 = Marks.AsDecimString(familySymbol, "ГабаритТолщина");
-            string[] temp_i6 = ActiveElement.LookupParameter("Тип PVL_СТАРТ").AsString().Split(' ');
-            string i6 = temp_i6[1];
-            string[] temp_i7 = ActiveElement.LookupParameter("Тип PVL_ФИНИШ").AsString().Split(' ');
-            string i7 = temp_i7[1];
-            return $"{i3}.{i4}.{i5}_{i6}.{i7}";
+
+            ParameterMap instanceMap = elementFamily.ParametersMap;
+            ParameterMap symbolMap = familySymbol.ParametersMap;
+
+            if (familySymbol.FamilyName.ToLower().Contains(".vs"))
+            {
+                return String.Format("{0}.{1}.{2}",
+                Marks.ParameterValueAsDecimeterString(instanceMap.get_Item("ГабаритДлина")),
+                Marks.ParameterValueAsDecimeterString(symbolMap.get_Item("ГабаритВысота")),
+                Marks.ParameterValueAsDecimeterString(symbolMap.get_Item("ГабаритТолщина")));
+            }
+            else
+            {
+                string[] tempPvlStart = instanceMap.get_Item("Тип PVL_СТАРТ").AsString().Split(' ');
+                string[] tempPvlFinish = instanceMap.get_Item("Тип PVL_ФИНИШ").AsString().Split(' ');
+
+                return String.Format("{0}.{1}.{2}_{3}.{4}",
+                Marks.ParameterValueAsDecimeterString(instanceMap.get_Item("ГабаритДлина")),
+                Marks.ParameterValueAsDecimeterString(symbolMap.get_Item("ГабаритВысота")),
+                Marks.ParameterValueAsDecimeterString(symbolMap.get_Item("ГабаритТолщина")),
+                tempPvlStart[1],
+                tempPvlFinish[1]);
+            }
+
         }
         private string GetClosureCode()
         {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Autodesk.Revit.DB;
 
 namespace DSKPrim.PanelTools.ProjectEnvironment
@@ -25,36 +26,56 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
 
         public PanelTypes GetPanelType(Element element)
         {
+            string familyName;
 
-            if (element.Name.Contains("НС") || element.Name.Contains("есущая"))
+            var cat = Category.GetCategory(element.Document, BuiltInCategory.OST_StructuralFraming);
+
+            if (element.Category.Name.Contains("Каркас несущий"))
             {
-                return PanelTypes.NS_PANEL;
+                FamilyInstance family = element as FamilyInstance;
+                familyName = family.Symbol.FamilyName;
             }
-            else if (element.Name.Contains("ВС"))
+            else familyName = element.Name;
+
+            var result = PanelTypes.NOT_A_PANEL;
+            if (panelTypesMap.ContainsKey(familyName))
             {
-                return PanelTypes.VS_PANEL;
+                result = panelTypesMap[familyName];
             }
-            else if (element.Name.Contains("ПП"))
-            {
-                return PanelTypes.PP_PANEL;
-            }
-            else if (element.Name.Contains("ПС") || element.Name.Contains("П_100-"))
-            {
-                return PanelTypes.PS_PANEL;
-            }
-            else if (element.Name.Contains("БП"))
-            {
-                return PanelTypes.BP_PANEL;
-            }
-            else if (element.Name.Contains("Фасад"))
-            {
-                return PanelTypes.FACADE_PANEL;
-            }
-            else
-            {
-                return PanelTypes.NOT_A_PANEL;
-            }
+            return result;
+
         }
+        private static readonly Dictionary<string, PanelTypes> panelTypesMap = new Dictionary<string, PanelTypes>()
+        {
+            {"NS_Empty", PanelTypes.NS_PANEL},
+            {"NS_Medium", PanelTypes.NS_PANEL},
+            //Навесные
+            {"N.NS_Empty", PanelTypes.NS_PANEL},
+            {"N.NS_Medium", PanelTypes.NS_PANEL},
+            //Закладные
+            {"Z.NS_Empty", PanelTypes.NS_PANEL},
+            {"Z.NS_Medium", PanelTypes.NS_PANEL},
+
+            {"VS_Empty", PanelTypes.VS_PANEL},
+            {"VS_Medium", PanelTypes.VS_PANEL},
+            //Навесные
+            {"N.VS_Empty", PanelTypes.VS_PANEL},
+            {"N.VS_Medium", PanelTypes.VS_PANEL},
+            //Закладные
+            {"Z.VS_Empty", PanelTypes.VS_PANEL},
+            {"Z.VS_Medium", PanelTypes.VS_PANEL},
+
+            {"PP_Empty", PanelTypes.PP_PANEL},
+
+            {"PS_Empty", PanelTypes.PS_PANEL},
+            {"PS_Medium", PanelTypes.PS_PANEL},
+
+            {"BP_Empty", PanelTypes.BP_PANEL},
+            {"BP_Medium", PanelTypes.BP_PANEL},
+
+            {"DNS_Фасад", PanelTypes.FACADE_PANEL},
+            {"DNS_Фасад 2", PanelTypes.FACADE_PANEL},
+        };
 
     }
 }
