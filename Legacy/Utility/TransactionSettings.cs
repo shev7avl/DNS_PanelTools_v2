@@ -12,7 +12,7 @@ namespace DSKPrim.PanelTools.Utility
     public static class TransactionSettings
     {
 
-        internal static bool WorksetsUnavailable(Document document)
+        public static void CheckWorksets(Document document)
         {
             if (document.IsWorkshared)
             {
@@ -22,10 +22,15 @@ namespace DSKPrim.PanelTools.Utility
 
                 if (checkedWorksets.Count() != worksets.Count())
                 {
-                    return true;
+                    throw new Exception("Рабочие наборы заняты. Освободите рабочие наборы");
                 }
+
             }
-            return false;
+        }
+
+        public static void ReleaseWorksets(Document document)
+        {
+            WorksharingUtils.RelinquishOwnership(document, new RelinquishOptions(true), new TransactWithCentralOptions());
         }
 
         internal static void SetFailuresPreprocessor(Transaction transaction)

@@ -33,7 +33,7 @@ namespace DSKPrim.PanelTools.PanelMaster
 			List<PrecastPanel> panels = new List<PrecastPanel>();
 			foreach (var item in wallsCollection)
 			{
-				panels.Add(new PrecastPanel(Document, item));
+				panels.Add(new PrecastPanel(item));
 			}
 
 			CreateAssemblyIfMissing(panels, transaction);
@@ -46,8 +46,8 @@ namespace DSKPrim.PanelTools.PanelMaster
 		{
 			foreach (PrecastPanel item in list_Panels)
 			{
-				BasePanelWrapper panelWrapper = new DrawingWrapper(item);
-				panelWrapper.Execute(Document);
+				IPanelOperation panelWrapper = new DrawingOperation(item);
+				panelWrapper.Execute();
 			}
 		}
 

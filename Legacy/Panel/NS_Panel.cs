@@ -113,7 +113,6 @@ namespace DSKPrim.PanelTools.Panel
             bool nSlvl = (xPanel is NS_Panel && yPanel is NS_Panel) && (lvlY - lvlX == 1);
 
             return vSnSlvl || nSlvl;
-
         }
 
         public void InTransferHandler(object sender, EventArgs e)

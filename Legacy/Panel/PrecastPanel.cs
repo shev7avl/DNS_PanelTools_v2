@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using Autodesk.Revit.DB;
 using DSKPrim.PanelTools.Legacy.Builders.MarkBuilder;
+using DSKPrim.PanelTools.Legacy.Controllers;
 using DSKPrim.PanelTools.Legacy.Panel;
 
 namespace DSKPrim.PanelTools.Panel
@@ -14,16 +15,19 @@ namespace DSKPrim.PanelTools.Panel
     /// </summary>
     public class PrecastPanel
     {
-        public Document ActiveDocument { get; set; }
         public Element ActiveElement { get; set; }
         public AssemblyInstance AssemblyInstance { get; set; }
         public Mark Mark { get; set; }
         public StructureCategory StructureCategory { get; set; }
 
-        public PrecastPanel(Document document, Element element)
+        public PrecastPanel(Element element)
         {
-            ActiveDocument = document;
             ActiveElement = element;
+            if (element.AssemblyInstanceId.IntegerValue != -1)
+            {
+                AssemblyInstance = element.Document.GetElement(element.AssemblyInstanceId) as AssemblyInstance;
+            }
+            Mark = new Mark();
             StructureCategory = new StructureCategory(element);
         }
 

@@ -40,6 +40,10 @@ namespace DSKPrim.PanelTools.Legacy.Controllers
 
         public Mark Read()
         {
+            if (_panel.Mark is null)
+            {
+                return this.Create();
+            }
             return _panel.Mark;
         }
 
@@ -62,7 +66,7 @@ namespace DSKPrim.PanelTools.Legacy.Controllers
 
         public void Write()
         {
-            Document document = _panel.ActiveDocument;
+            Document document = _panel.ActiveElement.Document;
             Transaction writeParameters = new Transaction(document, "Writing marks");
             TransactionSettings.SetFailuresPreprocessor(writeParameters);
 

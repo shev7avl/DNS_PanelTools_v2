@@ -49,38 +49,38 @@ namespace DSKPrim.PanelTools.Builders
             }
         }
 
-        public void BuildSheets(Document document)
+        public void BuildSheets()
         {
-            Transaction transaction = new Transaction(document, $"Создание листов панели {Panel.Mark.ShortMark}");
+            Transaction transaction = new Transaction(Panel.ActiveElement.Document, $"Создание листов панели {Panel.Mark.ShortMark}");
             TransactionSettings.SetFailuresPreprocessor(transaction);
 
             ElementId elementId = Panel.AssemblyInstance.Id;
 
             transaction.Start();
 
-            List<Sheet> sheets = SheetUtils.CreateSheetList(document, elementId, BuilderTemplate.GetNumberOfSheets());
+            List<Sheet> sheets = SheetUtils.CreateSheetList(Panel.ActiveElement.Document, elementId, BuilderTemplate.GetNumberOfSheets());
 
             transaction.Commit();
 
             BuilderTemplate.Sheets = sheets;
         }
 
-        public void BuildViews(Document document)
+        public void BuildViews()
         {
-            BuilderTemplate.ViewReferences = CreateViewReferences(document);
-            Transaction transaction = new Transaction(document, "Creating the views");
+            BuilderTemplate.ViewReferences = CreateViewReferences(Panel.ActiveElement.Document);
+            Transaction transaction = new Transaction(Panel.ActiveElement.Document, "Creating the views");
             TransactionSettings.SetFailuresPreprocessor(transaction);
             transaction.Start();
             foreach (var viewReference in BuilderTemplate.ViewReferences)
             {
-                SetAndCreateViews(document, viewReference);
+                SetAndCreateViews(Panel.ActiveElement.Document, viewReference);
             }
             transaction.Commit();
         }
 
-        public void BuildDrawings(Document document)
+        public void BuildDrawings()
         {
-            Transaction transaction = new Transaction(document, $"Создание листов панели {Panel.AssemblyInstance.Name}");
+            Transaction transaction = new Transaction(Panel.ActiveElement.Document, $"Создание листов панели {Panel.AssemblyInstance.Name}");
             TransactionSettings.SetFailuresPreprocessor(transaction);
 
             transaction.Start();
@@ -88,15 +88,15 @@ namespace DSKPrim.PanelTools.Builders
             {
                 foreach (var viewRef in BuilderTemplate.GetDrawingSetMapping()[sheet])
                 {
-                    SheetUtils.PlaceViewsOnSheet(document, sheet, viewRef);
+                    SheetUtils.PlaceViewsOnSheet(Panel.ActiveElement.Document, sheet, viewRef);
                 }
             }
             transaction.Commit();
         }
 
-        public void BuildParameters(Document document)
+        public void BuildParameters()
         {
-            Transaction transaction = new Transaction(document, $"Создание листов панели {Panel.AssemblyInstance.Name}");
+            Transaction transaction = new Transaction(Panel.ActiveElement.Document, $"Создание листов панели {Panel.AssemblyInstance.Name}");
             TransactionSettings.SetFailuresPreprocessor(transaction);
 
             ElementId elementId = Panel.AssemblyInstance.Id;
@@ -104,14 +104,14 @@ namespace DSKPrim.PanelTools.Builders
             transaction.Start();
             for (int i = 0; i < BuilderTemplate.Sheets.Count; i++)
             {
-                SheetUtils.SetSheetParameters(document, elementId, BuilderTemplate.Sheets[i].SheetLink, i + 1);
+                SheetUtils.SetSheetParameters(Panel.ActiveElement.Document, elementId, BuilderTemplate.Sheets[i].SheetLink, i + 1);
             }
             transaction.Commit();
 
-            SetFrontView(document, Panel);
+            SetFrontView(Panel);
             if (Panel.StructureCategory.StructureType is Legacy.Panel.StructureType.PP_PANEL)
             {
-                SetPlanView(document, Panel);
+                SetPlanView(Panel);
             }
         }
 
@@ -183,28 +183,28 @@ namespace DSKPrim.PanelTools.Builders
             return viewReference.ViewTemplate.ToString().Contains("SECTION_VIEW") && !viewReference.ViewTemplate.ToString().Contains("JOINT");
         }
 
-        private static void SetPlanView(Document document, PrecastPanel basePanel)
+        private static void SetPlanView(PrecastPanel basePanel)
         {
-            View sectionView = new FilteredElementCollector(document).OfClass(typeof(View)).
+            View sectionView = new FilteredElementCollector(basePanel.ActiveElement.Document).OfClass(typeof(View)).
                 Cast<View>().ToList().Where(o => basePanel.ActiveElement.AssemblyInstanceId == o.AssociatedAssemblyInstanceId
                 && o.GetType() == typeof(ViewSection)
                 && o.Name == "Разрез узла A").FirstOrDefault();
 
             if (sectionView != null)
             {
-                Transaction transaction = new Transaction(document, "setPlanView");
+                Transaction transaction = new Transaction(basePanel.ActiveElement.Document, "setPlanView");
                 TransactionSettings.SetFailuresPreprocessor(transaction);
                 transaction.Start();
                 sectionView.EnableRevealHiddenMode();
                 transaction.Commit();
 
                 transaction.Start();
-                Element planViewer = new FilteredElementCollector(document, sectionView.Id).
+                Element planViewer = new FilteredElementCollector(basePanel.ActiveElement.Document, sectionView.Id).
                     OfCategory(BuiltInCategory.OST_Viewers).
                     Where(o => o.Name.Contains("План")).FirstOrDefault();
                 if (planViewer != null)
                 {
-                    ElementTransformUtils.MoveElement(document, planViewer.Id, new XYZ(0, 0, 
+                    ElementTransformUtils.MoveElement(basePanel.ActiveElement.Document, planViewer.Id, new XYZ(0, 0, 
                         UnitUtils.ConvertToInternalUnits(150, DisplayUnitType.DUT_MILLIMETERS)));
                 }
                 transaction.Commit();
@@ -216,18 +216,18 @@ namespace DSKPrim.PanelTools.Builders
 
         }
 
-        private static void SetFrontView(Document document, PrecastPanel basePanel)
+        private static void SetFrontView(PrecastPanel basePanel)
         {
-            FilteredElementCollector views = new FilteredElementCollector(document).OfClass(typeof(View));
+            FilteredElementCollector views = new FilteredElementCollector(basePanel.ActiveElement.Document).OfClass(typeof(View));
             List<View> viewsTempFiltered = views.Cast<View>().ToList();
             List<View> viewsFiltered1 = viewsTempFiltered.
                 Where(o => basePanel.ActiveElement.AssemblyInstanceId == o.AssociatedAssemblyInstanceId
             && o.GetType() == typeof(ViewSection)).ToList();
 
-            Element newSection = new FilteredElementCollector(document).
+            Element newSection = new FilteredElementCollector(basePanel.ActiveElement.Document).
                 OfClass(typeof(ViewFamilyType)).FirstOrDefault(o => o.Name.Contains("Сечение_Без номера листа"));
 
-            Transaction transaction = new Transaction(document, "hide Els");
+            Transaction transaction = new Transaction(basePanel.ActiveElement.Document, "hide Els");
             Utility.TransactionSettings.SetFailuresPreprocessor(transaction);
 
             transaction.Start();
@@ -240,7 +240,7 @@ namespace DSKPrim.PanelTools.Builders
             {
                 foreach (var item in viewsFiltered1)
                 {
-                    List<Element> viewersOnView = new FilteredElementCollector(document, item.Id).
+                    List<Element> viewersOnView = new FilteredElementCollector(basePanel.ActiveElement.Document, item.Id).
                         OfCategory(BuiltInCategory.OST_Viewers).ToList();
 
 

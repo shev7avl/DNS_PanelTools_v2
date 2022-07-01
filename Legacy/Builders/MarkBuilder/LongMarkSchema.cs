@@ -1,7 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using DSKPrim.PanelTools.Legacy.Panel;
 using DSKPrim.PanelTools.Panel;
-using DSKPrim.PanelTools.Precast;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,35 +32,33 @@ namespace DSKPrim.PanelTools.Legacy.Builders.MarkBuilder
         {
             switch (this.PanelType)
             {
-                case StructureType.NOT_A_PANEL: 
+                case StructureType.NOT_A_PANEL:
                     return "";
-                    break;
+
+                case StructureType.NS_PANEL_EMBEDDED:
+                    return GetNSEmbeddedMarkSchema();
                 case StructureType.NS_PANEL:
                     return GetNSMarkSchema();
-                    break;
+
                 case StructureType.VS_PANEL:
                     return GetVSMarkSchema();
-                    break;
+                case StructureType.VS_PANEL_EMBEDDED:
+                    return GetVSEmbeddedMarkSchema();
+
                 case StructureType.PP_PANEL:
                     return GetPPMarkSchema();
-                    break;
+
                 case StructureType.BP_PANEL:
-                    try
-                    {
-                        return GetBPMarkSchema();
-                    }
-                    catch (Exception)
-                    {
-                        return GetBPSupMarkSchema();
-                        
-                    }
-                    break;
+                    return GetBPMarkSchema();
+                case StructureType.BP_PANEL_SUPPORT:
+                    return GetBPSupMarkSchema();
+
                 case StructureType.PS_PANEL:
                     return GetPSMarkSchema();
-                    break;
+
                 default:
                     return "";
-                    break;
+
             }
         }
 
@@ -78,6 +75,17 @@ namespace DSKPrim.PanelTools.Legacy.Builders.MarkBuilder
                         GetClosureCode());
         }
 
+        private string GetNSEmbeddedMarkSchema()
+        {
+            return String.Format("{0}.{1}_{2}.{3}.{4}_{5}",
+                        _instanceMap.get_Item("СТАРТ").AsValueString(),
+                        _instanceMap.get_Item("ФИНИШ").AsValueString(),
+                        ParameterAsDecimeter(_instanceMap.get_Item("ГабаритДлина")),
+                        ParameterAsDecimeter(_symbolMap.get_Item("ГабаритВысота")),
+                        ParameterAsDecimeter(_symbolMap.get_Item("ГабаритТолщина")),
+                        GetClosureCode());
+        }
+
         private string GetVSMarkSchema()
         {
             return String.Format("{0}.{1}.{2}_{3}.{4}_{5}",
@@ -86,6 +94,15 @@ namespace DSKPrim.PanelTools.Legacy.Builders.MarkBuilder
                     ParameterAsDecimeter(_symbolMap.get_Item("ГабаритТолщина")),
                     _instanceMap.get_Item("Тип PVL_СТАРТ").AsString().Split(' ')[1],
                     _instanceMap.get_Item("Тип PVL_ФИНИШ").AsString().Split(' ')[1],
+                    GetClosureCode());
+        }
+
+        private string GetVSEmbeddedMarkSchema()
+        {
+            return String.Format("{0}.{1}.{2}_{3}",
+                    ParameterAsDecimeter(_instanceMap.get_Item("ГабаритДлина")),
+                    ParameterAsDecimeter(_symbolMap.get_Item("ГабаритВысота")),
+                    ParameterAsDecimeter(_symbolMap.get_Item("ГабаритТолщина")),
                     GetClosureCode());
         }
 

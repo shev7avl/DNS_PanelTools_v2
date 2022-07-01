@@ -48,7 +48,7 @@ namespace DSKPrim.PanelTools.Architecture
                     Curve curve1 = OffsetCurve(item, directionCurve, StepV + Gap);
                     temp.Add(curve1);
 
-                    if (Geometry.InBox(partBbox, curve1.GetEndPoint(0)) && Geometry.InBox(partBbox, curve1.GetEndPoint(1)))
+                    if (GeometryUtils.InBox(partBbox, curve1.GetEndPoint(0)) && GeometryUtils.InBox(partBbox, curve1.GetEndPoint(1)))
                     {
                         curves.Add(curve1);
                     }

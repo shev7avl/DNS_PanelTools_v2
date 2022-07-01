@@ -5,10 +5,12 @@ using System.Linq;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using DSKPrim.PanelTools.Facade;
+using DSKPrim.PanelTools.Legacy.Panel;
 using DSKPrim.PanelTools.ProjectEnvironment;
 
 namespace DSKPrim.PanelTools.Utility
 {
+
     public static class Openings
     {
 
@@ -16,151 +18,82 @@ namespace DSKPrim.PanelTools.Utility
 
 
         #region Structural Utility
-        public static void SetOpeningParams(Document document, RevitLinkInstance revitLink, Element element, Element window1)
+
+        public static Window UpdateWindow(Element element, Element windowElement)
         {
 
-            Debug.WriteLine("Вызван статический метод Utility.Openings.SetOpeningParams()");
-            Debug.WriteLine($"Назначаем параметры проема элементу {element.Id}");
+            Window window = new Window(element);
+            window.OffsetXY = CalculateOffset(element, windowElement);
 
-            GetOpeningParams(window1, out double appWidth, out double appHeight, out double offsetZ);
-            CalculateOffset(revitLink, element, window1, out double offsetLine);
-            Transaction transaction = new Transaction(document, "Test_opening");
-            TransactionSettings.SetFailuresPreprocessor(transaction);
-            transaction.Start();
+            return window;
+        }
 
+        public static void SetWindowParameters(ParameterMap map, Window window, int index = 1)
+        {
+            if (index > 2) throw new ArgumentException("--> Index is too big");
+            if (index < 1) throw new ArgumentException("--> Index is too small");
+
+            string windowPrefix = $"ПР{index}";
             try
             {
-                element.LookupParameter("ПР1.ВКЛ").Set((int)1);
-                element.LookupParameter("ПР1.Отступ").SetValueString(offsetLine.ToString());
-                element.LookupParameter("ПР1.Ширина").SetValueString(appWidth.ToString());
-                element.LookupParameter("ПР1.Высота").SetValueString(appHeight.ToString());
-                element.LookupParameter("ПР1.ВысотаСмещение").SetValueString(offsetZ.ToString());
+                map.get_Item($"{windowPrefix}.ВКЛ").Set((int)1);
+                map.get_Item($"{windowPrefix}.Отступ").SetValueString(window.OffsetXY.ToString());
+                map.get_Item($"{windowPrefix}.Ширина").SetValueString(window.Width.ToString());
+                map.get_Item($"{windowPrefix}.Высота").SetValueString(window.Height.ToString());
+                map.get_Item($"{windowPrefix}.ВысотаСмещение").SetValueString(window.OffsetZ.ToString());
                 Debug.WriteLine($"Успешно");
             }
             catch (Exception e)
             {
-                Debug.WriteLine($"В элементе ID: {element.Id} возникла ошибка {e.Message}");
+                Debug.WriteLine($"--> Cannot create window: {e.Message}");
                 throw;
             }
-
-            Debug.WriteLine($"-- Панель {element.Name}: {element.Id} --");
-
-            Debug.WriteLine($"ПР1.Отступ: {offsetLine} --");
-            Debug.WriteLine($"ПР1.Ширина: {appWidth} --");
-            Debug.WriteLine($"ПР1.Высота: {appHeight} --");
-            Debug.WriteLine($"ПР1.ВысотаСмещение: {offsetZ} --");
-
-            Debug.WriteLine($"-------------");
-
-            transaction.Commit();
-
         }
-        
-        public static void SetOpeningParams(Document document, RevitLinkInstance revitLink, Element element, Element window1, Element window2)
+
+        public static void SetOpeningParams(Element element, List<Element> windows)
         {
 
-            Debug.WriteLine("Вызван статический метод Utility.Openings.SetOpeningParams()");
-            Debug.WriteLine($"Назначаем параметры проема элементу {element.Id}");
+            FamilyInstance instance = element as FamilyInstance;
+            ParameterMap map = instance.ParametersMap;
+
+            List<Window> windowsList = windows.Select(o => UpdateWindow(element, o)).ToList();
+
+            Window window1 = default;
+            Window window2 = default;
+
+            if (windowsList.Count == 1)
+            {
+                window1 = windowsList[0];
+
+            }
+            if (windowsList.Count == 2)
+            {
+                window1 = windowsList[0];
+                window2 = windowsList[1];
+
+                if (window1.OffsetXY > window2.OffsetXY)
+                {
+                    var temp = window2;
+                    window2 = window1;
+                    window1 = temp;
+                }
+                if (window1.OffsetXY == window2.OffsetXY)
+                {
+                    window2 = null;
+                }
+            }
+            if (windowsList.Count > 2) throw new ArgumentException($"--> Too many windows ({windows.Count})");
 
 
-            GetOpeningParams(window1, out double appWidth, out double appHeight, out double offsetZ);
-            GetOpeningParams(window2, out double appWidth2, out double appHeight2, out double offsetZ2);
-
-            CalculateOffset(revitLink, element, window1, out double offsetLine);
-            CalculateOffset(revitLink, element, window2, out double offsetLine2);
-
-            Transaction transaction = new Transaction(document, "Test_opening");
+            Transaction transaction = new Transaction(element.Document, "Test_opening");
             TransactionSettings.SetFailuresPreprocessor(transaction);
             transaction.Start();
-
-            if (offsetLine == offsetLine2)
-            {
-
-                try
-                {
-                    element.LookupParameter("ПР1.ВКЛ").Set((int)1);
-                    element.LookupParameter("ПР1.Отступ").SetValueString(offsetLine.ToString());
-                    element.LookupParameter("ПР1.Ширина").SetValueString(appWidth.ToString());
-                    element.LookupParameter("ПР1.Высота").SetValueString(appHeight.ToString());
-                    element.LookupParameter("ПР1.ВысотаСмещение").SetValueString(offsetZ.ToString());
-                    Debug.WriteLine($"Успешно");
-                }
-                catch (Exception e)
-                {
-                    Debug.WriteLine($"В элементе ID: {element.Id} возникла ошибка {e.Message}");
-                    throw;
-                }
-
-                Debug.WriteLine($"-- Панель {element.Name}: {element.Id} --");
-
-                Debug.WriteLine($"ПР1.Отступ: {offsetLine} --");
-                Debug.WriteLine($"ПР1.Ширина: {appWidth} --");
-                Debug.WriteLine($"ПР1.Высота: {appHeight} --");
-                Debug.WriteLine($"ПР1.ВысотаСмещение: {offsetZ} --");
-
-                Debug.WriteLine($"-------------");
-                
-            }
-
-            else
-            {
-                try
-                {
-                    if (offsetLine2 > offsetLine)
-                    {
-                        element.LookupParameter("ПР1.ВКЛ").Set((int)1);
-                        element.LookupParameter("ПР1.Отступ").SetValueString(offsetLine.ToString());
-                        element.LookupParameter("ПР1.Ширина").SetValueString(appWidth.ToString());
-                        element.LookupParameter("ПР1.Высота").SetValueString(appHeight.ToString());
-                        element.LookupParameter("ПР1.ВысотаСмещение").SetValueString(offsetZ.ToString());
-
-                        element.LookupParameter("ПР2.ВКЛ").Set((int)1);
-                        element.LookupParameter("ПР2.Отступ").SetValueString(offsetLine2.ToString());
-                        element.LookupParameter("ПР2.Ширина").SetValueString(appWidth2.ToString());
-                        element.LookupParameter("ПР2.Высота").SetValueString(appHeight2.ToString());
-                        element.LookupParameter("ПР2.ВысотаСмещение").SetValueString(offsetZ2.ToString());
-                    }
-                    else
-                    {
-                        element.LookupParameter("ПР1.ВКЛ").Set((int)1);
-                        element.LookupParameter("ПР1.Отступ").SetValueString(offsetLine2.ToString());
-                        element.LookupParameter("ПР1.Ширина").SetValueString(appWidth2.ToString());
-                        element.LookupParameter("ПР1.Высота").SetValueString(appHeight2.ToString());
-                        element.LookupParameter("ПР1.ВысотаСмещение").SetValueString(offsetZ2.ToString());
-
-                        element.LookupParameter("ПР2.ВКЛ").Set((int)1);
-                        element.LookupParameter("ПР2.Отступ").SetValueString(offsetLine.ToString());
-                        element.LookupParameter("ПР2.Ширина").SetValueString(appWidth.ToString());
-                        element.LookupParameter("ПР2.Высота").SetValueString(appHeight.ToString());
-                        element.LookupParameter("ПР2.ВысотаСмещение").SetValueString(offsetZ.ToString());
-                    }
-                    
-                    Debug.WriteLine($"Успешно");
-                }
-                catch (Exception e)
-                {
-                    Debug.WriteLine($"В элементе ID: {element.Id} возникла ошибка {e.Message}");
-                    throw;
-                }
-
-
-                Debug.WriteLine($"--[2 окна] Панель {element.Name}: {element.Id} --");
-
-                Debug.WriteLine($"ПР1.Отступ: {offsetLine}");
-                Debug.WriteLine($"ПР1.Ширина: {appWidth}");
-                Debug.WriteLine($"ПР1.Высота: {appHeight}");
-                Debug.WriteLine($"ПР1.ВысотаСмещение: {offsetZ}");
-
-                Debug.WriteLine($"ПР2.Отступ: {offsetLine2}");
-                Debug.WriteLine($"ПР2.Ширина: {appWidth2}");
-                Debug.WriteLine($"ПР2.Высота: {appHeight2}");
-                Debug.WriteLine($"ПР2.ВысотаСмещение: {offsetZ2}");
-
-                Debug.WriteLine($"-------------");
-
-
-            }
+            if (window1 != null) SetWindowParameters(map, window1, index: 1);
             transaction.Commit();
+
+            transaction.Start();
+            if (window2 != null) SetWindowParameters(map, window2, index: 2);
+            transaction.Commit(); 
 
         }
 
@@ -353,44 +286,8 @@ namespace DSKPrim.PanelTools.Utility
         #endregion
 
         #region Utility
-        private static void GetOpeningParams(Element window, out double appWidth, out double appHeigth, out double offsetZ)
-        {
-            FamilyInstance familyInstanceWin = window as FamilyInstance;
-            FamilySymbol familySymbolWin = familyInstanceWin.Symbol;
 
-
-            Debug.WriteLine("Вызван статический метод Utility.Openings.GetOpeningParams()");
-
-            try
-            {
-                appWidth = Convert.ToDouble(familySymbolWin.LookupParameter("Ширина").AsValueString());
-            }
-            catch (NullReferenceException)
-            {
-                appWidth = Convert.ToDouble(window.LookupParameter("Ширина").AsValueString());
-            }
-
-            try
-            {
-                appHeigth = Convert.ToDouble(familySymbolWin.LookupParameter("Высота").AsValueString());
-            }
-            catch (NullReferenceException)
-            {
-                appHeigth = Convert.ToDouble(window.LookupParameter("Высота").AsValueString());
-            }
-
-            try
-            {
-                offsetZ = Convert.ToDouble(window.LookupParameter("Высота нижнего бруса").AsValueString())+80;
-            }
-            catch (NullReferenceException)
-            {
-                offsetZ = Convert.ToDouble(familySymbolWin.LookupParameter("Высота нижнего бруса").AsValueString())+80;
-            }
-            
-        }
-
-        public static void CalculateOffset(RevitLinkInstance revitLink, Element hostPanel, Element window, out double offset)
+        public static double CalculateOffset(Element hostPanel, Element window)
         {
             FamilyInstance familyInstance = window as FamilyInstance;
             FamilySymbol familySymbol = familyInstance.Symbol;
@@ -409,7 +306,9 @@ namespace DSKPrim.PanelTools.Utility
                 appHalfWidth = Convert.ToDouble(window.LookupParameter("Ширина").AsValueString()) * 0.5;
             }
 
-            XYZ linkOriginPoint = revitLink.GetTransform().Origin;
+            //XYZ linkOriginPoint = revitLink.GetTransform().Origin;
+
+            XYZ linkOriginPoint = window.Document.ActiveProjectLocation.GetTransform().Origin;
 
             LocationPoint windowPoint = (LocationPoint)window.Location;
             LocationPoint panelPoint = (LocationPoint)hostPanel.Location;
@@ -417,39 +316,23 @@ namespace DSKPrim.PanelTools.Utility
             XYZ windowXYZ = windowPoint.Point + linkOriginPoint;
             XYZ panelXYZ = panelPoint.Point;
 
-            double mmLen = Math.Abs(UnitUtils.ConvertFromInternalUnits(CalculateAxialLength(panelXYZ, windowXYZ), DisplayUnitType.DUT_MILLIMETERS));
+            double mmLen = Math.Abs(UnitUtils.ConvertFromInternalUnits(CalculateAxialLength(panelXYZ, windowXYZ), DisplayUnitType.DUT_MILLIMETERS));  
+            double offset = Math.Round(mmLen - appHalfWidth);
 
-            offset = RoundToOnes(mmLen - appHalfWidth);
-
-            RoundToStep(offset, step, out offset);
+            return RoundToStep(offset, step);
         }
         
-        private static void RoundToStep(double value, double step, out double result)
+        private static double RoundToStep(double value, double step)
         {
             double remainder = value % step;
             if (remainder >= 0.5*step)
             {
-                result = value + (step - remainder);
+                return value + (step - remainder);
             }
             else
             {
-                result = value - remainder;
+                return value - remainder;
             }
-        }
-
-        private static double RoundToOnes(double value)
-        {
-            double remainder = value % 1;
-
-            if (remainder >= 0.5)
-            {
-                value += (1 - remainder);
-            }
-            else
-            {
-                value -= remainder;
-            }
-            return value;
         }
 
         private static double CalculateAxialLength(XYZ pointA, XYZ pointB)

@@ -3,6 +3,7 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using DSKPrim.PanelTools.Legacy.Controllers;
 using DSKPrim.PanelTools.Panel;
+using Autofac;
 using DSKPrim.PanelTools.ProjectEnvironment;
 using DSKPrim.PanelTools.Utility;
 using System.Collections.Generic;
@@ -27,8 +28,6 @@ namespace DSKPrim.PanelTools.PanelMaster
                 return Result.Failed;
             }
 
-            CommonProjectEnvironment environment = CommonProjectEnvironment.GetInstance(Document);
-
             TransactionGroup transactionGroup = new TransactionGroup(Document, "Присвоение марок");
             transactionGroup.Start();
 
@@ -37,6 +36,8 @@ namespace DSKPrim.PanelTools.PanelMaster
                 new PanelSelectionFilter(),
                 BuiltInCategory.OST_StructuralFraming);
             
+            
+
             int positionEnum = 1;
             foreach (var item in els)
             {
@@ -48,7 +49,7 @@ namespace DSKPrim.PanelTools.PanelMaster
                 //}
                 //else posEnum = positionEnum.ToString();
 
-                PrecastPanel panel = new PrecastPanel(Document, item);
+                PrecastPanel panel = new PrecastPanel(item);
                 MarkController markController = new MarkController(panel);
                 markController.Create();
                 markController.Write();
@@ -57,7 +58,6 @@ namespace DSKPrim.PanelTools.PanelMaster
             }
             transactionGroup.Assimilate();
             transactionGroup.Dispose();
-            environment.Reset();
 
             return Result.Succeeded;
         }
