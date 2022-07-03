@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Autodesk.Revit.DB;
 using DSKPrim.PanelTools.Legacy.Builders.MarkBuilder;
@@ -18,7 +19,7 @@ namespace DSKPrim.PanelTools.Panel
         public Element ActiveElement { get; set; }
         public AssemblyInstance AssemblyInstance { get; set; }
         public Mark Mark { get; set; }
-        public StructureCategory StructureCategory { get; set; }
+        public StructureType StructureType { get; set; }
 
         public PrecastPanel(Element element)
         {
@@ -28,8 +29,30 @@ namespace DSKPrim.PanelTools.Panel
                 AssemblyInstance = element.Document.GetElement(element.AssemblyInstanceId) as AssemblyInstance;
             }
             Mark = new Mark();
-            StructureCategory = new StructureCategory(element);
+            StructureType = StructureTypeMapper.GetStructureType(element);
+        }
+        public bool IsValidCategory()
+        {
+            if (StructureType is StructureType.NOT_A_PANEL)
+            {
+                return false;
+            }
+            else return true;
+
         }
 
+        public bool IsValidForWindowCreation()
+        {
+            List<StructureType> validTypes = new List<StructureType>
+            {
+                StructureType.NS_PANEL,
+                StructureType.NS_PANEL_EMBEDDED,
+                StructureType.VS_PANEL,
+                StructureType.VS_PANEL_EMBEDDED
+            };
+
+            if (validTypes.Contains(StructureType)) return true;
+            else return false;
+        }
     }
 }

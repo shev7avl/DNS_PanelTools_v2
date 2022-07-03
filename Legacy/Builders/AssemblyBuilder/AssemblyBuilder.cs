@@ -30,7 +30,7 @@ namespace DSKPrim.PanelTools.Legacy.Builders.AssemblyBuilder
             _rebarFamNames = ParseFamilyNames(_rebarFamPath);
             _assemblyElements = new List<ElementId>();
         }
-
+        //TODO: Принести логику создания сборок для фасадов
         public void CollectAssemblyElements()
         {
 

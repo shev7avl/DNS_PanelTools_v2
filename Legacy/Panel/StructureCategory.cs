@@ -22,10 +22,9 @@ namespace DSKPrim.PanelTools.Legacy.Panel
         FACADE_PANEL,
         NOT_A_PANEL
     }
-    public class StructureCategory
+    public static class StructureTypeMapper
     {
-        private Element _element;
-        private readonly Dictionary<StructureType, List<string>> _familyNameTypeMapping = new Dictionary<StructureType, List<string>>()
+        private readonly static Dictionary<StructureType, List<string>> _familyNameTypeMapping = new Dictionary<StructureType, List<string>>()
         {
             { StructureType.NS_PANEL,
                 new List<string>(){"NS_Empty", "NS_Medium" } },
@@ -47,16 +46,9 @@ namespace DSKPrim.PanelTools.Legacy.Panel
                 new List<string>(){"DNS_Фасад", "DNS_Фасад2" } }
         };
 
-        public StructureType StructureType { get { return GetStructureType(); } }
-
-        public StructureCategory(Element element)
+        public static StructureType GetStructureType(Element element)
         {
-            _element = element;
-        }
-
-        public StructureType GetStructureType()
-        {
-            FamilyInstance instance = _element as FamilyInstance;
+            FamilyInstance instance = element as FamilyInstance;
             string familyName = instance.Symbol.Family.Name;
 
             foreach (var type in _familyNameTypeMapping.Keys)
@@ -69,29 +61,7 @@ namespace DSKPrim.PanelTools.Legacy.Panel
             return StructureType.NOT_A_PANEL;
         }
 
-        public bool IsValidCategory()
-        {
-            if (StructureType is StructureType.NOT_A_PANEL)
-            {
-                return false;
-            }
-            else return true;
-
-        }
-
-        public bool IsValidForWindowCreation()
-        {
-            List<StructureType> validTypes = new List<StructureType>
-            {
-                StructureType.NS_PANEL,
-                StructureType.NS_PANEL_EMBEDDED,
-                StructureType.VS_PANEL,
-                StructureType.VS_PANEL_EMBEDDED
-            };
-
-            if(validTypes.Contains(StructureType)) return true;
-            else return false;
-        }
+       
        
     }
 

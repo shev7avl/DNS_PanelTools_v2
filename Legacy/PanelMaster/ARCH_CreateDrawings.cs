@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using Autofac;
 using Autodesk.Revit.UI.Selection;
 using DSKPrim.PanelTools.Panel;
 using DSKPrim.PanelTools.ProjectEnvironment;
@@ -16,60 +17,51 @@ namespace DSKPrim.PanelTools.PanelMaster
 	[Regeneration(RegenerationOption.Manual)]
 	class ARCH_CreateDrawings : IExternalCommand
 	{
-		public Document Document { get; set; }
 
 		public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
 		{
-			Document = commandData.Application.ActiveUIDocument.Document;
+			var document = commandData.Application.ActiveUIDocument.Document;
 
-			CommonProjectEnvironment environment = CommonProjectEnvironment.GetInstance(Document);
+			TransactionSettings.CheckWorksets(document);
 
-			Selector selector = new Selector();
+			var selector = new Selector();
+			var panels = selector.
+				CollectElements(commandData, new FacadeSelectionFilter(), BuiltInCategory.OST_Walls).
+				Select(e => new PrecastPanel(e)).
+				ToList();
 
-			ICollection<Element> wallsCollection = selector.CollectElements(commandData, new FacadeSelectionFilter(), BuiltInCategory.OST_Walls);
-			Transaction transaction = new Transaction(Document, "Создаем сборки");
-			TransactionSettings.SetFailuresPreprocessor(transaction);
+			var assemblyContainerBuilder = new ContainerBuilder();
+			assemblyContainerBuilder.RegisterType<AssemblyOperation>().As<IPanelOperation>();
+			var assemblyContainer = assemblyContainerBuilder.Build();
 
-			List<PrecastPanel> panels = new List<PrecastPanel>();
-			foreach (var item in wallsCollection)
+			var drawingContainerBuilder = new ContainerBuilder();
+			drawingContainerBuilder.RegisterType<DrawingOperation>().As<IPanelOperation>();
+			var drawingContainer = drawingContainerBuilder.Build();
+
+			using (var scope = assemblyContainer.BeginLifetimeScope())
+            {
+				var operation = scope.Resolve<IPanelOperation>();
+				operation.ExecuteRange(panels);
+            }
+
+			if (document.IsModified && document.IsModifiable)
 			{
-				panels.Add(new PrecastPanel(item));
+				SubTransaction regeneration = new SubTransaction(document);
+				regeneration.Start();
+				document.Regenerate();
+				regeneration.Commit();
 			}
 
-			CreateAssemblyIfMissing(panels, transaction);
-			CreateDrawingForSelectedPanels(panels);
+			using (var scope = drawingContainer.BeginLifetimeScope())
+			{
+				var operation = scope.Resolve<IPanelOperation>();
+				operation.ExecuteRange(panels);
+			}
 
 			return Result.Succeeded;
 		}
 
-		private void CreateDrawingForSelectedPanels(List<PrecastPanel> list_Panels)
-		{
-			foreach (PrecastPanel item in list_Panels)
-			{
-				IPanelOperation panelWrapper = new DrawingOperation(item);
-				panelWrapper.Execute();
-			}
-		}
-
-		private void CreateAssemblyIfMissing(List<PrecastPanel> list_Panels, Transaction transaction)
-		{
-			foreach (var item in list_Panels)
-			{
-				if (item.AssemblyInstance is null)
-				{
-					item.AssemblyInstance = CreatePartAssembly(transaction, item.ActiveElement);
-				}
-			}
-			//Пересохраняем коллектор
-			if (Document.IsModified && Document.IsModifiable)
-			{
-				SubTransaction regeneration = new SubTransaction(Document);
-				regeneration.Start();
-				Document.Regenerate();
-				regeneration.Commit();
-			}
-		}
-
+		//TODO: Перенести логику в строители
 		private ElementId GetWallHostId(ElementId partId)
 		{
 			if (Document.GetElement(partId) is Part)
@@ -94,7 +86,7 @@ namespace DSKPrim.PanelTools.PanelMaster
 				throw new ArgumentException("Element is not a Part");
 			}
 		}
-
+		//TODO: Перенести логику в строители
 		private AssemblyInstance CreatePartAssembly(Transaction transaction, Element item)
 		{
 			XYZ[] boundaries = new XYZ[2];
@@ -168,7 +160,7 @@ namespace DSKPrim.PanelTools.PanelMaster
 			}
 			return assembly;
 		}
-
+		//TODO: Перенести логику в строители
 		private string SetPartAssemblyName(ICollection<Part> parts)
 		{
 			string markName = parts.First().ParametersMap.get_Item("ADSK_Марка конструкции").AsString().Split('.')[0];
@@ -198,7 +190,7 @@ namespace DSKPrim.PanelTools.PanelMaster
 
 			return String.Format("{0}-{1}-1", markName, paintName);
 		}
-
+		//TODO: Перенести логику в строители
 		private void CopyMaterialCodes(ICollection<Part> parts)
 		{
 			foreach (var item in parts)
