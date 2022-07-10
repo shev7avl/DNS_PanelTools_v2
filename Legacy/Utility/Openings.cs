@@ -185,62 +185,54 @@ namespace DSKPrim.PanelTools.Utility
                 {
                     PlaceWindow(activeDocument, elementHost, window);
                 }
-
             }
-
         }
 
         private static WindowParameter[] CreateWindowsData(Document activeDocument, Element elementHost)
         {
-            IEnumerable<Element> fecLinksSTRUCT = new FilteredElementCollector(activeDocument).
+            IEnumerable<RevitLinkInstance> fecLinksSTRUCT = new FilteredElementCollector(activeDocument).
                 OfClass(typeof(RevitLinkInstance)).
                 WhereElementIsNotElementType().
-                Where(doc => doc.Name.Contains("_КР") || doc.Name.Contains("_КЖ"));
-
-            List<RevitLinkInstance> linkedDocSTR = fecLinksSTRUCT.Cast<RevitLinkInstance>().ToList();
-
-            List<Document> LinkedStructs = new List<Document>();
-
-            foreach (var item in linkedDocSTR)
-            {
-                if (item.GetLinkDocument() != null)
-                {
-                    LinkedStructs.Add(item.GetLinkDocument());
-                }
-            }
+                Where(doc => doc.Name.Contains("_КР") || doc.Name.Contains("_КЖ")).
+                Cast<RevitLinkInstance>().
+                ToList();
 
             Element panel = default;
 
-            ElementIntersectsElementFilter panelFilter = new ElementIntersectsElementFilter(elementHost);
-
             Transform activeDocTransform = activeDocument.ActiveProjectLocation.GetTotalTransform();
+
+            Element _wall = elementHost as Element;
+            BoundingBoxXYZ wallBox = _wall.get_Geometry(new Options()).GetBoundingBox();
+            LocationCurve wallLocation = _wall.Location as LocationCurve;
+            XYZ wallOrigin = wallLocation.Curve.GetEndPoint(0);
+
+            ElementIntersectsElementFilter panelFilter = new ElementIntersectsElementFilter(elementHost);
 
             string NSPanelName = "NS_Empty";
 
-            foreach (var item in LinkedStructs)
+            foreach (var item in fecLinksSTRUCT)
             {
-                Transform linkTransform = item.ActiveProjectLocation.GetTotalTransform();
 
-                FilteredElementCollector panelCollector = new FilteredElementCollector(item).
+                List<FamilyInstance> panels = new FilteredElementCollector(item.GetLinkDocument()).
                         OfCategory(BuiltInCategory.OST_StructuralFraming).
-                        OfClass(typeof(FamilyInstance));
-
-                    panel = panelCollector.
+                        OfClass(typeof(FamilyInstance)).
                         WherePasses(panelFilter).
                         Cast<FamilyInstance>().
                         Where(x => x.Symbol.FamilyName.Contains(NSPanelName)).
-                        FirstOrDefault();
+                        ToList();
+
+                panel = panels.FirstOrDefault();
 
                 if (panel != null)
                 {
                     break;
                 }
-                else
-                {
-                    throw new NullReferenceException(message: $"Не удалось найти экземпляр семейства {NSPanelName}" +
-                            $" для данной стены, ID : {elementHost.Id}. Проверьте наименования семейств и убедитесь, что " +
-                            "координаты получены из связи КР");
-                } 
+            }
+            if (panel is null)
+            {
+                throw new NullReferenceException(message: $"Не удалось найти экземпляр семейства {NSPanelName}" +
+                               $" для данной стены, ID : {elementHost.Id}. Проверьте наименования семейств и убедитесь, что " +
+                               "координаты получены из связи КР");
             }
 
             WindowParameter[] windowParameters = new WindowParameter[2];
@@ -248,9 +240,12 @@ namespace DSKPrim.PanelTools.Utility
             windowParameters[0] = new WindowParameter(panel, 1);
             windowParameters[1] = new WindowParameter(panel, 2);
 
+
+
             return windowParameters;
             
         }
+
 
         private static void PlaceWindow(Document activeDocument, Element elementHost, WindowParameter window)
         {

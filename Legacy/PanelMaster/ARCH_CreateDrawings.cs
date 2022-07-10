@@ -57,7 +57,10 @@ namespace DSKPrim.PanelTools.PanelMaster
 			{
 				if (item.AssemblyInstance is null)
 				{
-					item.AssemblyInstance = CreatePartAssembly(transaction, item.ActiveElement);
+					item.AssemblyInstance = CreateAssembly(transaction, item.ActiveElement);
+
+					
+
 				}
 			}
 			//Пересохраняем коллектор
@@ -95,32 +98,27 @@ namespace DSKPrim.PanelTools.PanelMaster
 			}
 		}
 
-		private AssemblyInstance CreatePartAssembly(Transaction transaction, Element item)
+		private AssemblyInstance CreateAssembly(Transaction transaction, Element item)
 		{
-			XYZ[] boundaries = new XYZ[2];
-			boundaries[0] = item.get_Geometry(new Options()).GetBoundingBox().Min;
-			boundaries[1] = item.get_Geometry(new Options()).GetBoundingBox().Max;
+			var map = item.ParametersMap;
 
-			BoundingBoxIntersectsFilter boundingBoxIntersectsFilter = new BoundingBoxIntersectsFilter(new Outline(boundaries[0], boundaries[1]));
+			string constrMark = map.get_Item("ADSK_Марка конструкции").AsString();
+			string locMark = map.get_Item("DNS_Марка элемента").AsString();
+			string longMark = map.get_Item("DNS_Код изделия полный").AsString();
 
 			ICollection<Part> parts = new FilteredElementCollector(Document).
 				OfClass(typeof(Part)).
-				WhereElementIsNotElementType().
-				WherePasses(boundingBoxIntersectsFilter).
+				Where(o => 
+					o.ParametersMap.get_Item("ADSK_Марка конструкции").AsString() == constrMark &&
+					o.ParametersMap.get_Item("DNS_Марка элемента").AsString() == locMark &&
+					o.ParametersMap.get_Item("DNS_Код изделия полный").AsString() == longMark &&
+					o.IsValidObject &&
+					o.AssemblyInstanceId.IntegerValue == -1 &&
+					AssemblyInstance.AreElementsValidForAssembly(Document, new List<ElementId> { o.Id }, ElementId.InvalidElementId) &&
+					o.get_Parameter(BuiltInParameter.DPART_VOLUME_COMPUTED).AsDouble() < 0.4).
 				Cast<Part>().ToList();
 
-			ICollection<ElementId> ids = new FilteredElementCollector(Document).
-				OfClass(typeof(Part)).
-				WhereElementIsNotElementType().
-				WherePasses(boundingBoxIntersectsFilter).
-				Where(
-					o => o.IsValidObject &&
-					o.AssemblyInstanceId.IntegerValue == -1 &&
-					AssemblyInstance.AreElementsValidForAssembly(Document, new List<ElementId>{ o.Id}, ElementId.InvalidElementId)&&
-					o.get_Parameter(BuiltInParameter.DPART_VOLUME_COMPUTED).AsDouble() < 0.4).
-				Cast<Part>().
-				Where(o => GetWallHostId(o.Id) == item.Id).
-				Select(o => o.Id).ToList();		
+			var ids = parts.Select(o => o.Id).ToList();
 
 			ElementId partNamingCategory = ids.Select(x => Document.GetElement(x)).First().Category.Id;
 
@@ -141,7 +139,7 @@ namespace DSKPrim.PanelTools.PanelMaster
 						assembly.AssemblyTypeName = name;
 						transaction.Commit();
 						transaction.Start();
-						CopyMaterialCodes(parts);
+						CopyMaterialCodes(parts, name);
 						transaction.Commit();
 					}
 				}
@@ -157,20 +155,22 @@ namespace DSKPrim.PanelTools.PanelMaster
 						string[] nameParts = SetPartAssemblyName(parts).Split('-');
 						var index = Int32.Parse(nameParts[2]);
 
-						string name = String.Format("{0}-{1}-{2}", nameParts[0], nameParts[1], index+1);
+						string name = String.Format("{0}-{1}-{2}", nameParts[0], nameParts[1], index + 1);
 						assembly.AssemblyTypeName = name;
 						transaction.Commit();
 						transaction.Start();
-						CopyMaterialCodes(parts);
+						CopyMaterialCodes(parts, name);
 						transaction.Commit();
 					}
-				}	
+				}
 			}
 			return assembly;
+
 		}
 
 		private string SetPartAssemblyName(ICollection<Part> parts)
 		{
+
 			string markName = parts.First().ParametersMap.get_Item("ADSK_Марка конструкции").AsString().Split('.')[0];
 
 			string paintName = "";
@@ -180,8 +180,12 @@ namespace DSKPrim.PanelTools.PanelMaster
 			foreach (var item in parts)
 			{
 				Element material = Document.GetElement(item.ParametersMap.get_Item("Материал").AsElementId());
+
+				
+
 				if (material != null)
 				{
+					
 					if (material.ParametersMap.get_Item("ADSK_Наименование и номер цвета").AsString() != null)
 					{
 						string code = material.ParametersMap.get_Item("ADSK_Наименование и номер цвета").AsString();
@@ -199,19 +203,24 @@ namespace DSKPrim.PanelTools.PanelMaster
 			return String.Format("{0}-{1}-1", markName, paintName);
 		}
 
-		private void CopyMaterialCodes(ICollection<Part> parts)
+		private void CopyMaterialCodes(ICollection<Part> parts, string colorCode)
 		{
+			
+		
+
 			foreach (var item in parts)
 			{
 				Element material = Document.GetElement(item.ParametersMap.get_Item("Материал").AsElementId());
 				if (material != null)
 				{
+					
 					if (material.ParametersMap.get_Item("ADSK_Наименование и номер цвета").AsString() != null)
 					{
 						string code = material.ParametersMap.get_Item("ADSK_Наименование и номер цвета").AsString();
 						string name = code.Substring(code.Length - 2, 2);
 						item.ParametersMap.get_Item("DNS_Номер цвета плитки").Set(name);
 						item.ParametersMap.get_Item("ADSK_Позиция").Set(code);
+						item.ParametersMap.get_Item("DNS_Код фасада").Set(colorCode.Split('-')[1]);
 					}
 				}
 			}

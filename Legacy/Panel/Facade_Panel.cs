@@ -33,6 +33,12 @@ namespace DSKPrim.PanelTools.Panel
             Element linkedPanel = FindLinkedPanel(ActiveDocument);
             ParameterMap panelMap = linkedPanel.ParametersMap;
 
+            List<Part> parts = FindParts();
+            List<ParameterMap> partsMaps = parts.Select(o => o.ParametersMap).ToList();
+
+            
+
+
             string[] values = new string[3]
                 {
                 panelMap.get_Item(lngMark).AsString(),
@@ -43,8 +49,6 @@ namespace DSKPrim.PanelTools.Panel
             Transaction transaction = new Transaction(ActiveDocument, "setting facade params");
             TransactionSettings.SetFailuresPreprocessor(transaction);
 
-            List<Part> parts = FindParts();
-            List<ParameterMap> partsMaps = parts.Select(o => o.ParametersMap).ToList();
 
             using (transaction)
             {

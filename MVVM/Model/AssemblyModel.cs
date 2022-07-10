@@ -24,6 +24,7 @@ namespace DSKPrim.PanelTools.MVVM.Model
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
+
         public void OnPropertyChanged([CallerMemberName] string prop = "")
         {
             if (PropertyChanged != null)

@@ -45,7 +45,14 @@ namespace DSKPrim.PanelTools
                 Assembly.GetExecutingAssembly().Location,
                 "DSKPrim.PanelTools.PanelMaster.STR_DisassembleAll",
                 "Disassemble all",
-                "Разобрать сборки")
+                "Разобрать сборки"),
+
+                new Button(lod100Builder.SubPanel.Ribbon.RibbonPanel,
+                Properties.Resource.a_copyMarks.ToBitmap(),
+                Assembly.GetExecutingAssembly().Location,
+                "DSKPrim.PanelTools.Legacy.PanelMaster.STR_CopyArchMarks",
+                "CopyArchMarks",
+                "Скопировать марки АКР")
             });
 
             ButtonBuilder lod400Builder = new ButtonBuilder(application);

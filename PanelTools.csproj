@@ -97,6 +97,7 @@
       <DependentUpon>PanelSelector.cs</DependentUpon>
     </Compile>
     <Compile Include="Legacy\PanelMaster\ExportSchedules.cs" />
+    <Compile Include="Legacy\PanelMaster\STR_CopyArchMarks.cs" />
     <Compile Include="MVVM\Data\DataContextBuilder.cs" />
     <Compile Include="MVVM\Model\AssemblyModel.cs" />
     <Compile Include="MVVM\Model\FamilyModel.cs" />

@@ -287,7 +287,7 @@ namespace DSKPrim.PanelTools.Utility
                     //FailureResolution fr = DeleteElements.Create(document, assembly.Id);
 
                         index = assembly.get_Parameter(new Guid(Properties.Resource.ADSK_Номер_изделия)).AsString();
-                        if (index != "")
+                        if (index != "" && index != null)
                         {
                             ICollection<ElementId> ids = assembly.GetMemberIds();
                             List<Element> elements = ids.Select(o => document.GetElement(o)).ToList();

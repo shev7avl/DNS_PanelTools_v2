@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Autodesk.Revit.DB;
 using DSKPrim.PanelTools.ProjectEnvironment;
 
@@ -14,17 +15,22 @@ namespace DSKPrim.PanelTools.Utility
         /// <returns></returns>
         public static bool InBox(BoundingBoxXYZ boundingBox, XYZ point)
         {
-            double maxX = boundingBox.Max.X;
-            double maxY = boundingBox.Max.Y;
-            double maxZ = boundingBox.Max.Z;
+            double maxX = Math.Max(Math.Abs(boundingBox.Max.X), Math.Abs(boundingBox.Min.X));
+            double maxY = Math.Max(Math.Abs(boundingBox.Max.Y), Math.Abs(boundingBox.Min.Y));
+            double maxZ = Math.Max(Math.Abs(boundingBox.Max.Z), Math.Abs(boundingBox.Min.Z));
 
-            double minX = boundingBox.Min.X;
-            double minY = boundingBox.Min.Y;
-            double minZ = boundingBox.Min.Z;
+            double minX = Math.Min(Math.Abs(boundingBox.Max.X), Math.Abs(boundingBox.Min.X));
+            double minY = Math.Min(Math.Abs(boundingBox.Max.Y), Math.Abs(boundingBox.Min.Y));
+            double minZ = Math.Min(Math.Abs(boundingBox.Max.Z), Math.Abs(boundingBox.Min.Z));
 
-            bool XCheck = (point.X >= minX && point.X <= maxX);
-            bool YCheck = (point.Y >= minY && point.Y <= maxY);
-            bool ZCheck = (point.Z >= minZ && point.Z <= maxZ);
+            XYZ absPoint = new XYZ(x: Math.Abs(point.X),
+                y: Math.Abs(point.Y),
+                z: Math.Abs(point.Z));
+
+
+            bool XCheck = (maxX >= absPoint.X && minX <= absPoint.X);
+            bool YCheck = (maxY >= absPoint.Y && minY <= absPoint.Y);
+            bool ZCheck = (maxZ >= absPoint.Z && minZ <= absPoint.Z);
 
             return XCheck && YCheck && ZCheck;
 

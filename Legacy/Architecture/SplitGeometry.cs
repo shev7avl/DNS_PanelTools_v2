@@ -150,12 +150,16 @@ namespace DSKPrim.PanelTools.Architecture
             //TODO: переключить считывание габаритов с части на стену
             Element wallElement = facadeDescription.WallElement;
 
+            AddinSettings settings = AddinSettings.GetSettings();
+
 
             double LenU = wallElement.get_Parameter(BuiltInParameter.CURVE_ELEM_LENGTH).AsDouble();
             double HeiV = wallElement.get_Parameter(BuiltInParameter.WALL_USER_HEIGHT_PARAM).AsDouble();
 
             conLenU = UnitUtils.ConvertFromInternalUnits(LenU, DisplayUnitType.DUT_MILLIMETERS);
-            conHeiV = UnitUtils.ConvertFromInternalUnits(HeiV, DisplayUnitType.DUT_MILLIMETERS);
+            conHeiV = UnitUtils.ConvertFromInternalUnits(HeiV, DisplayUnitType.DUT_MILLIMETERS) 
+                + settings.GetTileModule().ModuleHeight 
+                + settings.GetTileModule().ModuleGap;
 
             return CreateRectangle(facadeDescription, conLenU, conHeiV);
         }
@@ -232,11 +236,11 @@ namespace DSKPrim.PanelTools.Architecture
             {
                 if (basicLines[1].Direction.Z == 1)
                 {
-                    scaledPoints[2] = new XYZ(scaledPoints[0].X, scaledPoints[0].Y, scaledPoints[0].Z + convHeigth * basicLines[1].Direction.Z);
+                    scaledPoints[2] = new XYZ(scaledPoints[0].X, scaledPoints[0].Y, scaledPoints[0].Z + (convHeigth+convHalfGap) * basicLines[1].Direction.Z);
                 }
                 else
                 {
-                    scaledPoints[2] = new XYZ(scaledPoints[0].X, scaledPoints[0].Y, scaledPoints[0].Z - convHeigth * basicLines[1].Direction.Z);
+                    scaledPoints[2] = new XYZ(scaledPoints[0].X, scaledPoints[0].Y, scaledPoints[0].Z - (convHeigth + convHalfGap) * basicLines[1].Direction.Z);
                 }
 
             }
