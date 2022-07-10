@@ -1,18 +1,9 @@
-﻿using System;
+﻿using Autodesk.Revit.UI;
+using DSK.Application.AppGUI;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Autodesk.Revit.UI;
-using Autodesk.Revit.DB;
 using System.Reflection;
-using System.Drawing;
-using System.Windows.Media.Imaging;
-using System.IO;
-using System.Drawing.Imaging;
-using System.Windows.Media;
 
-namespace DNS_PanelTools_v2
+namespace DSKPrim.PanelTools
 {
     class App : IExternalApplication
     {
@@ -23,54 +14,143 @@ namespace DNS_PanelTools_v2
 
         public Result OnStartup(UIControlledApplication application)
         {
-            string tabName = "TEST /n DNS Panel";
-            string panelName = "DNS Panel";
-            application.CreateRibbonTab(tabName);
-            RibbonPanel panel = application.CreateRibbonPanel(tabName, panelName);
 
-            PushButtonData JsonButtonData = new PushButtonData("DNS Panel", $"Создать марки", Assembly.GetExecutingAssembly().Location, "DNS_PanelTools_v2.Commands.SetMarks");
-            var JSONbutton = panel.AddItem(JsonButtonData) as PushButton;
-            Image image = Properties.Resource.Test.ToBitmap();
-            ImageSource imageSource = Convert(image);
-            JSONbutton.LargeImage = imageSource;
+            ButtonBuilder lod100Builder = new ButtonBuilder(application);
+            lod100Builder.BuildRibbon("Мастер панелей", "КЖ - LOD100").BuildButtons(
+                new List<Button>
+            {
+                new Button(lod100Builder.SubPanel.Ribbon.RibbonPanel,
+                Properties.Resource.s_createMarks.ToBitmap(),
+                Assembly.GetExecutingAssembly().Location,
+                "DSKPrim.PanelTools.PanelMaster.STR_SetMarks",
+                "Create marks",
+                "Создать марки"),
 
-            PushButtonData JsonButtonData1 = new PushButtonData("DNS Panel1", $"Создать проемы", Assembly.GetExecutingAssembly().Location, "DNS_PanelTools_v2.Commands.CreateOpenings");
-            var JSONbutton1 = panel.AddItem(JsonButtonData1) as PushButton;
-            JSONbutton1.LargeImage = imageSource;
+                new Button(lod100Builder.SubPanel.Ribbon.RibbonPanel,
+                Properties.Resource.s_createOpening.ToBitmap(),
+                Assembly.GetExecutingAssembly().Location,
+                "DSKPrim.PanelTools.PanelMaster.STR_CreateOpenings",
+                "Create panel openings",
+                "Создать проемы"),
 
-            PushButtonData JsonButtonData2 = new PushButtonData("DNS Panel2", $"Маркисборки", Assembly.GetExecutingAssembly().Location, "DNS_PanelTools_v2.Commands.Assemblies");
-            var JSONbutton2 = panel.AddItem(JsonButtonData2) as PushButton;
-            JSONbutton2.LargeImage = imageSource;
+                new Button(lod100Builder.SubPanel.Ribbon.RibbonPanel,
+                Properties.Resource.s_createAssemblies.ToBitmap(),
+                Assembly.GetExecutingAssembly().Location,
+                "DSKPrim.PanelTools.PanelMaster.STR_CreateAssemblies",
+                "Create assemblies",
+                "Создать сборки"),
 
-            PushButtonData JsonButtonData3 = new PushButtonData("DNS Panel3", $"ФасадМарки", Assembly.GetExecutingAssembly().Location, "DNS_PanelTools_v2.Commands.ARCH_copyMarks");
-            var JSONbutton3 = panel.AddItem(JsonButtonData3) as PushButton;
-            JSONbutton3.LargeImage = imageSource;
+                new Button(lod100Builder.SubPanel.Ribbon.RibbonPanel,
+                Properties.Resource.s_disassembleAssemblies.ToBitmap(),
+                Assembly.GetExecutingAssembly().Location,
+                "DSKPrim.PanelTools.PanelMaster.STR_DisassembleAll",
+                "Disassemble all",
+                "Разобрать сборки"),
 
-            PushButtonData JsonButtonData4 = new PushButtonData("DNS Panel4", $"ФасадПроем", Assembly.GetExecutingAssembly().Location, "DNS_PanelTools_v2.Commands.ARCH_PlaceWindow");
-            var JSONbutton4 = panel.AddItem(JsonButtonData4) as PushButton;
-            JSONbutton4.LargeImage = imageSource;
+                new Button(lod100Builder.SubPanel.Ribbon.RibbonPanel,
+                Properties.Resource.a_copyMarks.ToBitmap(),
+                Assembly.GetExecutingAssembly().Location,
+                "DSKPrim.PanelTools.Legacy.PanelMaster.STR_CopyArchMarks",
+                "CopyArchMarks",
+                "Скопировать марки АКР")
+            });
 
-            PushButtonData JsonButtonData5 = new PushButtonData("DNS Panel5", $"ФасадПлитка", Assembly.GetExecutingAssembly().Location, "DNS_PanelTools_v2.Commands.ARCH_SplitToParts");
-            var JSONbutton5 = panel.AddItem(JsonButtonData5) as PushButton;
-            JSONbutton5.LargeImage = imageSource;
+            ButtonBuilder lod400Builder = new ButtonBuilder(application);
+            lod400Builder.BuildRibbon("Мастер панелей", "КЖ.И - LOD400").BuildButtons(
+                new List<Button>
+            {
+                new Button(lod400Builder.SubPanel.Ribbon.RibbonPanel,
+                PanelTools.Properties.Resource.s_distinctAssemblies.ToBitmap(),
+                Assembly.GetExecutingAssembly().Location,
+                "DSKPrim.PanelTools.PanelMaster.STR_UniqueAssemblies",
+                "Leave Unique Assemblies",
+                "Оставить уникальные сборки"),
+
+                new Button(lod400Builder.SubPanel.Ribbon.RibbonPanel,
+                PanelTools.Properties.Resource.s_createDrawings.ToBitmap(),
+                Assembly.GetExecutingAssembly().Location,
+                "DSKPrim.PanelTools.PanelMaster.STR_CreateDrawings",
+                "Create panel drawings",
+                "Создать чертежи КЖ.И")
+            }
+                );
+
+            ButtonBuilder archBuilder = new ButtonBuilder(application);
+            archBuilder.BuildRibbon("Мастер панелей", "АКР").BuildButtons(
+                new List<Button>
+            {
+
+
+                new Button(archBuilder.SubPanel.Ribbon.RibbonPanel,
+                Properties.Resource.s_createOpening.ToBitmap(),
+                Assembly.GetExecutingAssembly().Location,
+                "DSKPrim.PanelTools.PanelMaster.ARCH_Windows",
+                "Create openings",
+                "Создать проемы"),
+
+                new Button(archBuilder.SubPanel.Ribbon.RibbonPanel,
+                Properties.Resource.a_createTile.ToBitmap(),
+                Assembly.GetExecutingAssembly().Location,
+                "DSKPrim.PanelTools.PanelMaster.ARCH_SplitToParts",
+                "Split to parts",
+                "Создать плитку"),
+
+                new Button(archBuilder.SubPanel.Ribbon.RibbonPanel,
+                Properties.Resource.a_copyMarks.ToBitmap(),
+                Assembly.GetExecutingAssembly().Location,
+                "DSKPrim.PanelTools.PanelMaster.ARCH_copyMarks",
+                "Copy marks",
+                "Скопировать марки"),
+
+                new Button(archBuilder.SubPanel.Ribbon.RibbonPanel,
+                Properties.Resource.a_createDrawings.ToBitmap(),
+                Assembly.GetExecutingAssembly().Location,
+                "DSKPrim.PanelTools.PanelMaster.ARCH_CreateDrawings",
+                "Create Drawings",
+                "Создать чертежи")
+            }
+                );
+
+            ButtonBuilder settingsBuilder = new ButtonBuilder(application);
+            settingsBuilder.BuildRibbon("Мастер панелей", "Настройки").BuildButtons(
+                new List<Button>
+            {
+                new Button(settingsBuilder.SubPanel.Ribbon.RibbonPanel,
+                Properties.Resource.settings.ToBitmap(),
+                Assembly.GetExecutingAssembly().Location,
+                "DSKPrim.PanelTools.PanelMaster.SettingsCommand",
+                "Settings",
+                "Настройки")
+            }
+                );
+
+            ButtonBuilder exportBuilder = new ButtonBuilder(application);
+            settingsBuilder.BuildRibbon("Мастер панелей", "Экспорт").BuildButtons(
+                new List<Button>
+            {
+                new Button(settingsBuilder.SubPanel.Ribbon.RibbonPanel,
+                Properties.Resource.settings.ToBitmap(),
+                Assembly.GetExecutingAssembly().Location,
+                "DSKPrim.PanelTools.PanelMaster.ExportSchedules",
+                "export",
+                "Экспорт")
+            }
+                );
+
+            //ButtonBuilder testBuilder = new ButtonBuilder(application);
+            //testBuilder.BuildRibbon("Мастер панелей", "Тестовые функции").BuildButtons(
+            //    new List<Button>
+            //{
+            //    new Button(testBuilder.SubPanel.Ribbon.RibbonPanel,
+            //    Properties.Resource.Test.ToBitmap(),
+            //    Assembly.GetExecutingAssembly().Location,
+            //    "DSKPrim.PanelTools.PanelMaster.PlaceEmbedded",
+            //    "Place Embedded",
+            //    "Разместить закладную")
+            //}
+            //   );
 
             return Result.Succeeded;
-        }
-
-        public BitmapImage Convert(Image image)
-        {
-            using (var memory = new MemoryStream())
-            {
-                image.Save(memory, ImageFormat.Png);
-                memory.Position = 0;
-
-                var bitmapImage = new BitmapImage();
-                bitmapImage.BeginInit();
-                bitmapImage.StreamSource = memory;
-                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                bitmapImage.EndInit();
-                return bitmapImage;
-            }
         }
 
     }
