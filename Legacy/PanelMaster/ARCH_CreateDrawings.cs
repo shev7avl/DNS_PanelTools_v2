@@ -30,12 +30,10 @@ namespace DSKPrim.PanelTools.PanelMaster
 			Transaction transaction = new Transaction(Document, "Создаем сборки");
 			TransactionSettings.SetFailuresPreprocessor(transaction);
 
-			List<BasePanel> panels = new List<BasePanel>();
-			foreach (var item in wallsCollection)
-			{
-				panels.Add(new Facade_Panel(Document, item));
-			}
-
+			List<BasePanel> panels = wallsCollection.Select(o => new Facade_Panel(o))
+				.Cast<BasePanel>()
+				.ToList();
+			
 			CreateAssemblyIfMissing(panels, transaction);
 			CreateDrawingForSelectedPanels(panels);
 
@@ -106,8 +104,28 @@ namespace DSKPrim.PanelTools.PanelMaster
 			string locMark = map.get_Item("DNS_Марка элемента").AsString();
 			string longMark = map.get_Item("DNS_Код изделия полный").AsString();
 
+			var wallBox = item.get_Geometry(new Options()).GetBoundingBox();
+			var newBox = new BoundingBoxXYZ
+			{
+				Max = new XYZ(
+					x: wallBox.Max.X + 5,
+					y: wallBox.Max.Y + 5,
+					z: wallBox.Max.Z + 5),
+				Min = new XYZ(
+					x: wallBox.Min.X - 5,
+					y: wallBox.Min.Y - 5,
+					z: wallBox.Min.Z - 5),
+				Transform = wallBox.Transform
+
+			};
+
+			BoundingBoxIntersectsFilter filter = new BoundingBoxIntersectsFilter(new Outline(
+				newBox.Min, newBox.Max));
+
+
 			ICollection<Part> parts = new FilteredElementCollector(Document).
 				OfClass(typeof(Part)).
+				WherePasses(filter).
 				Where(o => 
 					o.ParametersMap.get_Item("ADSK_Марка конструкции").AsString() == constrMark &&
 					o.ParametersMap.get_Item("DNS_Марка элемента").AsString() == locMark &&
@@ -128,11 +146,13 @@ namespace DSKPrim.PanelTools.PanelMaster
 			{
 				transaction.Start();
 				assembly = AssemblyInstance.Create(Document, ids, partNamingCategory);
+				
 				transaction.Commit();
 
-				try
-				{
-					if (transaction.GetStatus() == TransactionStatus.Committed)
+				//try
+				//{
+					
+				if (transaction.GetStatus() == TransactionStatus.Committed)
 					{
 						transaction.Start();
 						string name = SetPartAssemblyName(parts);
@@ -142,29 +162,49 @@ namespace DSKPrim.PanelTools.PanelMaster
 						CopyMaterialCodes(parts, name);
 						transaction.Commit();
 					}
-				}
-				catch (Exception)
-				{
-					if (transaction.GetStatus() == TransactionStatus.Started)
-					{
-						transaction.Commit();
-					}
-					if (transaction.GetStatus() == TransactionStatus.Committed)
-					{
-						transaction.Start();
-						string[] nameParts = SetPartAssemblyName(parts).Split('-');
-						var index = Int32.Parse(nameParts[2]);
-
-						string name = String.Format("{0}-{1}-{2}", nameParts[0], nameParts[1], index + 1);
-						assembly.AssemblyTypeName = name;
-						transaction.Commit();
-						transaction.Start();
-						CopyMaterialCodes(parts, name);
-						transaction.Commit();
-					}
-				}
+				//}
+				//catch (Exception)
+				//{
+				//	if (transaction.GetStatus() == TransactionStatus.Started)
+				//	{
+				//		transaction.Commit();
+				//	}
+				//	if (transaction.GetStatus() == TransactionStatus.Committed)
+				//	{
+				//		transaction.Start();
+				//		string name = SetPartAssemblyName(parts);
+				//		var newName = FindMaxAssemblyIndex(name);
+						
+				//		assembly.AssemblyTypeName = newName;
+				//		transaction.Commit();
+				//		transaction.Start();
+				//		CopyMaterialCodes(parts, newName);
+				//		transaction.Commit();
+				//	}
+				//}
 			}
 			return assembly;
+
+		}
+
+		private string FindMaxAssemblyIndex(string name)
+		{
+
+			var mainCode = $"{name.Split('-')[0]}-{name.Split('-')[1]}";
+		List<string> names = new FilteredElementCollector(Document).
+				OfClass(typeof(AssemblyType)).
+				Select(x => x.Name).
+				Where(x => x.Contains(mainCode)).Distinct().ToList();
+            if (names.Count == 0)
+            {
+				return $"{mainCode}-1";
+
+			}
+			List<int> indices = 
+				names.Select(o => int.Parse(o.Split('-')[2])).
+				ToList();
+
+			return $"{mainCode}-{indices.Max()+1}";
 
 		}
 
@@ -200,7 +240,9 @@ namespace DSKPrim.PanelTools.PanelMaster
 			}
 			else paintName= $"ID{parts.First().Id}";
 
-			return String.Format("{0}-{1}-1", markName, paintName);
+			var resName = String.Format("{0}-{1}-1", markName, paintName);
+
+			return FindMaxAssemblyIndex(resName);
 		}
 
 		private void CopyMaterialCodes(ICollection<Part> parts, string colorCode)

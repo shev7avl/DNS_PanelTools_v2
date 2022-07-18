@@ -39,7 +39,7 @@ namespace DSKPrim.PanelTools.PanelMaster
             {
                 foreach (Element item in els)
                 {
-                    Facade_Panel facade = new Facade_Panel(Document, item);
+                    Facade_Panel facade = new Facade_Panel(item);
                     facade.CreateMarks();
                 }
             }

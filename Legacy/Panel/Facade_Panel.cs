@@ -18,9 +18,9 @@ namespace DSKPrim.PanelTools.Panel
         public override string ShortMark { get; set; }
         public override string Index { get; set; }
 
-        public Facade_Panel(Document document, Element element)
+        public Facade_Panel(Element element)
         {
-            ActiveDocument = document;
+            ActiveDocument = element.Document;
             ActiveElement = element;
         }
 
@@ -84,14 +84,17 @@ namespace DSKPrim.PanelTools.Panel
                 ActiveElement.get_Geometry(new Options())
                 .GetBoundingBox().Max));
 
-            List<Element> parts = new FilteredElementCollector(ActiveDocument).
+            ElementCategoryFilter categoryFilter = new ElementCategoryFilter(BuiltInCategory.OST_Parts);
+
+            List<Part> parts = new FilteredElementCollector(ActiveDocument).
                 OfCategory(BuiltInCategory.OST_Parts).
                 WhereElementIsNotElementType().
                 WherePasses(boundingBoxIntersectsFilter).
-                ToElements().
+                Cast<Part>().
+                Where(o => ActiveElement.GetDependentElements(categoryFilter).Contains(o.Id)).
                 ToList();
 
-            return parts.Cast<Part>().ToList();
+            return parts;
         }
 
         private Element FindLinkedPanel(Document activeDocument)
@@ -99,18 +102,9 @@ namespace DSKPrim.PanelTools.Panel
             CommonProjectEnvironment projectEnvironment = CommonProjectEnvironment.GetInstance(ActiveDocument);
 
             List<RevitLinkInstance> linkedDocs = CommonProjectEnvironment.FindLinkedDocuments(ActiveDocument);
-            Document linkedDocSTR = CommonProjectEnvironment.FindLinkedDocuments(ActiveDocument).
+            RevitLinkInstance linkedDocSTR = CommonProjectEnvironment.FindLinkedDocuments(ActiveDocument).
                 Where<RevitLinkInstance>(o => o.Name.Contains("_КР") || o.Name.Contains("_КЖ")).
-                Select(o => o.GetLinkDocument()).
                 FirstOrDefault();
-
-
-            ElementIntersectsElementFilter facadeIntersectionFilter = new ElementIntersectsElementFilter(ActiveElement);
-            BoundingBoxIntersectsFilter boundingBoxIntersectsFilter = new BoundingBoxIntersectsFilter
-                (new Outline(ActiveElement.get_Geometry(new Options())
-                .GetBoundingBox().Min,
-                ActiveElement.get_Geometry(new Options())
-                .GetBoundingBox().Max));
 
             if (linkedDocSTR is null)
             {
@@ -118,12 +112,51 @@ namespace DSKPrim.PanelTools.Panel
                     " Проверьте наличие \"_КЖ\" или \"_КР\" в названии связанного файла ");
             }
 
-            Element panel = new FilteredElementCollector(linkedDocSTR).
+            var linkTransform = linkedDocSTR.GetTotalTransform().Inverse;
+            var box = ActiveElement.get_Geometry(new Options()).GetBoundingBox();
+            var transformedBox = new BoundingBoxXYZ
+            {
+                Max = new XYZ
+            (x: box.Max.X + linkTransform.Origin.X,
+                y: box.Max.Y + linkTransform.Origin.Y,
+                z: box.Max.Z + linkTransform.Origin.Z),
+
+                Min = new XYZ
+            (x: box.Min.X + linkTransform.Origin.X,
+                y: box.Min.Y + linkTransform.Origin.Y,
+                z: box.Min.Z + linkTransform.Origin.Z),
+
+                Transform = linkTransform
+            };
+
+            LocationCurve curve = ActiveElement.Location as LocationCurve;
+            Line line = curve.Curve as Line;
+            var transformedCentroid = new XYZ(
+                x: curve.Curve.GetEndPoint(0).X + 0.5 * curve.Curve.Length * line.Direction.X + linkTransform.Origin.X,
+                y: curve.Curve.GetEndPoint(0).Y + 0.5 * curve.Curve.Length * line.Direction.Y + linkTransform.Origin.Y,
+                z: curve.Curve.GetEndPoint(0).Z + 0.5 * (transformedBox.Max.Z - transformedBox.Min.Z));
+
+            BoundingBoxIntersectsFilter boundingBoxIntersectsFilter = new BoundingBoxIntersectsFilter
+                (new Outline(transformedBox.Min,
+                transformedBox.Max));
+
+            var wallLevel = ActiveDocument.GetElement(ActiveElement.LevelId).Name;
+
+
+            Predicate<Element> passes = (Element element) => {
+                bool levelPasses = element.Document.GetElement(element.LevelId).Name == wallLevel;
+                bool intersects = Geometry.InBox(element.get_Geometry(new Options()).GetBoundingBox(), transformedCentroid);
+
+                return levelPasses;
+
+            };
+
+            Element panel = new FilteredElementCollector(linkedDocSTR.GetLinkDocument()).
                 OfCategory(BuiltInCategory.OST_StructuralFraming).
                 WhereElementIsNotElementType().
                 WherePasses(boundingBoxIntersectsFilter).
-                WherePasses(facadeIntersectionFilter).
                 ToElements().
+                Where(o => passes(o)).
                 FirstOrDefault();
 
             if (panel is null)

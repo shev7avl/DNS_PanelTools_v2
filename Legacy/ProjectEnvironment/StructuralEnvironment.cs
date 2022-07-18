@@ -190,7 +190,7 @@ namespace DSKPrim.PanelTools.ProjectEnvironment
                 }
                 if (type == StructureType.PanelTypes.FACADE_PANEL)
                 {
-                    Facade_Panel facade = new Facade_Panel(doc, element);
+                    Facade_Panel facade = new Facade_Panel(element);
                     return facade;
                 }
             }

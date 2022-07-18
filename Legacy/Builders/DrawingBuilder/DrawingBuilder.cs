@@ -353,6 +353,13 @@ namespace DSKPrim.PanelTools.Builders
 
                     var comparedValue = basePanel.AssemblyInstance.Name;
 
+                    int filterCount = locationSchedule.Definition.GetFilterCount();
+                    while (filterCount > 0)
+                    {
+                        locationSchedule.Definition.RemoveFilter(filterCount - 1);
+                        filterCount--;
+                    }
+
                     ScheduleFieldId assemblyFieldId = locationSchedule.Definition.GetFieldId(2);
                     ScheduleFilter assemblyFilter = new ScheduleFilter(assemblyFieldId,
                         ScheduleFilterType.Equal,
@@ -398,21 +405,29 @@ namespace DSKPrim.PanelTools.Builders
                     var location = basePanel.ActiveElement.ParametersMap.get_Item("DNS_Марка элемента").AsString();
                     var mark = basePanel.ActiveElement.ParametersMap.get_Item("ADSK_Марка конструкции").AsString();
 
-                    ScheduleFieldId assemblyFieldId = detailSchedule.Definition.GetFieldId(detailSchedule.Definition.GetFieldCount() - 1);
-                    ScheduleFieldId markFieldId = detailSchedule.Definition.GetFieldId(detailSchedule.Definition.GetFieldCount() - 2);
-                    ScheduleFieldId locationFieldId = detailSchedule.Definition.GetFieldId(detailSchedule.Definition.GetFieldCount() - 3);
 
-                    ScheduleFilter assemblyFilter = new ScheduleFilter(assemblyFieldId,
-                        ScheduleFilterType.Equal,
-                        assemblyName);
+                    int filtercount = detailSchedule.Definition.GetFilterCount();
+                    while (filtercount>0)
+                    {
+                        detailSchedule.Definition.RemoveFilter(filtercount - 1);
+                        filtercount--;
+                    }
+
+                    //ScheduleFieldId assemblyFieldId = detailSchedule.Definition.GetFieldId(detailSchedule.Definition.GetFieldCount() - 1);
+                    ScheduleFieldId markFieldId = detailSchedule.Definition.GetFieldId(detailSchedule.Definition.GetFieldCount() - 2);
+                    //ScheduleFieldId locationFieldId = detailSchedule.Definition.GetFieldId(detailSchedule.Definition.GetFieldCount() - 3);
+
+                    //ScheduleFilter assemblyFilter = new ScheduleFilter(assemblyFieldId,
+                    //    ScheduleFilterType.Equal,
+                    //    assemblyName);
                     ScheduleFilter markFilter = new ScheduleFilter(markFieldId,
                         ScheduleFilterType.Equal,
-                        mark);
-                    ScheduleFilter locationFilter = new ScheduleFilter(locationFieldId, ScheduleFilterType.Equal, location);
+                        location);
+                    //ScheduleFilter locationFilter = new ScheduleFilter(locationFieldId, ScheduleFilterType.Equal, location);
 
-                    detailSchedule.Definition.AddFilter(assemblyFilter);
+                    //detailSchedule.Definition.AddFilter(assemblyFilter);
                     detailSchedule.Definition.AddFilter(markFilter);
-                    detailSchedule.Definition.AddFilter(locationFilter);
+                    //detailSchedule.Definition.AddFilter(locationFilter);
 
                     return detailSchedule;
                 }
